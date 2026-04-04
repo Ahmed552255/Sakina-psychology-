@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>سُكُون — محادثة</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <style>
+        :root {
+            --primary: #98D8D8; --accent: #5aabab; --accent-dark: #3d8a8a;
+            --bg: #eef6f6; --white: #fff; --ink: #2c3e50; --text-sec: #7f8c8d;
+            --bubble-sent-bg: var(--primary);
+            --bubble-sent-text: var(--ink);
+            --bubble-received-bg: var(--white);
+            --bubble-received-text: var(--ink);
+            --grad: linear-gradient(135deg, var(--primary), var(--accent));
+            --shadow: 0 4px 24px rgba(90, 171, 171, 0.1);
+            --radius: 22px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { font-size: 16px; }
+        body {
+            font-family: 'Cairo', sans-serif; color: var(--ink);
+            height: 100vh; width: 100vw;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            background-color: var(--bg);
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        /* ======================================== */
+        /* --- 1. رأس الصفحة (Chat Header) --- */
+        /* ======================================== */
+        .chat-header {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: var(--shadow);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+        .back-btn { background: none; border: none; cursor: pointer; color: var(--ink); padding: 0.5rem; display: flex; }
+        .avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+        .header-info { flex-grow: 1; }
+        .header-info .name { font-size: 1.1rem; font-weight: 700; color: var(--accent-dark); }
+        .header-info .status { font-size: 0.8rem; color: var(--text-sec); }
+        
+        .call-actions { display: flex; gap: 0.5rem; }
+        .call-btn {
+            background: none; border: none; cursor: pointer;
+            padding: 0.6rem; color: var(--accent);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+        }
+        .call-btn:hover { background-color: rgba(152, 216, 216, 0.2); color: var(--accent-dark); }
+        .call-btn:active { transform: scale(0.9); }
+
+        /* ======================================== */
+        /* --- 2. منطقة عرض الرسائل --- */
+        /* ======================================== */
+        .messages-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem; /* مسافة بسيطة بين الحاويات */
+        }
+        .message-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 75%;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: popIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
+
+        .message-bubble {
+            padding: 0.75rem 1.1rem;
+            border-radius: var(--radius);
+            line-height: 1.7;
+            font-size: 0.95rem;
+            word-wrap: break-word;
+        }
+        .message-meta { font-size: 0.7rem; color: var(--text-sec); margin-top: 0.3rem; padding: 0 0.5rem; }
+        .message-meta .status-ticks { margin-right: 0.25rem; font-weight: 700; }
+        .status-ticks.read { color: #3498db; }
+
+        /* --- رسالة مستلمة (من الطبيب) --- */
+        .received-container { align-self: flex-start; align-items: flex-start; }
+        .received {
+            background: var(--bubble-received-bg);
+            color: var(--bubble-received-text);
+            border-top-right-radius: 6px;
+        }
+        
+        /* --- رسالة مرسلة (من المستخدم) --- */
+        .sent-container { align-self: flex-end; align-items: flex-end; }
+        .sent {
+            background: var(--bubble-sent-bg);
+            color: var(--bubble-sent-text);
+            border-top-left-radius: 6px;
+        }
+
+        /* --- فاصل التاريخ --- */
+        .date-divider {
+            align-self: center;
+            background: rgba(152, 216, 216, 0.2);
+            color: var(--accent-dark);
+            padding: 0.25rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+
+        /* ======================================== */
+        /* --- 3. منطقة إدخال النص --- */
+        /* ======================================== */
+        .input-area {
+            display: flex; align-items: flex-end; gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        .message-input {
+            flex-grow: 1;
+            border: none;
+            background: rgba(238, 246, 246, 0.9);
+            border-radius: 20px;
+            padding: 0.8rem 1rem;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            resize: none;
+            max-height: 100px; /* تحديد أقصى ارتفاع للحقل */
+            overflow-y: auto;
+        }
+        .send-btn {
+            background: var(--grad);
+            border: none;
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(90, 171, 171, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(90, 171, 171, 0.4);
+        }
+        .send-btn:active { transform: scale(1); box-shadow: 0 2px 8px rgba(90, 171, 171, 0.2); }
+        .send-btn .icon { transform: translateX(2px); }
+    </style>
+</head>
+<body>
+
+    <header class="chat-header" id="chatHeader"></header>
+    <main class="messages-area" id="messagesArea"></main>
+    <footer class="input-area">
+        <textarea class="message-input" id="messageInput" placeholder="اكتب رسالتك هنا..." rows="1"></textarea>
+        <button class="send-btn" id="sendBtn" aria-label="إرسال">
+            <i class="icon" data-feather="send"></i>
+        </button>
+    </footer>
+
+    <script>
+        const CHAT_APP = (() => {
+            'use strict';
+
+            // --- DATA (Mock Database) ---
+            const DB = {
+                doctors: {
+                    'doc_ahmed': { name: 'د. أحمد صالح', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' },
+                    'doc_fatima': { name: 'د. فاطمة علي', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
+                },
+                messages: {
+                    'doc_ahmed': [
+                        { from: 'doctor', text: 'أهلاً بك. كيف يمكنني مساعدتك اليوم؟', time: '10:40 ص', date: '2026-04-05' },
+                        { from: 'user', text: 'أهلاً دكتور، أشعر ببعض القلق مؤخراً.', time: '10:41 ص', status: 'read' },
+                        { from: 'doctor', text: 'أتفهم ذلك تماماً. هل يمكنك أن تصف لي طبيعة هذا القلق؟', time: '10:42 ص' },
+                        { from: 'user', text: 'هو شعور عام بعدم الارتياح، خاصة في المواقف الاجتماعية.', time: '10:44 ص', status: 'sent' },
+                    ],
+                    'doc_fatima': [
+                        { from: 'doctor', text: 'مرحباً، وصلني طلبك. كيف حالك اليوم؟', time: '09:15 ص', date: '2026-04-04' },
+                    ]
+                },
+                currentUser: { id: 'user_abc_123' }
+            };
+
+            // --- DOM Elements ---
+            const elements = {
+                header: document.getElementById('chatHeader'),
+                messagesArea: document.getElementById('messagesArea'),
+                input: document.getElementById('messageInput'),
+                sendBtn: document.getElementById('sendBtn'),
+            };
+
+            // --- State ---
+            let currentDoctorId = null;
+
+            // --- TEMPLATES (Clean HTML generation) ---
+            const createHeaderHTML = (doctor) => `
+                <button class="back-btn" onclick="window.location.href='chats.html'">
+                    <i data-feather="arrow-right"></i>
+                </button>
+                <img src="${doctor.avatar}" alt="${doctor.name}" class="avatar">
+                <div class="header-info">
+                    <div class="name">${doctor.name}</div>
+                    <div class="status">متاح للمراسلة</div>
+                </div>
+                <div class="call-actions">
+                    <button class="call-btn" id="videoCallBtn" title="مكالمة فيديو"><i data-feather="video"></i></button>
+                    <button class="call-btn" id="audioCallBtn" title="مكالمة صوتية"><i data-feather="phone"></i></button>
+                </div>
+            `;
+
+            const createMessageHTML = (msg) => {
+                const isSent = msg.from === 'user';
+                const ticks = { sent: '✓', read: '✓✓' };
+                const statusTicks = isSent ? `<span class="status-ticks ${msg.status}">${ticks[msg.status] || ''}</span>` : '';
+                
+                return `
+                    <div class="message-container ${isSent ? 'sent-container' : 'received-container'}">
+                        <div class="message-bubble ${isSent ? 'sent' : 'received'}">${msg.text}</div>
+                        <div class="message-meta">${statusTicks}<span>${msg.time}</span></div>
+                    </div>
+                `;
+            };
+
+            const createDateDividerHTML = (dateStr) => {
+                const date = new Date(dateStr).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
+                return `<div class="date-divider">${date}</div>`;
+            };
+
+            // --- RENDER Functions ---
+            const render = () => {
+                const doctor = DB.doctors[currentDoctorId];
+                const messages = DB.messages[currentDoctorId] || [];
+                if (!doctor) {
+                    document.body.innerHTML = '<h1>لم يتم العثور على الطبيب</h1>';
+                    return;
+                }
+
+                // Render Header
+                elements.header.innerHTML = createHeaderHTML(doctor);
+                feather.replace();
+                
+                // Render Messages
+                elements.messagesArea.innerHTML = '';
+                let lastDate = null;
+                const fragment = document.createDocumentFragment();
+                messages.forEach((msg, index) => {
+                    if (msg.date && msg.date !== lastDate) {
+                        const divider = document.createElement('div');
+                        divider.innerHTML = createDateDividerHTML(msg.date);
+                        fragment.appendChild(divider.firstChild);
+                        lastDate = msg.date;
+                    }
+                    const msgEl = document.createElement('div');
+                    msgEl.innerHTML = createMessageHTML(msg);
+                    msgEl.firstChild.style.animationDelay = `${Math.min(index * 0.07, 0.5)}s`;
+                    fragment.appendChild(msgEl.firstChild);
+                });
+                elements.messagesArea.appendChild(fragment);
+
+                // Scroll to bottom
+                elements.messagesArea.scrollTop = elements.messagesArea.scrollHeight;
+            };
+
+            // --- ACTIONS ---
+            const sendMessage = () => {
+                const text = elements.input.value.trim();
+                if (!text) return;
+
+                const newMessage = {
+                    from: 'user',
+                    text: text,
+                    time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                    status: 'sent'
+                };
+                
+                DB.messages[currentDoctorId].push(newMessage);
+                
+                // Optimistic UI update
+                const msgEl = document.createElement('div');
+                msgEl.innerHTML = createMessageHTML(newMessage);
+                msgEl.firstChild.style.animationDelay = `0s`;
+                elements.messagesArea.appendChild(msgEl.firstChild);
+                elements.messagesArea.scrollTop = elements.messagesArea.scrollHeight;
+
+                elements.input.value = '';
+                elements.input.style.height = 'auto';
+                elements.input.focus();
+            };
+
+            const startCall = (type) => {
+                const url = `call.html?type=${type}&doctor_id=${currentDoctorId}&patient_id=${DB.currentUser.id}`;
+                alert(`جاري بدء مكالمة ${type === 'video' ? 'فيديو' : 'صوتية'}...\nسيتم توجيهك إلى: ${url}`);
+                // window.location.href = url; // Uncomment for actual redirection
+            };
+
+            // --- EVENT BINDING ---
+            const bindEvents = () => {
+                elements.sendBtn.addEventListener('click', sendMessage);
+                elements.input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+
+                elements.input.addEventListener('input', () => {
+                    elements.input.style.height = 'auto';
+                    elements.input.style.height = `${elements.input.scrollHeight}px`;
+                });
+
+                // Use event delegation for call buttons
+                elements.header.addEventListener('click', (e) => {
+                    const videoBtn = e.target.closest('#videoCallBtn');
+                    const audioBtn = e.target.closest('#audioCallBtn');
+                    if (videoBtn) startCall('video');
+                    if (audioBtn) startCall('audio');
+                });
+            };
+
+            // --- INITIALIZATION ---
+            const init = () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                currentDoctorId = urlParams.get('id') || 'doc_ahmed'; // Default to a chat
+                
+                render();
+                bindEvents();
+            };
+
+            return { init };
+        })();
+
+        document.addEventListener('DOMContentLoaded', CHAT_APP.init);
+    </script>
+</body>
+</html>
