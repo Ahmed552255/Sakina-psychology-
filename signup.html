@@ -10,20 +10,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
 
     <style>
+        /* ======================================== */
+        /* --- 1. المتغيرات ونظام الألوان --- */
+        /* ======================================== */
         :root {
             --primary: #98D8D8; --accent: #5aabab; --accent-dark: #3d8a8a;
             --bg: #eef6f6; --white: #fff; --ink: #2c3e50; --text-sec: #7f8c8d;
             --danger: #ff6b6b; --success: #4caf93; --warn: #f39c12; --excellent: #8e44ad;
-            --grad: linear-gradient(135deg, var(--primary ), var(--accent));
+            --grad: linear-gradient(135deg, var(--primary), var(--accent));
             --shadow: 0 8px 32px rgba(90, 171, 171, 0.15);
             --shadow-lg: 0 20px 60px rgba(90, 171, 171, 0.22);
             --radius: 28px;
         }
 
+        /* ======================================== */
+        /* --- 2. الإعدادات العامة --- */
+        /* ======================================== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html { font-size: 16px; }
         body {
@@ -35,12 +39,18 @@
             position: relative;
         }
 
+        /* ======================================== */
+        /* --- 3. الخلفية والأشكال العائمة --- */
+        /* ======================================== */
         .bg-orbs { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
         .orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; animation: float 40s infinite alternate; }
         .orb1 { width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(152, 216, 216, 0.25) 0%, transparent 70%); top: -15%; right: -15%; animation-duration: 35s; }
         .orb2 { width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(90, 171, 171, 0.15) 0%, transparent 70%); bottom: -10%; left: -10%; animation-duration: 45s; animation-direction: alternate-reverse; }
         @keyframes float { from { transform: translate(0, 0) scale(1); } to { transform: translate(5%, 8%) scale(1.1); } }
 
+        /* ======================================== */
+        /* --- 4. بطاقة إنشاء الحساب --- */
+        /* ======================================== */
         .glass-card {
             background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
             border: 1px solid rgba(255, 255, 255, 0.4); border-radius: var(--radius); box-shadow: var(--shadow);
@@ -54,6 +64,9 @@
         .card-header h1 { font-size: 2.2rem; font-weight: 700; color: var(--accent-dark); margin-bottom: 0.5rem; }
         .card-header p { font-size: 1rem; color: var(--text-sec); line-height: 1.6; }
 
+        /* ======================================== */
+        /* --- 5. حقل الإدخال الرئيسي --- */
+        /* ======================================== */
         .main-input-section { margin-bottom: 2rem; }
         .input-group { position: relative; margin-bottom: 1rem; }
         .input-group .icon { position: absolute; top: 50%; right: 1.25rem; transform: translateY(-50%); color: var(--accent); }
@@ -82,6 +95,9 @@
         .suggest-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; }
         .suggest-btn:hover { color: var(--accent-dark); text-decoration: underline; }
 
+        /* ======================================== */
+        /* --- 6. الأزرار --- */
+        /* ======================================== */
         .actions { margin-top: 2rem; }
         .btn { width: 100%; padding: 1rem; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; font-family: 'Cairo', sans-serif; cursor: pointer; transition: all 0.3s ease; margin-bottom: 1rem; }
         .btn-primary { background: var(--grad); color: white; box-shadow: 0 6px 20px rgba(90, 171, 171, 0.35); }
@@ -92,6 +108,9 @@
         .btn-link { background: none; border: none; color: var(--accent); cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 1rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; }
         .btn-link:hover { color: var(--accent-dark); text-decoration: underline; }
 
+        /* ======================================== */
+        /* --- 7. النافذة المنبثقة (Modal) --- */
+        /* ======================================== */
         .modal-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); z-index: 600; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(8px); }
         .modal-bg.open { opacity: 1; pointer-events: auto; }
         .modal-bg .glass-card { max-width: 450px; position: relative; }
@@ -134,7 +153,7 @@
             <p>أنشئ مُعرّفك الشخصي الآمن لبدء رحلتك</p>
         </header>
         
-        <form id="signupForm">
+        <form id="signupForm" onsubmit="SIGNUP_APP.createAccount(event)">
             
             <div class="main-input-section">
                 <div class="input-group">
@@ -206,8 +225,8 @@
         </div>
     </div>
 
-    <script type="module">
-        import { auth, db, createUserWithEmailAndPassword, doc, setDoc, getDoc, serverTimestamp } from './firebase-service.js';
+    <script>
+        feather.replace();
 
         const SIGNUP_APP = (() => {
             'use strict';
@@ -219,7 +238,6 @@
                 signupButton: $('signupButton'), securityBtn: $('securityBtn'), securityModal: $('securityModal'),
                 modalCloseBtn: $('modalCloseBtn'), saveSecurityBtn: $('saveSecurityBtn'),
                 securityAnswer: $('securityAnswer'), suggestBtn: $('suggestBtn'), selectWrapper: $('custom-select'),
-                signupForm: $('signupForm'),
             };
             elements.selectTrigger = elements.selectWrapper.querySelector('.custom-select-trigger');
             elements.options = elements.selectWrapper.querySelectorAll('.custom-select-option');
@@ -237,11 +255,12 @@
                 4: { text: 'قوي', color: 'var(--success)', width: '80%' }, 5: { text: 'ممتاز!', color: 'var(--excellent)', width: '100%' },
             };
 
-            const checkIdAvailability = async (id) => {
-                const docRef = doc(db, "users", id);
-                const docSnap = await getDoc(docRef);
-                return !docSnap.exists();
-            };
+            const checkIdAvailability = (id) => new Promise(resolve => {
+                setTimeout(() => {
+                    const usedIDs = ['user123', 'sokoon_patient', 'test_id', 'admin'];
+                    resolve(!usedIDs.includes(id));
+                }, 800);
+            });
 
             const updateSignupButtonState = () => {
                 elements.signupButton.disabled = !(isIdAvailable && isIdStrong);
@@ -268,8 +287,8 @@
                 if (id.length >= 4) {
                     elements.availabilityIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     availabilityTimeout = setTimeout(async () => {
-                        if (elements.newIdInput.value !== id) return;
                         const isAvailable = await checkIdAvailability(id);
+                        if (elements.newIdInput.value !== id) return;
                         isIdAvailable = isAvailable;
                         if (isAvailable) {
                             elements.availabilityIcon.innerHTML = '<i data-feather="check-circle" style="color: var(--success);"></i>';
@@ -331,56 +350,25 @@
                 });
             };
 
-            const createAccount = async (event) => {
+            const createAccount = (event) => {
                 event.preventDefault();
-                elements.signupButton.disabled = true;
-                elements.signupButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
-
-                const id = elements.newIdInput.value;
-                // For simplicity, we'll use the ID as both email and password.
-                // In a real app, you'd have separate fields for email and password.
-                const email = `${id}@sokoon.app`;
-                const password = id;
-
-                try {
-                    // 1. Create user in Firebase Auth
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
-
-                    // 2. Create user document in Firestore
-                    const userDocRef = doc(db, "users", user.uid);
-                    await setDoc(userDocRef, {
-                        userId: id,
-                        email: email,
-                        role: 'patient', // Default role
-                        createdAt: serverTimestamp(),
-                        securityQuestion: securityQuestion || null,
-                        securityAnswer: securityAnswerValue || null,
-                        displayName: `مستخدم جديد`,
-                        avatarUrl: `https://i.pravatar.cc/150?u=${user.uid}` // Placeholder avatar
-                    } );
-
-                    alert(`تهانينا! تم إنشاء حسابك بنجاح. يمكنك الآن تسجيل الدخول.`);
-                    window.location.href = 'index.html';
-
-                } catch (error) {
-                    console.error("Error creating account: ", error);
-                    alert(`فشل إنشاء الحساب: ${error.message}`);
-                } finally {
-                    elements.signupButton.disabled = false;
-                    elements.signupButton.textContent = 'إنشاء الحساب';
+                let message = `تهانينا! تم إنشاء حسابك بنجاح بالمُعرّف: ${elements.newIdInput.value}`;
+                if (securityQuestion && securityAnswerValue) {
+                    message += `\nتم حفظ سؤال الأمان الخاص بك.`;
                 }
+                alert(message);
             };
 
             const init = () => {
-                feather.replace();
+                const faScript = document.createElement('script');
+                faScript.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js";
+                document.head.appendChild(faScript);
                 
                 elements.newIdInput.addEventListener('input', handleIdInput);
                 elements.suggestBtn.addEventListener('click', suggestId);
                 elements.securityBtn.addEventListener('click', openSecurityModal);
                 elements.modalCloseBtn.addEventListener('click', closeSecurityModal);
                 elements.saveSecurityBtn.addEventListener('click', saveSecurityData);
-                elements.signupForm.addEventListener('submit', createAccount);
                 
                 elements.securityModal.addEventListener('click', (e) => {
                     if (e.target === elements.securityModal) closeSecurityModal();
@@ -395,7 +383,7 @@
             };
 
             init();
-            
+            return { createAccount };
         })();
     </script>
 </body>
