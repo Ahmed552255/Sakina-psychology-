@@ -153,7 +153,7 @@
             <p>أنشئ مُعرّفك الشخصي الآمن لبدء رحلتك</p>
         </header>
         
-        <form id="signupForm" onsubmit="SIGNUP_APP.createAccount(event)">
+        <form id="signupForm">
             
             <div class="main-input-section">
                 <div class="input-group">
@@ -224,7 +224,9 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { createAnonymousPatientAccount } from './firebase-service.js';
+
         feather.replace();
 
         const SIGNUP_APP = (() => {
@@ -232,6 +234,7 @@
 
             const $ = id => document.getElementById(id);
             const elements = {
+                signupForm: $('signupForm'),
                 newIdInput: $('newId'), strengthBar: $('strength-bar'), strengthText: $('strength-text'),
                 availabilityIcon: $('availabilityIcon'), availabilityMessage: $('availabilityMessage'),
                 signupButton: $('signupButton'), securityBtn: $('securityBtn'), securityModal: $('securityModal'),
@@ -254,7 +257,6 @@
                 4: { text: 'قوي', color: 'var(--success)', width: '80%' }, 5: { text: 'ممتاز!', color: 'var(--excellent)', width: '100%' },
             };
 
-            // المنطق الأول: الاتصال بقاعدة البيانات (محاكاة)
             const checkIdAvailability = (id) => new Promise(resolve => {
                 setTimeout(() => {
                     const usedIDs = ['user123', 'sokoon_patient', 'test_id', 'admin'];
@@ -339,7 +341,7 @@
                 elements.options.forEach(option => {
                     option.addEventListener('click', () => {
                         elements.selectedText.textContent = option.querySelector('span').textContent;
-                        securityQuestion = option.dataset.value;
+                        securityQuestion = option.querySelector('span').textContent; // حفظ نص السؤال
                         elements.selectWrapper.classList.remove('open');
                     });
                 });
@@ -350,24 +352,21 @@
                 });
             };
 
-            // المنطق الثاني: توجيه المستخدم لصفحة المنزل بعد النجاح
             const createAccount = async (event) => {
                 event.preventDefault();
-                const userData = {
-                    identifier: elements.newIdInput.value,
-                    securityQuestion: securityQuestion,
-                    securityAnswer: securityAnswerValue
-                };
+                elements.signupButton.disabled = true;
+                elements.signupButton.textContent = "جاري الإنشاء...";
 
                 try {
-                    // هنا يتم الاتصال الفعلي بالخادم مستقبلاً
-                    console.log("Saving user data...", userData);
+                    // تنفيذ تسجيل الدخول المجهول وحفظ البيانات في Firestore
+                    await createAnonymousPatientAccount(securityQuestion, securityAnswerValue);
                     
-                    // محاكاة نجاح العملية ثم التوجيه
-                    alert(`تهانينا ${userData.identifier}! تم إنشاء حسابك بنجاح.`);
-                    window.location.href = 'home.html'; 
+                    alert("تم إنشاء حسابك المجهول بنجاح!");
+                    window.location.href = 'home.html';
                 } catch (error) {
-                    alert("حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة لاحقاً.");
+                    alert("حدث خطأ أثناء إنشاء الحساب: " + error.message);
+                    elements.signupButton.disabled = false;
+                    elements.signupButton.textContent = "إنشاء الحساب";
                 }
             };
 
@@ -381,6 +380,7 @@
                 elements.securityBtn.addEventListener('click', openSecurityModal);
                 elements.modalCloseBtn.addEventListener('click', closeSecurityModal);
                 elements.saveSecurityBtn.addEventListener('click', saveSecurityData);
+                elements.signupForm.addEventListener('submit', createAccount);
                 
                 elements.securityModal.addEventListener('click', (e) => {
                     if (e.target === elements.securityModal) closeSecurityModal();
@@ -395,7 +395,6 @@
             };
 
             init();
-            return { createAccount };
         })();
     </script>
 </body>
