@@ -188,7 +188,6 @@
         </form>
     </main>
 
-    <!-- نافذة سؤال الأمان المنبثقة -->
     <div class="modal-bg" id="securityModal">
         <div class="glass-card">
             <button type="button" class="modal-close" id="modalCloseBtn"><i data-feather="x"></i></button>
@@ -255,6 +254,7 @@
                 4: { text: 'قوي', color: 'var(--success)', width: '80%' }, 5: { text: 'ممتاز!', color: 'var(--excellent)', width: '100%' },
             };
 
+            // المنطق الأول: الاتصال بقاعدة البيانات (محاكاة)
             const checkIdAvailability = (id) => new Promise(resolve => {
                 setTimeout(() => {
                     const usedIDs = ['user123', 'sokoon_patient', 'test_id', 'admin'];
@@ -350,13 +350,25 @@
                 });
             };
 
-            const createAccount = (event) => {
+            // المنطق الثاني: توجيه المستخدم لصفحة المنزل بعد النجاح
+            const createAccount = async (event) => {
                 event.preventDefault();
-                let message = `تهانينا! تم إنشاء حسابك بنجاح بالمُعرّف: ${elements.newIdInput.value}`;
-                if (securityQuestion && securityAnswerValue) {
-                    message += `\nتم حفظ سؤال الأمان الخاص بك.`;
+                const userData = {
+                    identifier: elements.newIdInput.value,
+                    securityQuestion: securityQuestion,
+                    securityAnswer: securityAnswerValue
+                };
+
+                try {
+                    // هنا يتم الاتصال الفعلي بالخادم مستقبلاً
+                    console.log("Saving user data...", userData);
+                    
+                    // محاكاة نجاح العملية ثم التوجيه
+                    alert(`تهانينا ${userData.identifier}! تم إنشاء حسابك بنجاح.`);
+                    window.location.href = 'home.html'; 
+                } catch (error) {
+                    alert("حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة لاحقاً.");
                 }
-                alert(message);
             };
 
             const init = () => {
