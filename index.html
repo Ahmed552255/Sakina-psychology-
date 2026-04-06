@@ -5,34 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>سُكُون — بوابتك إلى الهدوء</title>
     
-    <!-- Google Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     
-    <!-- Crypto-JS for Hashing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
+        /* ======================================== */
+        /* --- 1. المتغيرات ونظام الألوان الأساسي --- */
+        /* ======================================== */
         :root {
-            --primary: #98D8D8; --accent: #5aabab; --accent-dark: #3d8a8a; --bg: #eef6f6;
-            --white: #fff; --ink: #2c3e50; --text-sec: #7f8c8d; --danger: #ff6b6b;
-            --success: #4caf93; --grad: linear-gradient(135deg, var(--primary ), var(--accent));
-            --shadow: 0 8px 32px rgba(90, 171, 171, 0.15); --shadow-lg: 0 20px 60px rgba(90, 171, 171, 0.22);
+            --primary: #98D8D8;
+            --accent: #5aabab;
+            --accent-dark: #3d8a8a;
+            --bg: #eef6f6;
+            --white: #fff;
+            --ink: #2c3e50;
+            --text-sec: #7f8c8d;
+            --danger: #ff6b6b;
+            --success: #4caf93;
+            --grad: linear-gradient(135deg, var(--primary), var(--accent));
+            --shadow: 0 8px 32px rgba(90, 171, 171, 0.15);
+            --shadow-lg: 0 20px 60px rgba(90, 171, 171, 0.22);
             --radius: 28px;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { font-size: 16px; }
-        body { font-family: 'Cairo', sans-serif; color: var(--ink); min-height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; padding: 1rem; background: linear-gradient(135deg, var(--bg), #d1e8e8); position: relative; }
-        .bg-orbs { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
-        .orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; animation: float 40s infinite alternate; }
-        .orb1 { width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(152, 216, 216, 0.25) 0%, transparent 70%); top: -15%; right: -15%; animation-duration: 35s; }
-        .orb2 { width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(90, 171, 171, 0.15) 0%, transparent 70%); bottom: -10%; left: -10%; animation-duration: 45s; animation-direction: alternate-reverse; }
-        @keyframes float { from { transform: translate(0, 0) scale(1); } to { transform: translate(5%, 8%) scale(1.1); } }
-        .glass-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: var(--radius); box-shadow: var(--shadow); width: 100%; max-width: 420px; padding: 2.5rem; text-align: center; z-index: 1; animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; transform: scale(0.9); opacity: 0; }
-        @keyframes popIn { to { transform: scale(1); opacity: 1; } }
+
+        /* ======================================== */
+        /* --- 2. الإعدادات العامة والتنسيق الأساسي --- */
+        /* ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            color: var(--ink);
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            /* استخدام تدرج لوني ثابت كخلفية رئيسية */
+            background: linear-gradient(135deg, var(--bg), #d1e8e8);
+            position: relative; /* ضروري لتثبيت الأشكال العائمة */
+        }
+
+        /* ======================================== */
+        /* --- 3. الأشكال العائمة في الخلفية --- */
+        /* ======================================== */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px); /* تأثير ضبابي شديد لدمج الألوان */
+            pointer-events: none;
+            animation: float 40s infinite alternate;
+        }
+        .orb1 {
+            width: 50vw; height: 50vw;
+            background: radial-gradient(circle, rgba(152, 216, 216, 0.25) 0%, transparent 70%);
+            top: -15%; right: -15%;
+            animation-duration: 35s;
+        }
+        .orb2 {
+            width: 40vw; height: 40vw;
+            background: radial-gradient(circle, rgba(90, 171, 171, 0.15) 0%, transparent 70%);
+            bottom: -10%; left: -10%;
+            animation-duration: 45s;
+            animation-direction: alternate-reverse;
+        }
+        @keyframes float {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(5%, 8%) scale(1.1); }
+        }
+
+        /* ======================================== */
+        /* --- 4. بطاقة تسجيل الدخول الزجاجية --- */
+        /* ======================================== */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            text-align: center;
+            z-index: 1;
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform: scale(0.9);
+            opacity: 0;
+        }
+
+        @keyframes popIn {
+            to { transform: scale(1); opacity: 1; }
+        }
+
         .card-header { margin-bottom: 2rem; }
         .logo-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(152, 216, 216, 0.25); border-radius: 20px; padding: 10px 22px; box-shadow: 0 4px 12px rgba(90, 171, 171, 0.1); margin-bottom: 1.25rem; }
         .logo-badge .li { width: 32px; height: 32px; border-radius: 10px; background: var(--grad); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; }
@@ -40,26 +124,38 @@
         .logo-badge .lt span { color: var(--primary); }
         .card-header h1 { font-size: 2.2rem; font-weight: 700; color: var(--accent-dark); margin-bottom: 0.5rem; }
         .card-header p { font-size: 1rem; color: var(--text-sec); line-height: 1.6; }
+
+        /* ======================================== */
+        /* --- 5. حقول الإدخال الذكية --- */
+        /* ======================================== */
         .input-group { position: relative; margin-bottom: 1rem; }
         .input-group .icon { position: absolute; top: 50%; right: 1.25rem; transform: translateY(-50%); color: var(--accent); transition: color 0.3s; }
-        .input-group .validation-icon { position: absolute; top: 50%; left: 1.25rem; right: auto; transform: translateY(-50%); font-size: 1.2rem; }
+        .input-group .validation-icon { left: 1.25rem; right: auto; font-size: 1.2rem; }
         .validation-icon .fa-spinner { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .input-group input { width: 100%; padding: 1rem 4rem 1rem 4rem; background: rgba(255, 255, 255, 0.7); border: 1.5px solid transparent; border-radius: 16px; outline: none; font-size: 1rem; font-family: 'Cairo', sans-serif; color: var(--ink); transition: all 0.3s ease; }
+        .input-group input { width: 100%; padding: 1rem 4rem 1rem 1.5rem; background: rgba(255, 255, 255, 0.7); border: 1.5px solid transparent; border-radius: 16px; outline: none; font-size: 1rem; font-family: 'Cairo', sans-serif; color: var(--ink); transition: all 0.3s ease; }
         .input-group input:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(152, 216, 216, 0.2); }
         .input-group input:focus + .icon { color: var(--accent-dark); }
         .validation-message { text-align: right; font-size: 0.85rem; font-weight: 600; margin-top: -0.5rem; margin-bottom: 1rem; height: 1.2rem; transition: color 0.3s; }
         .validation-message.success { color: var(--success); }
         .validation-message.error { color: var(--danger); }
+
+        /* ======================================== */
+        /* --- 6. الأزرار والروابط --- */
+        /* ======================================== */
         .help-link { text-align: left; margin-bottom: 1.5rem; }
         .help-link a { color: var(--text-sec); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
         .help-link a:hover { color: var(--accent-dark); text-decoration: underline; }
-        .btn { width: 100%; padding: 1rem; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; font-family: 'Cairo', sans-serif; cursor: pointer; transition: all 0.3s ease; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .btn { width: 100%; padding: 1rem; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; font-family: 'Cairo', sans-serif; cursor: pointer; transition: all 0.3s ease; margin-bottom: 1rem; }
         .btn-primary { background: var(--grad); color: white; box-shadow: 0 6px 20px rgba(90, 171, 171, 0.35); }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(90, 171, 171, 0.45); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(90, 171, 171, 0.45); }
         .btn-primary:disabled { background: #bdc3c7; box-shadow: none; cursor: not-allowed; transform: none; }
         .btn-secondary { background: transparent; color: var(--accent-dark); border: 2px solid rgba(152, 216, 216, 0.5); }
         .btn-secondary:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* ======================================== */
+        /* --- 7. النافذة المنبثقة (Modal) --- */
+        /* ======================================== */
         .modal-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); z-index: 600; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(8px); }
         .modal-bg.open { opacity: 1; pointer-events: auto; }
         .modal-bg .glass-card { max-width: 450px; }
@@ -76,14 +172,14 @@
         .custom-select-option:last-child { border-bottom: none; }
         .custom-select-option:hover { background: var(--bg); color: var(--accent-dark); }
         .custom-select-option .icon { margin-left: 0.75rem; color: var(--accent); }
-        .hidden { display: none !important; }
-        .security-question-text { font-weight: 600; color: var(--accent-dark); margin-bottom: 1rem; padding: 1rem; background: rgba(152, 216, 216, 0.1); border-radius: 12px; }
-        .spinner { animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
 
-    <div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+    <div class="bg-orbs">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+    </div>
 
     <main class="glass-card" id="login-card">
         <header class="card-header">
@@ -95,30 +191,23 @@
             <p>بوابتك نحو مساحة آمنة وهادئة</p>
         </header>
         
-        <form id="loginForm">
+        <form id="loginForm" onsubmit="LOGIN_APP.login(event)">
             <div class="input-group">
-                <input type="text" id="customId" placeholder="المُعرّف الشخصي" required autocomplete="off">
+                <input type="email" id="userId" placeholder="البريد الإلكتروني" required autocomplete="on">
                 <i class="icon" data-feather="user"></i>
                 <span class="validation-icon" id="validationIcon"></span>
             </div>
-            <div class="validation-message" id="mainValidationMessage"></div>
-            
-            <div id="securityStep" class="hidden">
-                <p class="security-question-text" id="securityQuestionText"></p>
-                <div class="input-group">
-                    <input type="password" id="securityAnswer" placeholder="إجابتك السرية" required>
-                    <i class="icon" data-feather="lock"></i>
-                </div>
+            <div class="input-group">
+                <input type="password" id="userPassword" placeholder="كلمة المرور" required>
+                <i class="icon" data-feather="lock"></i>
             </div>
+            <div class="validation-message" id="validationMessage"></div>
             
             <div class="help-link">
                 <a href="javascript:void(0)" onclick="LOGIN_APP.openModal()">هل نسيت المُعرّف؟</a>
             </div>
 
-            <button type="submit" class="btn btn-primary" id="loginButton" disabled>
-                <span id="loginButtonText">تسجيل الدخول</span>
-                <i id="loginSpinner" class="spinner" data-feather="loader" style="display: none;"></i>
-            </button>
+            <button type="submit" class="btn btn-primary" id="loginButton">تسجيل الدخول</button>
             <button type="button" class="btn btn-secondary" onclick="window.location.href='signup.html'">إنشاء حساب جديد</button>
         </form>
     </main>
@@ -130,7 +219,7 @@
                 <h2>استعادة الحساب</h2>
                 <p>أجب عن سؤال الأمان للتحقق من هويتك</p>
             </header>
-            <form id="recoveryForm">
+            <form onsubmit="LOGIN_APP.recover(event)">
                 <div class="custom-select-wrapper" id="custom-select">
                     <div class="custom-select-trigger">
                         <span id="selected-option-text">اختر سؤال الأمان...</span>
@@ -151,186 +240,102 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <input type="text" id="recoveryAnswer" placeholder="إجابتك السرية" required>
+                    <input type="text" id="securityAnswer" placeholder="إجابتك السرية" required>
                     <i class="icon" data-feather="lock"></i>
                 </div>
-                <div class="validation-message error" id="recoveryValidationMessage"></div>
-                <div id="recoveredIdMessage" class="validation-message success" style="height: auto; padding: 1rem; margin-bottom: 1rem; border-radius: 12px; background: rgba(76, 175, 147, 0.1);"></div>
-                <button type="submit" class="btn btn-primary">التحقق وإظهار المُعرّف</button>
+                <button type="submit" class="btn btn-primary">التحقق والمتابعة</button>
             </form>
         </div>
     </div>
 
     <script type="module">
-        import { db, query, where, getDocs, collection } from './firebase-service.js';
+        import { auth, signInWithEmailAndPassword } from "./firebase-service.js";
 
-        feather.replace();
-
-        const LOGIN_APP = (() => {
+        // جعل الكائن متاحاً للـ HTML
+        window.LOGIN_APP = (() => {
             'use strict';
+
             const $ = id => document.getElementById(id);
             const elements = {
-                loginForm: $('loginForm'), customIdInput: $('customId'), validationIcon: $('validationIcon'),
-                mainValidationMessage: $('mainValidationMessage'), securityStep: $('securityStep'),
-                securityQuestionText: $('securityQuestionText'), securityAnswerInput: $('securityAnswer'),
-                loginButton: $('loginButton'), loginButtonText: $('loginButtonText'), loginSpinner: $('loginSpinner'),
-                recoveryModal: $('recoveryModal'), recoveryForm: $('recoveryForm'), customSelect: $('custom-select'),
-                selectedOptionText: $('selected-option-text'), recoveryAnswer: $('recoveryAnswer'),
-                recoveryValidationMessage: $('recoveryValidationMessage'), recoveredIdMessage: $('recoveredIdMessage')
+                userIdInput: $('userId'), 
+                passwordInput: $('userPassword'),
+                validationIcon: $('validationIcon'), 
+                validationMessage: $('validationMessage'),
+                loginButton: $('loginButton'), 
+                recoveryModal: $('recoveryModal'), 
+                selectWrapper: $('custom-select'),
+                selectedText: $('selected-option-text'),
             };
-            elements.selectTrigger = elements.customSelect.querySelector('.custom-select-trigger');
-            elements.options = elements.customSelect.querySelectorAll('.custom-select-option');
-
-            let validationTimeout;
-            let loginUserData = null;
-            let selectedQuestion = null;
-
-            const securityQuestionsMap = {
-                q1: "ما هو اسم مدرستك الابتدائية؟", q2: "ما هو اسم أول حيوان أليف لك؟", q3: "ما هي المدينة التي ولدت فيها؟",
-                q4: "ما هو اسم أول معلم لك؟", q5: "ما هو اسم شخصيتك الخيالية المفضلة؟", q6: "ما هو أول فيلم شاهدته في السينما؟",
-                q7: "ما هي فرقتك الموسيقية المفضلة؟", q8: "ما هو طبقك المفضل الذي لا تمل منه؟", q9: "ما هي وجهة السفر التي تحلم بزيارتها؟",
-                q10: "ما هو اسم أفضل صديق لك في الطفولة؟", q11: "ما هو رقم الحظ الخاص بك؟"
-            };
-
-            const toggleLoading = (isLoading) => {
-                elements.loginButton.disabled = isLoading;
-                elements.loginButtonText.style.display = isLoading ? 'none' : 'inline-block';
-                elements.loginSpinner.style.display = isLoading ? 'inline-block' : 'none';
-                if(isLoading) feather.replace({ class: 'spinner' });
-            };
-
-            const handleIdValidation = async () => {
-                const id = elements.customIdInput.value.trim();
-                elements.loginButton.disabled = true;
-                elements.mainValidationMessage.textContent = '';
-                elements.securityStep.classList.add('hidden');
-                loginUserData = null;
-
-                if (id.length < 4) {
-                    elements.validationIcon.innerHTML = '';
-                    return;
-                }
-
-                elements.validationIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                
-                try {
-                    const q = query(collection(db, "users"), where("customId", "==", id));
-                    const querySnapshot = await getDocs(q);
-
-                    if (elements.customIdInput.value.trim() !== id) return;
-
-                    if (!querySnapshot.empty) {
-                        loginUserData = querySnapshot.docs[0].data();
-                        elements.validationIcon.innerHTML = '<i data-feather="check-circle" style="color: var(--success);"></i>';
-                        elements.mainValidationMessage.textContent = 'تم العثور على المُعرّف. أدخل إجابتك السرية.';
-                        elements.mainValidationMessage.className = 'validation-message success';
-                        elements.securityQuestionText.textContent = securityQuestionsMap[loginUserData.securityQuestion];
-                        elements.securityStep.classList.remove('hidden');
-                        elements.loginButton.disabled = false;
-                    } else {
-                        elements.validationIcon.innerHTML = '<i data-feather="x-circle" style="color: var(--danger);"></i>';
-                        elements.mainValidationMessage.textContent = 'المُعرّف غير موجود.';
-                        elements.mainValidationMessage.className = 'validation-message error';
-                    }
-                } catch(e) {
-                    elements.validationIcon.innerHTML = '<i data-feather="alert-triangle" style="color: var(--danger);"></i>';
-                    elements.mainValidationMessage.textContent = 'خطأ في الاتصال بالخادم.';
-                    elements.mainValidationMessage.className = 'validation-message error';
-                } finally {
-                    feather.replace();
-                }
-            };
-
-            const login = async (event) => {
-                event.preventDefault();
-                if (!loginUserData) return;
-
-                const answer = elements.securityAnswerInput.value;
-                if (!answer) {
-                    elements.mainValidationMessage.textContent = 'الرجاء إدخال إجابتك السرية.';
-                    elements.mainValidationMessage.className = 'validation-message error';
-                    return;
-                }
-
-                toggleLoading(true);
-                const answerHash = CryptoJS.SHA256(answer).toString();
-
-                if (answerHash === loginUserData.securityAnswerHash) {
-                    localStorage.setItem('sokonUser', JSON.stringify({ uid: loginUserData.uid, customId: loginUserData.customId }));
-                    window.location.href = 'home.html';
-                } else {
-                    elements.mainValidationMessage.textContent = 'الإجابة السرية غير صحيحة.';
-                    elements.mainValidationMessage.className = 'validation-message error';
-                    toggleLoading(false);
-                }
-            };
-
-            const recover = async (event) => {
-                event.preventDefault();
-                const answer = elements.recoveryAnswer.value.trim();
-                elements.recoveryValidationMessage.textContent = '';
-                elements.recoveredIdMessage.textContent = '';
-
-                if (!selectedQuestion || !answer) {
-                    elements.recoveryValidationMessage.textContent = 'الرجاء اختيار سؤال وتقديم إجابة.';
-                    return;
-                }
-
-                const answerHash = CryptoJS.SHA256(answer).toString();
-                const q = query(collection(db, "users"), where("securityQuestion", "==", selectedQuestion), where("securityAnswerHash", "==", answerHash));
-                
-                try {
-                    const querySnapshot = await getDocs(q);
-                    if (querySnapshot.empty) {
-                        elements.recoveryValidationMessage.textContent = 'المعلومات غير متطابقة. لم يتم العثور على حساب.';
-                    } else {
-                        const recoveredId = querySnapshot.docs[0].data().customId;
-                        elements.recoveredIdMessage.innerHTML = `تم العثور على حسابك.   
-<strong>المُعرّف الشخصي هو: ${recoveredId}</strong>`;
-                    }
-                } catch (e) {
-                    elements.recoveryValidationMessage.textContent = 'حدث خطأ أثناء البحث. حاول مرة أخرى.';
-                }
-            };
+            elements.selectTrigger = elements.selectWrapper.querySelector('.custom-select-trigger');
+            elements.options = elements.selectWrapper.querySelectorAll('.custom-select-option');
 
             const openModal = () => elements.recoveryModal.classList.add('open');
-            const closeModal = () => {
-                elements.recoveryModal.classList.remove('open');
-                elements.recoveryValidationMessage.textContent = '';
-                elements.recoveredIdMessage.textContent = '';
-                elements.recoveryForm.reset();
-                elements.selectedOptionText.textContent = 'اختر سؤال الأمان...';
-                selectedQuestion = null;
-            };
+            const closeModal = () => elements.recoveryModal.classList.remove('open');
 
             const setupCustomSelect = () => {
-                elements.selectTrigger.addEventListener('click', () => elements.customSelect.classList.toggle('open'));
+                elements.selectTrigger.addEventListener('click', () => elements.selectWrapper.classList.toggle('open'));
                 elements.options.forEach(option => {
                     option.addEventListener('click', () => {
-                        elements.selectedOptionText.textContent = option.querySelector('span').textContent;
-                        selectedQuestion = option.dataset.value;
-                        elements.customSelect.classList.remove('open');
+                        elements.selectedText.textContent = option.querySelector('span').textContent;
+                        elements.selectWrapper.classList.remove('open');
                     });
                 });
                 document.addEventListener('click', (e) => {
-                    if (!elements.customSelect.contains(e.target)) elements.customSelect.classList.remove('open');
+                    if (!elements.selectWrapper.contains(e.target)) {
+                        elements.selectWrapper.classList.remove('open');
+                    }
                 });
+            };
+            
+            const login = async (event) => {
+                event.preventDefault();
+                const email = elements.userIdInput.value;
+                const password = elements.passwordInput.value;
+
+                elements.loginButton.disabled = true;
+                elements.validationMessage.textContent = 'جاري التحقق...';
+                elements.validationMessage.className = 'validation-message success';
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    // التوجيه لصفحة home.html عند النجاح
+                    window.location.href = "home.html";
+                } catch (error) {
+                    console.error("Login Error:", error);
+                    elements.validationMessage.textContent = 'خطأ في البريد أو كلمة المرور.';
+                    elements.validationMessage.className = 'validation-message error';
+                    elements.loginButton.disabled = false;
+                }
+            };
+
+            const recover = (event) => {
+                event.preventDefault();
+                alert('تم إرسال طلب التحقق. سيتم مراجعة بياناتك.');
+                closeModal();
             };
 
             const init = () => {
-                elements.customIdInput.addEventListener('input', () => {
-                    clearTimeout(validationTimeout);
-                    validationTimeout = setTimeout(handleIdValidation, 500);
+                feather.replace();
+                const faScript = document.createElement('script');
+                faScript.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js";
+                document.head.appendChild(faScript);
+
+                elements.recoveryModal.addEventListener('click', e => {
+                    if (e.target === elements.recoveryModal) closeModal();
                 });
-                elements.loginForm.addEventListener('submit', login);
-                elements.recoveryForm.addEventListener('submit', recover);
-                elements.recoveryModal.addEventListener('click', e => { if (e.target === elements.recoveryModal) closeModal(); });
-                document.addEventListener('keydown', e => { if (e.key === 'Escape' && elements.recoveryModal.classList.contains('open')) closeModal(); });
+                
+                document.addEventListener('keydown', e => {
+                    if (e.key === 'Escape' && elements.recoveryModal.classList.contains('open')) {
+                        closeModal();
+                    }
+                });
+
                 setupCustomSelect();
             };
 
             init();
-            return { openModal, closeModal };
+
+            return { login, recover, openModal, closeModal };
         })();
     </script>
 </body>
