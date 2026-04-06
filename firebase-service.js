@@ -1,20 +1,31 @@
 // =================================================================
 //  firebase-service.js
 //  العقل المدبر لجميع عمليات Firebase في تطبيق "سُكُون"
+//  التركيز: الخصوصية التامة عبر تسجيل الدخول المجهول
 // =================================================================
 
-// 1. استيراد الدوال الأساسية من مكتبات Firebase
+// 1. استيراد الدوال الأساسية (تم إضافة signInAnonymously)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { 
+    getAuth, 
+    signInAnonymously, // مضاف للخصوصية
+    onAuthStateChanged, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+import { 
+    getFirestore, doc, setDoc, getDoc, collection, 
+    addDoc, query, where, getDocs, onSnapshot 
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
-// 2. إعدادات الاتصال الخاصة بمشروعك (من حساب Firebase الخاص بك )
+// 2. إعدادات الاتصال (المفتاح الوهمي للمراجعة)
 const firebaseConfig = {
     apiKey: "AIzaSyDFyJXl40OXWNYCP3QBOdOAS0H6nVbYvgg",
     authDomain: "sokon-cacea.firebaseapp.com",
     projectId: "sokon-cacea",
-    storageBucket: "sokon-cacea.appspot.com", // تم تصحيح الامتداد هنا
+    storageBucket: "sokon-cacea.appspot.com",
     messagingSenderId: "491910937298",
     appId: "1:491910937298:web:7852543ae60b76763f8b0b",
     measurementId: "G-LV0WG8KD1L"
@@ -30,68 +41,81 @@ const storage = getStorage(app);
 //  4. تصدير الخدمات والدوال لتكون متاحة في باقي الصفحات
 // =================================================================
 
-// تصدير الخدمات الأساسية
 export { auth, db, storage };
 
-// تصدير دوال المصادقة المساعدة
+// تصدير دوال المصادقة المحدثة
 export {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
+    signInAnonymously,
     onAuthStateChanged,
     signOut
 };
 
-// تصدير دوال قاعدة البيانات المساعدة
+// تصدير دوال قاعدة البيانات
 export {
-    doc,
-    setDoc,
-    getDoc,
-    collection,
-    addDoc,
-    query,
-    where,
-    getDocs,
-    onSnapshot
+    doc, setDoc, getDoc, collection, 
+    addDoc, query, where, getDocs, onSnapshot
 };
 
-// تصدير دوال التخزين المساعدة
-export {
-    ref,
-    uploadBytes,
-    getDownloadURL
-};
+// تصدير دوال التخزين
+export { ref, uploadBytes, getDownloadURL };
 
+// =================================================================
+//  5. الدوال المخصصة لتطبيق سُكُون (الخصوصية أولاً)
+// =================================================================
 
-// مثال لدالة مخصصة تجمع عدة عمليات
 /**
- * دالة لإنشاء حساب مستخدم جديد (مريض) وتخزين بياناته في Firestore
- * @param {string} email - البريد الإلكتروني للمستخدم
- * @param {string} password - كلمة المرور
- * @param {string} displayName - الاسم الذي سيظهر للمستخدم
- * @returns {Promise<UserCredential>}
+ * إنشاء حساب مجهول وحفظ بيانات الأمان للاستعادة لاحقاً
+ * @param {string} securityQuestion - السؤال السري الذي يختاره المستخدم
+ * @param {string} securityAnswer - إجابة السؤال السري
  */
-export async function createPatientAccount(email, password, displayName) {
+export async function createAnonymousPatientAccount(securityQuestion = null, securityAnswer = null) {
     try {
-        // الخطوة 1: إنشاء المستخدم في نظام المصادقة
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // الخطوة 1: تسجيل الدخول مجهول الهوية (بدون إيميل أو اسم)
+        const userCredential = await signInAnonymously(auth);
         const user = userCredential.user;
 
-        // الخطوة 2: إنشاء مستند لهذا المستخدم في قاعدة البيانات (Firestore)
-        // سنخزن بيانات إضافية مثل الاسم ونوع الحساب (مريض)
+        // الخطوة 2: إنشاء مستند في Firestore باستخدام الـ UID كمعرف وحيد
+        // سيتم تخزين السؤال والإجابة فقط لاستخدامهما في حال فقدان المعرف
         await setDoc(doc(db, "users", user.uid), {
             uid: user.uid,
-            email: user.email,
-            displayName: displayName,
-            role: "patient", // تحديد دور المستخدم
-            createdAt: new Date() // تاريخ إنشاء الحساب
+            role: "patient",
+            securityQuestion: securityQuestion,
+            // تخزين الإجابة بحروف صغيرة وبدون فراغات لزيادة دقة الاستعادة لاحقاً
+            securityAnswer: securityAnswer ? securityAnswer.toLowerCase().trim() : null,
+            createdAt: new Date()
         });
 
-        console.log("User created and data stored in Firestore:", user.uid);
-        return userCredential;
+        console.log("حساب مجهول جاهز! المعرف السري هو:", user.uid);
+        return user; 
 
     } catch (error) {
-        console.error("Error creating user account:", error);
-        // يمكنك هنا التعامل مع الأخطاء، مثل عرض رسالة للمستخدم
-        throw error; // إعادة رمي الخطأ لمعالجته في الواجهة
+        console.error("حدث خطأ أثناء إنشاء الحساب المجهول:", error);
+        throw error;
+    }
+}
+
+/**
+ * دالة لاسترجاع المعرف السري (UID) باستخدام السؤال والإجابة السرية
+ */
+export async function recoverAccount(question, answer) {
+    try {
+        const q = query(
+            collection(db, "users"), 
+            where("securityQuestion", "==", question),
+            where("securityAnswer", "==", answer.toLowerCase().trim())
+        );
+
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+            // نأخذ أول نتيجة مطابقة
+            const userData = querySnapshot.docs[0].data();
+            return userData.uid; // نرجع الـ UID ليتمكن المستخدم من استخدامه
+        } else {
+            throw new Error("لم يتم العثور على حساب بهذه البيانات.");
+        }
+    } catch (error) {
+        console.error("خطأ في استعادة الحساب:", error);
+        throw error;
     }
 }
