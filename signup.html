@@ -187,10 +187,10 @@
     <script type="module">
         import { auth, db, doc, setDoc, getDocs, query, where, collection, signInAnonymously } from './firebase-service.js';
 
-        feather.replace();
+        // انتظر حتى يتم تحميل محتوى الصفحة بالكامل
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
 
-        const SIGNUP_APP = (() => {
-            'use strict';
             const $ = id => document.getElementById(id);
             const elements = {
                 signupForm: $('signupForm'), newIdInput: $('newId'), strengthBar: $('strength-bar'),
@@ -328,15 +328,11 @@
                 toggleLoading(true);
 
                 try {
-                    // 1. Sign in anonymously to get a secure UID
                     const userCredential = await signInAnonymously(auth);
                     const user = userCredential.user;
-
-                    // 2. Hash the secret answer
                     const securityAnswerHash = CryptoJS.SHA256(securityAnswerValue).toString();
-
-                    // 3. Store user data in Firestore
                     const customId = elements.newIdInput.value;
+
                     await setDoc(doc(db, "users", user.uid), {
                         uid: user.uid,
                         customId: customId,
@@ -346,7 +342,6 @@
                         role: "patient"
                     });
 
-                    // 4. Store user info in localStorage and redirect
                     localStorage.setItem('sokonUser', JSON.stringify({ uid: user.uid, customId: customId }));
                     window.location.href = 'home.html';
 
@@ -357,20 +352,18 @@
                 }
             };
 
-            const init = () => {
-                elements.signupForm.addEventListener('submit', createAccount);
-                elements.newIdInput.addEventListener('input', handleIdInput);
-                elements.suggestBtn.addEventListener('click', suggestId);
-                elements.securityBtn.addEventListener('click', openSecurityModal);
-                elements.modalCloseBtn.addEventListener('click', closeSecurityModal);
-                elements.saveSecurityBtn.addEventListener('click', saveSecurityData);
-                elements.securityModal.addEventListener('click', (e) => { if (e.target === elements.securityModal) closeSecurityModal(); });
-                document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && elements.securityModal.classList.contains('open')) closeSecurityModal(); });
-                setupCustomSelect();
-            };
-
-            init();
-        })();
+            // ربط جميع الأحداث هنا
+            elements.signupForm.addEventListener('submit', createAccount);
+            elements.newIdInput.addEventListener('input', handleIdInput);
+            elements.suggestBtn.addEventListener('click', suggestId);
+            elements.securityBtn.addEventListener('click', openSecurityModal);
+            elements.modalCloseBtn.addEventListener('click', closeSecurityModal);
+            elements.saveSecurityBtn.addEventListener('click', saveSecurityData);
+            elements.securityModal.addEventListener('click', (e) => { if (e.target === elements.securityModal) closeSecurityModal(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && elements.securityModal.classList.contains('open')) closeSecurityModal(); });
+            
+            setupCustomSelect();
+        });
     </script>
 </body>
 </html>
