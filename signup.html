@@ -10,24 +10,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 
     <style>
-        /* ======================================== */
-        /* --- 1. المتغيرات ونظام الألوان --- */
-        /* ======================================== */
         :root {
             --primary: #98D8D8; --accent: #5aabab; --accent-dark: #3d8a8a;
             --bg: #eef6f6; --white: #fff; --ink: #2c3e50; --text-sec: #7f8c8d;
             --danger: #ff6b6b; --success: #4caf93; --warn: #f39c12; --excellent: #8e44ad;
-            --grad: linear-gradient(135deg, var(--primary), var(--accent));
+            --grad: linear-gradient(135deg, var(--primary ), var(--accent));
             --shadow: 0 8px 32px rgba(90, 171, 171, 0.15);
             --shadow-lg: 0 20px 60px rgba(90, 171, 171, 0.22);
             --radius: 28px;
         }
-
-        /* ======================================== */
-        /* --- 2. الإعدادات العامة --- */
-        /* ======================================== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html { font-size: 16px; }
         body {
@@ -38,19 +33,11 @@
             background: linear-gradient(135deg, var(--bg), #d1e8e8);
             position: relative;
         }
-
-        /* ======================================== */
-        /* --- 3. الخلفية والأشكال العائمة --- */
-        /* ======================================== */
         .bg-orbs { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
         .orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; animation: float 40s infinite alternate; }
         .orb1 { width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(152, 216, 216, 0.25) 0%, transparent 70%); top: -15%; right: -15%; animation-duration: 35s; }
         .orb2 { width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(90, 171, 171, 0.15) 0%, transparent 70%); bottom: -10%; left: -10%; animation-duration: 45s; animation-direction: alternate-reverse; }
         @keyframes float { from { transform: translate(0, 0) scale(1); } to { transform: translate(5%, 8%) scale(1.1); } }
-
-        /* ======================================== */
-        /* --- 4. بطاقة إنشاء الحساب --- */
-        /* ======================================== */
         .glass-card {
             background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
             border: 1px solid rgba(255, 255, 255, 0.4); border-radius: var(--radius); box-shadow: var(--shadow);
@@ -63,43 +50,32 @@
         .card-header { margin-bottom: 2.5rem; }
         .card-header h1 { font-size: 2.2rem; font-weight: 700; color: var(--accent-dark); margin-bottom: 0.5rem; }
         .card-header p { font-size: 1rem; color: var(--text-sec); line-height: 1.6; }
-
-        /* ======================================== */
-        /* --- 5. حقل الإدخال الرئيسي --- */
-        /* ======================================== */
         .main-input-section { margin-bottom: 2rem; }
         .input-group { position: relative; margin-bottom: 1rem; }
         .input-group .icon { position: absolute; top: 50%; right: 1.25rem; transform: translateY(-50%); color: var(--accent); }
-        .input-group .validation-icon { left: 1.25rem; right: auto; font-size: 1.2rem; }
+        .input-group .validation-icon { position: absolute; top: 50%; left: 1.25rem; right: auto; transform: translateY(-50%); font-size: 1.2rem; }
         .validation-icon .fa-spinner { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .input-group input {
-            width: 100%; padding: 1.1rem 4rem 1.1rem 1.5rem;
+            width: 100%; padding: 1.1rem 4rem 1.1rem 4rem;
             background: rgba(255, 255, 255, 0.8); border: 1.5px solid transparent;
             border-radius: 16px; outline: none; font-size: 1.1rem;
             font-family: 'Cairo', sans-serif; color: var(--ink); transition: all 0.3s ease;
             text-align: center;
         }
         .input-group input:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(152, 216, 216, 0.2); }
-        
         .feedback-area { display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding: 0 0.25rem; }
         .strength-meter { flex-grow: 1; text-align: right; }
         .strength-bar-container { background: #e0e0e0; border-radius: 5px; height: 6px; overflow: hidden; margin-bottom: 0.25rem; }
         .strength-bar { height: 100%; width: 0; border-radius: 5px; transition: width 0.3s, background-color 0.3s; }
         #strength-text { font-size: 0.85rem; font-weight: 600; transition: color 0.3s; }
-        
         .validation-message { font-size: 0.85rem; font-weight: 600; transition: color 0.3s; }
         .validation-message.success { color: var(--success); }
         .validation-message.error { color: var(--danger); }
-
         .suggest-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; }
         .suggest-btn:hover { color: var(--accent-dark); text-decoration: underline; }
-
-        /* ======================================== */
-        /* --- 6. الأزرار --- */
-        /* ======================================== */
         .actions { margin-top: 2rem; }
-        .btn { width: 100%; padding: 1rem; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; font-family: 'Cairo', sans-serif; cursor: pointer; transition: all 0.3s ease; margin-bottom: 1rem; }
+        .btn { width: 100%; padding: 1rem; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; font-family: 'Cairo', sans-serif; cursor: pointer; transition: all 0.3s ease; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .btn-primary { background: var(--grad); color: white; box-shadow: 0 6px 20px rgba(90, 171, 171, 0.35); }
         .btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(90, 171, 171, 0.45); }
         .btn-primary:disabled { background: #bdc3c7; box-shadow: none; cursor: not-allowed; transform: none; }
@@ -107,45 +83,29 @@
         .btn-secondary:hover { color: var(--accent-dark); }
         .btn-link { background: none; border: none; color: var(--accent); cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 1rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; }
         .btn-link:hover { color: var(--accent-dark); text-decoration: underline; }
-
-        /* ======================================== */
-        /* --- 7. النافذة المنبثقة (Modal) --- */
-        /* ======================================== */
         .modal-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); z-index: 600; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(8px); }
         .modal-bg.open { opacity: 1; pointer-events: auto; }
         .modal-bg .glass-card { max-width: 450px; position: relative; }
         .modal-close { position: absolute; top: 1.25rem; left: 1.25rem; background: none; border: none; color: var(--text-sec); font-size: 1.5rem; cursor: pointer; transition: transform 0.3s, color 0.3s; }
         .modal-close:hover { transform: rotate(90deg); color: var(--danger); }
-        
         .custom-select-wrapper { position: relative; margin-bottom: 1.5rem; }
         .custom-select-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 1rem; background: rgba(255, 255, 255, 0.7); border: 1.5px solid transparent; border-radius: 16px; cursor: pointer; transition: all 0.3s; color: var(--text-sec); }
         .custom-select-trigger .arrow { transition: transform 0.3s; }
-        
-        .custom-select-options {
-            position: absolute; top: 110%; left: 0; width: 100%;
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px;
-            max-height: 0; overflow-y: auto; opacity: 0; visibility: hidden;
-            transition: max-height 0.4s ease, opacity 0.4s ease; z-index: 10;
-        }
+        .custom-select-options { position: absolute; top: 110%; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; max-height: 0; overflow-y: auto; opacity: 0; visibility: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; z-index: 10; }
         .custom-select-wrapper.open .custom-select-options { max-height: 300px; opacity: 1; visibility: visible; }
         .custom-select-wrapper.open .custom-select-trigger .arrow { transform: rotate(180deg); }
-        
         .custom-select-options::-webkit-scrollbar { width: 5px; }
         .custom-select-options::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-        
         .custom-select-option { display: flex; align-items: center; padding: 1rem; cursor: pointer; transition: background-color 0.3s, color 0.3s; border-bottom: 1px solid var(--bg); }
         .custom-select-option:last-child { border-bottom: none; }
         .custom-select-option:hover { background: var(--bg); color: var(--accent-dark); }
         .custom-select-option .icon { margin-left: 0.75rem; color: var(--accent); }
+        .spinner { animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
 
-    <div class="bg-orbs">
-        <div class="orb orb1"></div>
-        <div class="orb orb2"></div>
-    </div>
+    <div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div></div>
 
     <main class="glass-card">
         <header class="card-header">
@@ -153,8 +113,7 @@
             <p>أنشئ مُعرّفك الشخصي الآمن لبدء رحلتك</p>
         </header>
         
-        <form id="signupForm" onsubmit="SIGNUP_APP.createAccount(event)">
-            
+        <form id="signupForm">
             <div class="main-input-section">
                 <div class="input-group">
                     <input type="text" id="newId" placeholder="اختر مُعرّفًا شخصيًا..." required autocomplete="off">
@@ -163,9 +122,7 @@
                 </div>
                 <div class="feedback-area">
                     <div class="strength-meter">
-                        <div class="strength-bar-container">
-                            <div class="strength-bar" id="strength-bar"></div>
-                        </div>
+                        <div class="strength-bar-container"><div class="strength-bar" id="strength-bar"></div></div>
                         <span id="strength-text"></span>
                     </div>
                     <div class="validation-message" id="availabilityMessage"></div>
@@ -182,13 +139,15 @@
             </button>
 
             <div class="actions">
-                <button type="submit" class="btn btn-primary" id="signupButton" disabled>إنشاء الحساب</button>
+                <button type="submit" class="btn btn-primary" id="signupButton" disabled>
+                    <span id="signupButtonText">إنشاء الحساب</span>
+                    <i id="signupSpinner" class="spinner" data-feather="loader" style="display: none;"></i>
+                </button>
                 <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">لديك حساب بالفعل؟ تسجيل الدخول</button>
             </div>
         </form>
     </main>
 
-    <!-- نافذة سؤال الأمان المنبثقة -->
     <div class="modal-bg" id="securityModal">
         <div class="glass-card">
             <button type="button" class="modal-close" id="modalCloseBtn"><i data-feather="x"></i></button>
@@ -225,19 +184,22 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { auth, db, doc, setDoc, getDocs, query, where, collection, signInAnonymously } from './firebase-service.js';
+
         feather.replace();
 
         const SIGNUP_APP = (() => {
             'use strict';
-
             const $ = id => document.getElementById(id);
             const elements = {
-                newIdInput: $('newId'), strengthBar: $('strength-bar'), strengthText: $('strength-text'),
-                availabilityIcon: $('availabilityIcon'), availabilityMessage: $('availabilityMessage'),
-                signupButton: $('signupButton'), securityBtn: $('securityBtn'), securityModal: $('securityModal'),
-                modalCloseBtn: $('modalCloseBtn'), saveSecurityBtn: $('saveSecurityBtn'),
-                securityAnswer: $('securityAnswer'), suggestBtn: $('suggestBtn'), selectWrapper: $('custom-select'),
+                signupForm: $('signupForm'), newIdInput: $('newId'), strengthBar: $('strength-bar'),
+                strengthText: $('strength-text'), availabilityIcon: $('availabilityIcon'),
+                availabilityMessage: $('availabilityMessage'), signupButton: $('signupButton'),
+                signupButtonText: $('signupButtonText'), signupSpinner: $('signupSpinner'),
+                securityBtn: $('securityBtn'), securityModal: $('securityModal'), modalCloseBtn: $('modalCloseBtn'),
+                saveSecurityBtn: $('saveSecurityBtn'), securityAnswer: $('securityAnswer'),
+                suggestBtn: $('suggestBtn'), selectWrapper: $('custom-select'),
             };
             elements.selectTrigger = elements.selectWrapper.querySelector('.custom-select-trigger');
             elements.options = elements.selectWrapper.querySelectorAll('.custom-select-option');
@@ -255,12 +217,11 @@
                 4: { text: 'قوي', color: 'var(--success)', width: '80%' }, 5: { text: 'ممتاز!', color: 'var(--excellent)', width: '100%' },
             };
 
-            const checkIdAvailability = (id) => new Promise(resolve => {
-                setTimeout(() => {
-                    const usedIDs = ['user123', 'sokoon_patient', 'test_id', 'admin'];
-                    resolve(!usedIDs.includes(id));
-                }, 800);
-            });
+            const checkIdAvailability = async (id) => {
+                const q = query(collection(db, "users"), where("customId", "==", id));
+                const querySnapshot = await getDocs(q);
+                return querySnapshot.empty;
+            };
 
             const updateSignupButtonState = () => {
                 elements.signupButton.disabled = !(isIdAvailable && isIdStrong);
@@ -287,8 +248,8 @@
                 if (id.length >= 4) {
                     elements.availabilityIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     availabilityTimeout = setTimeout(async () => {
-                        const isAvailable = await checkIdAvailability(id);
                         if (elements.newIdInput.value !== id) return;
+                        const isAvailable = await checkIdAvailability(id);
                         isIdAvailable = isAvailable;
                         if (isAvailable) {
                             elements.availabilityIcon.innerHTML = '<i data-feather="check-circle" style="color: var(--success);"></i>';
@@ -343,47 +304,72 @@
                         elements.selectWrapper.classList.remove('open');
                     });
                 });
-                document.addEventListener('click', (e) => {
-                    if (!elements.selectWrapper.contains(e.target)) {
-                        elements.selectWrapper.classList.remove('open');
-                    }
-                });
+                document.addEventListener('click', (e) => { if (!elements.selectWrapper.contains(e.target)) elements.selectWrapper.classList.remove('open'); });
             };
 
-            const createAccount = (event) => {
+            const toggleLoading = (isLoading) => {
+                elements.signupButton.disabled = isLoading;
+                elements.signupButtonText.style.display = isLoading ? 'none' : 'inline-block';
+                elements.signupSpinner.style.display = isLoading ? 'inline-block' : 'none';
+                if(isLoading) feather.replace({ class: 'spinner' });
+            };
+
+            const createAccount = async (event) => {
                 event.preventDefault();
-                let message = `تهانينا! تم إنشاء حسابك بنجاح بالمُعرّف: ${elements.newIdInput.value}`;
-                if (securityQuestion && securityAnswerValue) {
-                    message += `\nتم حفظ سؤال الأمان الخاص بك.`;
+                if (!isIdAvailable || !isIdStrong) {
+                    alert("الرجاء اختيار مُعرّف قوي ومتاح.");
+                    return;
                 }
-                alert(message);
+                if (!securityQuestion || !securityAnswerValue) {
+                    alert("الرجاء إضافة سؤال أمان لحماية حسابك.");
+                    return;
+                }
+
+                toggleLoading(true);
+
+                try {
+                    // 1. Sign in anonymously to get a secure UID
+                    const userCredential = await signInAnonymously(auth);
+                    const user = userCredential.user;
+
+                    // 2. Hash the secret answer
+                    const securityAnswerHash = CryptoJS.SHA256(securityAnswerValue).toString();
+
+                    // 3. Store user data in Firestore
+                    const customId = elements.newIdInput.value;
+                    await setDoc(doc(db, "users", user.uid), {
+                        uid: user.uid,
+                        customId: customId,
+                        securityQuestion: securityQuestion,
+                        securityAnswerHash: securityAnswerHash,
+                        createdAt: new Date(),
+                        role: "patient"
+                    });
+
+                    // 4. Store user info in localStorage and redirect
+                    localStorage.setItem('sokonUser', JSON.stringify({ uid: user.uid, customId: customId }));
+                    window.location.href = 'home.html';
+
+                } catch (error) {
+                    console.error("Error creating account:", error);
+                    alert("حدث خطأ أثناء إنشاء الحساب. الرجاء المحاولة مرة أخرى.");
+                    toggleLoading(false);
+                }
             };
 
             const init = () => {
-                const faScript = document.createElement('script');
-                faScript.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js";
-                document.head.appendChild(faScript);
-                
+                elements.signupForm.addEventListener('submit', createAccount);
                 elements.newIdInput.addEventListener('input', handleIdInput);
                 elements.suggestBtn.addEventListener('click', suggestId);
                 elements.securityBtn.addEventListener('click', openSecurityModal);
                 elements.modalCloseBtn.addEventListener('click', closeSecurityModal);
                 elements.saveSecurityBtn.addEventListener('click', saveSecurityData);
-                
-                elements.securityModal.addEventListener('click', (e) => {
-                    if (e.target === elements.securityModal) closeSecurityModal();
-                });
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape' && elements.securityModal.classList.contains('open')) {
-                        closeSecurityModal();
-                    }
-                });
-
+                elements.securityModal.addEventListener('click', (e) => { if (e.target === elements.securityModal) closeSecurityModal(); });
+                document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && elements.securityModal.classList.contains('open')) closeSecurityModal(); });
                 setupCustomSelect();
             };
 
             init();
-            return { createAccount };
         })();
     </script>
 </body>
