@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>سُكُون — بوابتك إلى الهدوء</title>
+    <title>سُكُون — تسجيل الدخول</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
-        /* ======================================== */
-        /* --- 1. المتغيرات ونظام الألوان الأساسي --- */
-        /* ======================================== */
         :root {
             --primary: #98D8D8;
             --accent: #5aabab;
@@ -27,24 +23,10 @@
             --success: #4caf93;
             --grad: linear-gradient(135deg, var(--primary), var(--accent));
             --shadow: 0 8px 32px rgba(90, 171, 171, 0.15);
-            --shadow-lg: 0 20px 60px rgba(90, 171, 171, 0.22);
             --radius: 28px;
         }
 
-        /* ======================================== */
-        /* --- 2. الإعدادات العامة والتنسيق الأساسي --- */
-        /* ======================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html {
-            font-size: 16px;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Cairo', sans-serif;
             color: var(--ink);
@@ -54,48 +36,16 @@
             justify-content: center;
             align-items: center;
             padding: 1rem;
-            /* استخدام تدرج لوني ثابت كخلفية رئيسية */
             background: linear-gradient(135deg, var(--bg), #d1e8e8);
-            position: relative; /* ضروري لتثبيت الأشكال العائمة */
+            position: relative;
         }
 
-        /* ======================================== */
-        /* --- 3. الأشكال العائمة في الخلفية --- */
-        /* ======================================== */
-        .bg-orbs {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            overflow: hidden;
-        }
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px); /* تأثير ضبابي شديد لدمج الألوان */
-            pointer-events: none;
-            animation: float 40s infinite alternate;
-        }
-        .orb1 {
-            width: 50vw; height: 50vw;
-            background: radial-gradient(circle, rgba(152, 216, 216, 0.25) 0%, transparent 70%);
-            top: -15%; right: -15%;
-            animation-duration: 35s;
-        }
-        .orb2 {
-            width: 40vw; height: 40vw;
-            background: radial-gradient(circle, rgba(90, 171, 171, 0.15) 0%, transparent 70%);
-            bottom: -10%; left: -10%;
-            animation-duration: 45s;
-            animation-direction: alternate-reverse;
-        }
-        @keyframes float {
-            from { transform: translate(0, 0) scale(1); }
-            to { transform: translate(5%, 8%) scale(1.1); }
-        }
+        .bg-orbs { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; animation: float 40s infinite alternate; }
+        .orb1 { width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(152, 216, 216, 0.25) 0%, transparent 70%); top: -15%; right: -15%; }
+        .orb2 { width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(90, 171, 171, 0.15) 0%, transparent 70%); bottom: -10%; left: -10%; animation-direction: alternate-reverse; }
+        @keyframes float { from { transform: translate(0, 0) scale(1); } to { transform: translate(5%, 8%) scale(1.1); } }
 
-        /* ======================================== */
-        /* --- 4. بطاقة تسجيل الدخول الزجاجية --- */
-        /* ======================================== */
         .glass-card {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(18px);
@@ -109,69 +59,34 @@
             text-align: center;
             z-index: 1;
             animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            transform: scale(0.9);
-            opacity: 0;
         }
 
-        @keyframes popIn {
-            to { transform: scale(1); opacity: 1; }
-        }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         .card-header { margin-bottom: 2rem; }
-        .logo-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(152, 216, 216, 0.25); border-radius: 20px; padding: 10px 22px; box-shadow: 0 4px 12px rgba(90, 171, 171, 0.1); margin-bottom: 1.25rem; }
-        .logo-badge .li { width: 32px; height: 32px; border-radius: 10px; background: var(--grad); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; }
+        .logo-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(152, 216, 216, 0.25); border-radius: 20px; padding: 10px 22px; margin-bottom: 1.25rem; }
+        .logo-badge .li { width: 32px; height: 32px; border-radius: 10px; background: var(--grad); display: flex; align-items: center; justify-content: center; color: #fff; }
         .logo-badge .lt { font-size: 18px; font-weight: 900; color: var(--accent-dark); }
-        .logo-badge .lt span { color: var(--primary); }
         .card-header h1 { font-size: 2.2rem; font-weight: 700; color: var(--accent-dark); margin-bottom: 0.5rem; }
-        .card-header p { font-size: 1rem; color: var(--text-sec); line-height: 1.6; }
+        .card-header p { font-size: 1rem; color: var(--text-sec); }
 
-        /* ======================================== */
-        /* --- 5. حقول الإدخال الذكية --- */
-        /* ======================================== */
         .input-group { position: relative; margin-bottom: 1rem; }
-        .input-group .icon { position: absolute; top: 50%; right: 1.25rem; transform: translateY(-50%); color: var(--accent); transition: color 0.3s; }
-        .input-group .validation-icon { left: 1.25rem; right: auto; font-size: 1.2rem; }
-        .validation-icon .fa-spinner { animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .input-group input { width: 100%; padding: 1rem 4rem 1rem 1.5rem; background: rgba(255, 255, 255, 0.7); border: 1.5px solid transparent; border-radius: 16px; outline: none; font-size: 1rem; font-family: 'Cairo', sans-serif; color: var(--ink); transition: all 0.3s ease; }
+        .input-group .icon { position: absolute; top: 50%; right: 1.25rem; transform: translateY(-50%); color: var(--accent); }
+        .input-group .validation-icon { left: 1.25rem; right: auto; position: absolute; top: 50%; transform: translateY(-50%); display: flex; align-items: center; }
+        .input-group input { width: 100%; padding: 1rem 4rem 1rem 3rem; background: rgba(255, 255, 255, 0.7); border: 1.5px solid transparent; border-radius: 16px; outline: none; font-size: 1rem; font-family: 'Cairo'; transition: 0.3s; }
         .input-group input:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(152, 216, 216, 0.2); }
-        .input-group input:focus + .icon { color: var(--accent-dark); }
-        .validation-message { text-align: right; font-size: 0.85rem; font-weight: 600; margin-top: -0.5rem; margin-bottom: 1rem; height: 1.2rem; transition: color 0.3s; }
+
+        .validation-message { text-align: right; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; min-height: 1.2rem; }
         .validation-message.success { color: var(--success); }
         .validation-message.error { color: var(--danger); }
 
-        /* ======================================== */
-        /* --- 6. الأزرار والروابط --- */
-        /* ======================================== */
-        .help-link { text-align: left; margin-bottom: 1.5rem; }
-        .help-link a { color: var(--text-sec); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
-        .help-link a:hover { color: var(--accent-dark); text-decoration: underline; }
-        .btn { width: 100%; padding: 1rem; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; font-family: 'Cairo', sans-serif; cursor: pointer; transition: all 0.3s ease; margin-bottom: 1rem; }
+        .btn { width: 100%; padding: 1rem; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; transition: 0.3s; margin-bottom: 1rem; }
         .btn-primary { background: var(--grad); color: white; box-shadow: 0 6px 20px rgba(90, 171, 171, 0.35); }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(90, 171, 171, 0.45); }
-        .btn-primary:disabled { background: #bdc3c7; box-shadow: none; cursor: not-allowed; transform: none; }
-        .btn-secondary { background: transparent; color: var(--accent-dark); border: 2px solid rgba(152, 216, 216, 0.5); }
-        .btn-secondary:hover { background: var(--accent); color: white; border-color: var(--accent); }
-
-        /* ======================================== */
-        /* --- 7. النافذة المنبثقة (Modal) --- */
-        /* ======================================== */
-        .modal-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); z-index: 600; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(8px); }
-        .modal-bg.open { opacity: 1; pointer-events: auto; }
-        .modal-bg .glass-card { max-width: 450px; }
-        .modal-close { position: absolute; top: 1.25rem; left: 1.25rem; background: none; border: none; color: var(--text-sec); font-size: 1.5rem; cursor: pointer; transition: transform 0.3s, color 0.3s; }
-        .modal-close:hover { transform: rotate(90deg); color: var(--danger); }
-        .custom-select-wrapper { position: relative; margin-bottom: 1.5rem; }
-        .custom-select-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 1rem; background: rgba(255, 255, 255, 0.7); border: 1.5px solid transparent; border-radius: 16px; cursor: pointer; transition: all 0.3s; color: var(--text-sec); }
-        .custom-select-trigger:hover { border-color: var(--primary); }
-        .custom-select-trigger .arrow { transition: transform 0.3s; }
-        .custom-select-options { position: absolute; top: 110%; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; max-height: 0; overflow-y: auto; opacity: 0; visibility: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; z-index: 10; }
-        .custom-select-wrapper.open .custom-select-options { max-height: 250px; opacity: 1; visibility: visible; }
-        .custom-select-wrapper.open .custom-select-trigger .arrow { transform: rotate(180deg); }
-        .custom-select-option { display: flex; align-items: center; padding: 1rem; cursor: pointer; transition: background-color 0.3s, color 0.3s; border-bottom: 1px solid var(--bg); }
-        .custom-select-option:last-child { border-bottom: none; }
-        .custom-select-option:hover { background: var(--bg); color: var(--accent-dark); }
-        .custom-select-option .icon { margin-left: 0.75rem; color: var(--accent); }
+        .btn-primary:hover { transform: translateY(-3px); }
+        .btn-primary:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .loader { width: 18px; height: 18px; border: 2px solid var(--primary); border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -181,161 +96,85 @@
         <div class="orb orb2"></div>
     </div>
 
-    <main class="glass-card" id="login-card">
+    <main class="glass-card">
         <header class="card-header">
             <div class="logo-badge">
                 <div class="li"><i data-feather="leaf"></i></div>
-                <span class="lt">سُ<span>كُون</span></span>
+                <span class="lt">سُكُون</span>
             </div>
             <h1>أهلاً بعودتك</h1>
-            <p>بوابتك نحو مساحة آمنة وهادئة</p>
+            <p>سجل دخولك للوصول إلى مساحتك</p>
         </header>
         
-        <form id="loginForm" onsubmit="LOGIN_APP.login(event)">
+        <form id="loginForm">
             <div class="input-group">
-                <input type="email" id="userId" placeholder="البريد الإلكتروني" required autocomplete="on">
+                <input type="text" id="userId" placeholder="المُعرّف الشخصي" required autocomplete="off">
                 <i class="icon" data-feather="user"></i>
                 <span class="validation-icon" id="validationIcon"></span>
             </div>
-            <div class="input-group">
-                <input type="password" id="userPassword" placeholder="كلمة المرور" required>
-                <i class="icon" data-feather="lock"></i>
-            </div>
             <div class="validation-message" id="validationMessage"></div>
             
-            <div class="help-link">
-                <a href="javascript:void(0)" onclick="LOGIN_APP.openModal()">هل نسيت المُعرّف؟</a>
-            </div>
-
-            <button type="submit" class="btn btn-primary" id="loginButton">تسجيل الدخول</button>
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='signup.html'">إنشاء حساب جديد</button>
+            <button type="submit" class="btn btn-primary" id="loginButton" disabled>دخول</button>
         </form>
     </main>
 
-    <div class="modal-bg" id="recoveryModal">
-        <div class="glass-card">
-            <button class="modal-close" onclick="LOGIN_APP.closeModal()"><i data-feather="x"></i></button>
-            <header class="card-header">
-                <h2>استعادة الحساب</h2>
-                <p>أجب عن سؤال الأمان للتحقق من هويتك</p>
-            </header>
-            <form onsubmit="LOGIN_APP.recover(event)">
-                <div class="custom-select-wrapper" id="custom-select">
-                    <div class="custom-select-trigger">
-                        <span id="selected-option-text">اختر سؤال الأمان...</span>
-                        <i class="arrow" data-feather="chevron-down"></i>
-                    </div>
-                    <div class="custom-select-options">
-                        <div class="custom-select-option" data-value="q1"><i class="icon" data-feather="book"></i><span>ما هو اسم مدرستك الابتدائية؟</span></div>
-                        <div class="custom-select-option" data-value="q2"><i class="icon" data-feather="github"></i><span>ما هو اسم أول حيوان أليف لك؟</span></div>
-                        <div class="custom-select-option" data-value="q3"><i class="icon" data-feather="map-pin"></i><span>ما هي المدينة التي ولدت فيها؟</span></div>
-                        <div class="custom-select-option" data-value="q4"><i class="icon" data-feather="award"></i><span>ما هو اسم أول معلم لك؟</span></div>
-                        <div class="custom-select-option" data-value="q5"><i class="icon" data-feather="star"></i><span>ما هو اسم شخصيتك الخيالية المفضلة؟</span></div>
-                        <div class="custom-select-option" data-value="q6"><i class="icon" data-feather="film"></i><span>ما هو أول فيلم شاهدته في السينما؟</span></div>
-                        <div class="custom-select-option" data-value="q7"><i class="icon" data-feather="music"></i><span>ما هي فرقتك الموسيقية المفضلة؟</span></div>
-                        <div class="custom-select-option" data-value="q8"><i class="icon" data-feather="coffee"></i><span>ما هو طبقك المفضل الذي لا تمل منه؟</span></div>
-                        <div class="custom-select-option" data-value="q9"><i class="icon" data-feather="globe"></i><span>ما هي وجهة السفر التي تحلم بزيارتها؟</span></div>
-                        <div class="custom-select-option" data-value="q10"><i class="icon" data-feather="pen-tool"></i><span>ما هو اسم أفضل صديق لك في الطفولة؟</span></div>
-                        <div class="custom-select-option" data-value="q11"><i class="icon" data-feather="hash"></i><span>ما هو رقم الحظ الخاص بك؟</span></div>
-                    </div>
-                </div>
-                <div class="input-group">
-                    <input type="text" id="securityAnswer" placeholder="إجابتك السرية" required>
-                    <i class="icon" data-feather="lock"></i>
-                </div>
-                <button type="submit" class="btn btn-primary">التحقق والمتابعة</button>
-            </form>
-        </div>
-    </div>
+    <script>
+        feather.replace();
 
-    <script type="module">
-        import { auth, signInWithEmailAndPassword } from "./firebase-service.js";
-
-        // جعل الكائن متاحاً للـ HTML
-        window.LOGIN_APP = (() => {
-            'use strict';
-
-            const $ = id => document.getElementById(id);
+        const LOGIN_APP = (() => {
             const elements = {
-                userIdInput: $('userId'), 
-                passwordInput: $('userPassword'),
-                validationIcon: $('validationIcon'), 
-                validationMessage: $('validationMessage'),
-                loginButton: $('loginButton'), 
-                recoveryModal: $('recoveryModal'), 
-                selectWrapper: $('custom-select'),
-                selectedText: $('selected-option-text'),
+                input: document.getElementById('userId'),
+                icon: document.getElementById('validationIcon'),
+                msg: document.getElementById('validationMessage'),
+                btn: document.getElementById('loginButton'),
+                form: document.getElementById('loginForm')
             };
-            elements.selectTrigger = elements.selectWrapper.querySelector('.custom-select-trigger');
-            elements.options = elements.selectWrapper.querySelectorAll('.custom-select-option');
 
-            const openModal = () => elements.recoveryModal.classList.add('open');
-            const closeModal = () => elements.recoveryModal.classList.remove('open');
+            let timeout;
 
-            const setupCustomSelect = () => {
-                elements.selectTrigger.addEventListener('click', () => elements.selectWrapper.classList.toggle('open'));
-                elements.options.forEach(option => {
-                    option.addEventListener('click', () => {
-                        elements.selectedText.textContent = option.querySelector('span').textContent;
-                        elements.selectWrapper.classList.remove('open');
-                    });
-                });
-                document.addEventListener('click', (e) => {
-                    if (!elements.selectWrapper.contains(e.target)) {
-                        elements.selectWrapper.classList.remove('open');
-                    }
-                });
-            };
-            
-            const login = async (event) => {
-                event.preventDefault();
-                const email = elements.userIdInput.value;
-                const password = elements.passwordInput.value;
-
-                elements.loginButton.disabled = true;
-                elements.validationMessage.textContent = 'جاري التحقق...';
-                elements.validationMessage.className = 'validation-message success';
-
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    // التوجيه لصفحة home.html عند النجاح
-                    window.location.href = "home.html";
-                } catch (error) {
-                    console.error("Login Error:", error);
-                    elements.validationMessage.textContent = 'خطأ في البريد أو كلمة المرور.';
-                    elements.validationMessage.className = 'validation-message error';
-                    elements.loginButton.disabled = false;
+            const validate = async (val) => {
+                if (val.length < 4) {
+                    elements.icon.innerHTML = '';
+                    elements.msg.textContent = '';
+                    elements.btn.disabled = true;
+                    return;
                 }
-            };
 
-            const recover = (event) => {
-                event.preventDefault();
-                alert('تم إرسال طلب التحقق. سيتم مراجعة بياناتك.');
-                closeModal();
-            };
-
-            const init = () => {
-                feather.replace();
-                const faScript = document.createElement('script');
-                faScript.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js";
-                document.head.appendChild(faScript);
-
-                elements.recoveryModal.addEventListener('click', e => {
-                    if (e.target === elements.recoveryModal) closeModal();
-                });
+                elements.icon.innerHTML = '<span class="loader"></span>';
                 
-                document.addEventListener('keydown', e => {
-                    if (e.key === 'Escape' && elements.recoveryModal.classList.contains('open')) {
-                        closeModal();
-                    }
-                });
+                // محاكاة التحقق من السيرفر
+                setTimeout(() => {
+                    const validIDs = ['admin', 'user123', 'sokoon_patient', 'nour_box'];
+                    const isOk = validIDs.includes(val.toLowerCase());
 
-                setupCustomSelect();
+                    if (isOk) {
+                        elements.icon.innerHTML = '<i data-feather="check-circle" style="color:var(--success)"></i>';
+                        elements.msg.textContent = 'مُعرّف صالح';
+                        elements.msg.className = 'validation-message success';
+                        elements.btn.disabled = false;
+                    } else {
+                        elements.icon.innerHTML = '<i data-feather="x-circle" style="color:var(--danger)"></i>';
+                        elements.msg.textContent = 'المُعرّف غير مسجل';
+                        elements.msg.className = 'validation-message error';
+                        elements.btn.disabled = true;
+                    }
+                    feather.replace();
+                }, 600);
             };
 
-            init();
+            elements.input.addEventListener('input', (e) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => validate(e.target.value.trim()), 400);
+            });
 
-            return { login, recover, openModal, closeModal };
+            elements.form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                elements.btn.innerHTML = '<span class="loader" style="border-color:#fff; border-bottom-color:transparent"></span>';
+                // التوجه لصفحة المنزل
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1000);
+            });
         })();
     </script>
 </body>
