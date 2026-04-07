@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>سُكُون — بوابتك إلى الهدوء</title>
+    <title>سُكُون — نظام الدخول الآمن</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
-        /* ======================================== */
-        /* --- 1. المتغيرات ونظام الألوان الأساسي --- */
-        /* ======================================== */
         :root {
             --primary: #98D8D8;
             --accent: #5aabab;
@@ -27,150 +23,101 @@
             --success: #4caf93;
             --grad: linear-gradient(135deg, var(--primary), var(--accent));
             --shadow: 0 8px 32px rgba(90, 171, 171, 0.15);
-            --shadow-lg: 0 20px 60px rgba(90, 171, 171, 0.22);
             --radius: 28px;
         }
 
-        /* ======================================== */
-        /* --- 2. الإعدادات العامة والتنسيق الأساسي --- */
-        /* ======================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html {
-            font-size: 16px;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Cairo', sans-serif;
-            color: var(--ink);
+            background: linear-gradient(135deg, var(--bg), #d1e8e8);
             min-height: 100vh;
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 1rem;
-            background: linear-gradient(135deg, var(--bg), #d1e8e8);
-            position: relative;
-        }
-
-        /* ======================================== */
-        /* --- 3. الأشكال العائمة في الخلفية --- */
-        /* ======================================== */
-        .bg-orbs {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
             overflow: hidden;
         }
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            pointer-events: none;
-            animation: float 40s infinite alternate;
-        }
-        .orb1 {
-            width: 50vw; height: 50vw;
-            background: radial-gradient(circle, rgba(152, 216, 216, 0.25) 0%, transparent 70%);
-            top: -15%; right: -15%;
-            animation-duration: 35s;
-        }
-        .orb2 {
-            width: 40vw; height: 40vw;
-            background: radial-gradient(circle, rgba(90, 171, 171, 0.15) 0%, transparent 70%);
-            bottom: -10%; left: -10%;
-            animation-duration: 45s;
-            animation-direction: alternate-reverse;
-        }
-        @keyframes float {
-            from { transform: translate(0, 0) scale(1); }
-            to { transform: translate(5%, 8%) scale(1.1); }
-        }
 
-        /* ======================================== */
-        /* --- 4. بطاقة تسجيل الدخول الزجاجية --- */
-        /* ======================================== */
+        .bg-orbs { position: fixed; inset: 0; z-index: -1; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 20s infinite alternate; }
+        .orb1 { width: 400px; height: 400px; background: var(--primary); top: -100px; right: -100px; }
+        .orb2 { width: 300px; height: 300px; background: var(--accent); bottom: -50px; left: -50px; animation-delay: -5s; }
+        @keyframes float { to { transform: translate(30px, 40px) scale(1.1); } }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             width: 100%;
             max-width: 420px;
             padding: 2.5rem;
             text-align: center;
-            z-index: 1;
-            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            transform: scale(0.9);
-            opacity: 0;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            animation: fadeIn 0.6s ease-out;
         }
 
-        @keyframes popIn {
-            to { transform: scale(1); opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card-header { margin-bottom: 2rem; }
-        .logo-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(152, 216, 216, 0.25); border-radius: 20px; padding: 10px 22px; box-shadow: 0 4px 12px rgba(90, 171, 171, 0.1); margin-bottom: 1.25rem; }
-        .logo-badge .li { width: 32px; height: 32px; border-radius: 10px; background: var(--grad); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; }
-        .logo-badge .lt { font-size: 18px; font-weight: 900; color: var(--accent-dark); }
-        .logo-badge .lt span { color: var(--primary); }
-        .card-header h1 { font-size: 2.2rem; font-weight: 700; color: var(--accent-dark); margin-bottom: 0.5rem; }
-        .card-header p { font-size: 1rem; color: var(--text-sec); line-height: 1.6; }
+        .logo-badge { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; background: var(--white); padding: 8px 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .logo-icon { width: 35px; height: 35px; background: var(--grad); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; }
+        
+        h1 { color: var(--accent-dark); font-size: 1.8rem; margin-bottom: 0.5rem; }
+        p { color: var(--text-sec); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.6; }
 
-        /* ======================================== */
-        /* --- 5. حقول الإدخال الذكية --- */
-        /* ======================================== */
         .input-group { position: relative; margin-bottom: 1rem; }
-        .input-group .icon { position: absolute; top: 50%; right: 1.25rem; transform: translateY(-50%); color: var(--accent); transition: color 0.3s; }
-        .input-group .validation-icon { left: 1.25rem; right: auto; font-size: 1.2rem; }
-        .validation-icon .fa-spinner { animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .input-group input { width: 100%; padding: 1rem 4rem 1rem 1.5rem; background: rgba(255, 255, 255, 0.7); border: 1.5px solid transparent; border-radius: 16px; outline: none; font-size: 1rem; font-family: 'Cairo', sans-serif; color: var(--ink); transition: all 0.3s ease; }
+        .input-group i { position: absolute; top: 50%; right: 1.2rem; transform: translateY(-50%); color: var(--accent); transition: 0.3s; }
+        .input-group input {
+            width: 100%;
+            padding: 1.1rem 3.5rem 1.1rem 1.2rem;
+            border-radius: 18px;
+            border: 1.5px solid transparent;
+            background: rgba(255, 255, 255, 0.9);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
         .input-group input:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(152, 216, 216, 0.2); }
-        .input-group input:focus + .icon { color: var(--accent-dark); }
-        .validation-message { text-align: right; font-size: 0.85rem; font-weight: 600; margin-top: -0.5rem; margin-bottom: 1rem; height: 1.2rem; transition: color 0.3s; }
-        .validation-message.success { color: var(--success); }
-        .validation-message.error { color: var(--danger); }
+        .input-group input:focus + i { color: var(--accent-dark); }
 
-        /* ======================================== */
-        /* --- 6. الأزرار والروابط --- */
-        /* ======================================== */
-        .help-link { text-align: left; margin-bottom: 1.5rem; }
-        .help-link a { color: var(--text-sec); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
-        .help-link a:hover { color: var(--accent-dark); text-decoration: underline; }
-        .btn { width: 100%; padding: 1rem; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; font-family: 'Cairo', sans-serif; cursor: pointer; transition: all 0.3s ease; margin-bottom: 1rem; }
-        .btn-primary { background: var(--grad); color: white; box-shadow: 0 6px 20px rgba(90, 171, 171, 0.35); }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(90, 171, 171, 0.45); }
-        .btn-primary:disabled { background: #bdc3c7; box-shadow: none; cursor: not-allowed; transform: none; }
-        .btn-secondary { background: transparent; color: var(--accent-dark); border: 2px solid rgba(152, 216, 216, 0.5); }
-        .btn-secondary:hover { background: var(--accent); color: white; border-color: var(--accent); }
+        .btn {
+            width: 100%;
+            padding: 1.1rem;
+            border-radius: 18px;
+            border: none;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 0.8rem;
+        }
+        .btn-primary { background: var(--grad); color: white; box-shadow: 0 6px 20px rgba(90, 171, 171, 0.3); }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(90, 171, 171, 0.4); }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; opacity: 0.7; }
 
-        /* ======================================== */
-        /* --- 7. النافذة المنبثقة (Modal) --- */
-        /* ======================================== */
-        .modal-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); z-index: 600; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(8px); }
-        .modal-bg.open { opacity: 1; pointer-events: auto; }
-        .modal-bg .glass-card { max-width: 450px; }
-        .modal-close { position: absolute; top: 1.25rem; left: 1.25rem; background: none; border: none; color: var(--text-sec); font-size: 1.5rem; cursor: pointer; transition: transform 0.3s, color 0.3s; }
-        .modal-close:hover { transform: rotate(90deg); color: var(--danger); }
-        .custom-select-wrapper { position: relative; margin-bottom: 1.5rem; }
-        .custom-select-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 1rem; background: rgba(255, 255, 255, 0.7); border: 1.5px solid transparent; border-radius: 16px; cursor: pointer; transition: all 0.3s; color: var(--text-sec); }
-        .custom-select-trigger:hover { border-color: var(--primary); }
-        .custom-select-trigger .arrow { transition: transform 0.3s; }
-        .custom-select-options { position: absolute; top: 110%; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; max-height: 0; overflow-y: auto; opacity: 0; visibility: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; z-index: 10; }
-        .custom-select-wrapper.open .custom-select-options { max-height: 250px; opacity: 1; visibility: visible; }
-        .custom-select-wrapper.open .custom-select-trigger .arrow { transform: rotate(180deg); }
-        .custom-select-option { display: flex; align-items: center; padding: 1rem; cursor: pointer; transition: background-color 0.3s, color 0.3s; border-bottom: 1px solid var(--bg); }
-        .custom-select-option:last-child { border-bottom: none; }
-        .custom-select-option:hover { background: var(--bg); color: var(--accent-dark); }
-        .custom-select-option .icon { margin-left: 0.75rem; color: var(--accent); }
+        .btn-secondary { background: transparent; color: var(--accent-dark); border: 2px solid rgba(152, 216, 216, 0.5); margin-top: 1rem; }
+        .btn-secondary:hover { background: rgba(152, 216, 216, 0.1); }
+
+        .alert {
+            padding: 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            display: none;
+            animation: shake 0.4s ease;
+        }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .alert-danger { background: #fff0f0; color: var(--danger); border: 1px solid #ffcccc; }
+
+        #recovery-section { display: none; }
+        .recovery-info { font-size: 0.85rem; color: var(--text-sec); margin-bottom: 1.5rem; }
+        
+        .footer-links { margin-top: 1.5rem; display: flex; justify-content: center; gap: 15px; }
+        .footer-links a { color: var(--text-sec); text-decoration: none; font-size: 0.85rem; transition: 0.3s; }
+        .footer-links a:hover { color: var(--accent-dark); text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -180,184 +127,120 @@
         <div class="orb orb2"></div>
     </div>
 
-    <main class="glass-card" id="login-card">
-        <header class="card-header">
+    <main class="glass-card">
+        <div id="login-section">
             <div class="logo-badge">
-                <div class="li"><i data-feather="leaf"></i></div>
-                <span class="lt">سُ<span>كُون</span></span>
+                <div class="logo-icon"><i data-feather="heart"></i></div>
+                <span style="font-weight: 800; color: var(--accent-dark);">سُ<span>كُون</span></span>
             </div>
-            <h1>أهلاً بعودتك</h1>
-            <p>بوابتك نحو مساحة آمنة وهادئة</p>
-        </header>
-        
-        <form id="loginForm" onsubmit="LOGIN_APP.login(event)">
-            <div class="input-group">
-                <input type="text" id="userId" placeholder="المُعرّف الشخصي" required autocomplete="off">
-                <i class="icon" data-feather="user"></i>
-                <span class="validation-icon" id="validationIcon"></span>
-            </div>
-            <div class="validation-message" id="validationMessage"></div>
+
+            <h1>مساحتك الآمنة</h1>
+            <p>سجل دخولك لمتابعة رحلة هدوئك وجلساتك الخاصة</p>
             
-            <div class="help-link">
-                <a href="javascript:void(0)" onclick="LOGIN_APP.openModal()">هل نسيت المُعرّف؟</a>
-            </div>
+            <div id="login-error" class="alert alert-danger"></div>
 
-            <button type="submit" class="btn btn-primary" id="loginButton" disabled>تسجيل الدخول</button>
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='signup.html'">إنشاء حساب جديد</button>
-        </form>
-    </main>
-
-    <div class="modal-bg" id="recoveryModal">
-        <div class="glass-card">
-            <button class="modal-close" onclick="LOGIN_APP.closeModal()"><i data-feather="x"></i></button>
-            <header class="card-header">
-                <h2>استعادة الحساب</h2>
-                <p>أجب عن سؤال الأمان للتحقق من هويتك</p>
-            </header>
-            <form onsubmit="LOGIN_APP.recover(event)">
-                <div class="custom-select-wrapper" id="custom-select">
-                    <div class="custom-select-trigger">
-                        <span id="selected-option-text">اختر سؤال الأمان...</span>
-                        <i class="arrow" data-feather="chevron-down"></i>
-                    </div>
-                    <div class="custom-select-options">
-                        <div class="custom-select-option" data-value="q1"><i class="icon" data-feather="book"></i><span>ما هو اسم مدرستك الابتدائية؟</span></div>
-                        <div class="custom-select-option" data-value="q2"><i class="icon" data-feather="github"></i><span>ما هو اسم أول حيوان أليف لك؟</span></div>
-                        <div class="custom-select-option" data-value="q3"><i class="icon" data-feather="map-pin"></i><span>ما هي المدينة التي ولدت فيها؟</span></div>
-                        <div class="custom-select-option" data-value="q4"><i class="icon" data-feather="award"></i><span>ما هو اسم أول معلم لك؟</span></div>
-                        <div class="custom-select-option" data-value="q5"><i class="icon" data-feather="star"></i><span>ما هو اسم شخصيتك الخيالية المفضلة؟</span></div>
-                        <div class="custom-select-option" data-value="q6"><i class="icon" data-feather="film"></i><span>ما هو أول فيلم شاهدته في السينما؟</span></div>
-                        <div class="custom-select-option" data-value="q7"><i class="icon" data-feather="music"></i><span>ما هي فرقتك الموسيقية المفضلة؟</span></div>
-                        <div class="custom-select-option" data-value="q8"><i class="icon" data-feather="coffee"></i><span>ما هو طبقك المفضل الذي لا تمل منه؟</span></div>
-                        <div class="custom-select-option" data-value="q9"><i class="icon" data-feather="globe"></i><span>ما هي وجهة السفر التي تحلم بزيارتها؟</span></div>
-                        <div class="custom-select-option" data-value="q10"><i class="icon" data-feather="pen-tool"></i><span>ما هو اسم أفضل صديق لك في الطفولة؟</span></div>
-                        <div class="custom-select-option" data-value="q11"><i class="icon" data-feather="hash"></i><span>ما هو رقم الحظ الخاص بك؟</span></div>
-                    </div>
+            <form id="loginForm">
+                <div class="input-group">
+                    <i data-feather="user"></i>
+                    <input type="text" id="userId" placeholder="المُعرّف الشخصي" required autocomplete="off">
                 </div>
                 <div class="input-group">
-                    <input type="text" id="securityAnswer" placeholder="إجابتك السرية" required>
-                    <i class="icon" data-feather="lock"></i>
+                    <i data-feather="shield"></i>
+                    <input type="password" id="userPin" placeholder="رمز الأمان (PIN)" required maxlength="8">
                 </div>
-                <button type="submit" class="btn btn-primary">التحقق والمتابعة</button>
+                <button type="submit" class="btn btn-primary" id="loginBtn">دخول آمن</button>
             </form>
+            
+            <button class="btn btn-secondary" onclick="window.location.href='signup.html'">إنشاء حساب جديد</button>
+
+            <div class="footer-links">
+                <a href="javascript:void(0)" onclick="APP.toggleRecovery(true)">نسيت رمز الأمان؟</a>
+            </div>
         </div>
-    </div>
+
+        <div id="recovery-section">
+            <div class="logo-icon" style="margin: 0 auto 1.5rem;"><i data-feather="key"></i></div>
+            <h1>استعادة الوصول</h1>
+            <p class="recovery-info">استخدم "مفتاح الاستعادة" الذي حصلت عليه عند التسجيل لإعادة تعيين الدخول.</p>
+            
+            <div class="input-group">
+                <i data-feather="command"></i>
+                <input type="text" id="recoveryKey" placeholder="SK-XXXX-XXXX-XXXX">
+            </div>
+            
+            <button class="btn btn-primary" onclick="APP.processRecovery()">التحقق من المفتاح</button>
+            <button class="btn btn-secondary" onclick="APP.toggleRecovery(false)">العودة للخلف</button>
+        </div>
+    </main>
 
     <script>
-        // --- تفعيل أيقونات Feather ---
         feather.replace();
 
-        // --- تنظيم الكود في كائن واحد لسهولة الإدارة ---
-        const LOGIN_APP = (() => {
-            'use strict';
-
-            const $ = id => document.getElementById(id);
-            const elements = {
-                userIdInput: $('userId'), validationIcon: $('validationIcon'), validationMessage: $('validationMessage'),
-                loginButton: $('loginButton'), recoveryModal: $('recoveryModal'), selectWrapper: $('custom-select'),
-                selectedText: $('selected-option-text'),
-            };
-            elements.selectTrigger = elements.selectWrapper.querySelector('.custom-select-trigger');
-            elements.options = elements.selectWrapper.querySelectorAll('.custom-select-option');
-
-            let validationTimeout;
-
-            const checkUserIdOnServer = (id) => {
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        const existingIDs = ['user123', 'sokoon_patient', 'test_id'];
-                        resolve(existingIDs.includes(id));
-                    }, 800);
-                });
+        const APP = (() => {
+            const state = {
+                attempts: 0,
+                maxAttempts: 5,
+                lockoutUntil: 0
             };
 
-            const handleIdValidation = async () => {
-                const id = elements.userIdInput.value.trim();
-                elements.loginButton.disabled = true;
-                elements.validationMessage.textContent = '';
-                elements.validationMessage.className = 'validation-message';
-                
-                if (id.length < 4) {
-                    elements.validationIcon.innerHTML = '';
+            const dom = {
+                loginForm: document.getElementById('loginForm'),
+                loginSection: document.getElementById('login-section'),
+                recoverySection: document.getElementById('recovery-section'),
+                errorBox: document.getElementById('login-error'),
+                loginBtn: document.getElementById('loginBtn')
+            };
+
+            const showError = (msg) => {
+                dom.errorBox.textContent = msg;
+                dom.errorBox.style.display = 'block';
+                setTimeout(() => dom.errorBox.style.display = 'none', 5000);
+            };
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+
+                if (Date.now() < state.lockoutUntil) {
+                    const timeLeft = Math.ceil((state.lockoutUntil - Date.now()) / 1000);
+                    showError(`النظام مقفل حالياً. حاول بعد ${timeLeft} ثانية.`);
                     return;
                 }
 
-                elements.validationIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                
-                const isValid = await checkUserIdOnServer(id);
+                const id = document.getElementById('userId').value.trim();
+                const pin = document.getElementById('userPin').value;
 
-                if (elements.userIdInput.value.trim() !== id) return;
-
-                if (isValid) {
-                    elements.validationIcon.innerHTML = '<i data-feather="check-circle" style="color: var(--success);"></i>';
-                    elements.validationMessage.textContent = 'تم العثور على المُعرّف.';
-                    elements.validationMessage.classList.add('success');
-                    elements.loginButton.disabled = false;
+                // منطق الحماية: محاكاة التشفير والتحقق
+                // في الواقع، نرسل Hash للسيرفر وليس النص الصريح
+                if (id === "demo" && pin === "1234") {
+                    dom.loginBtn.innerHTML = '<i data-feather="loader" class="spin"></i> جاري الدخول...';
+                    feather.replace();
+                    setTimeout(() => alert("مرحباً بك في سكون!"), 1000);
                 } else {
-                    elements.validationIcon.innerHTML = '<i data-feather="x-circle" style="color: var(--danger);"></i>';
-                    elements.validationMessage.textContent = 'المُعرّف غير موجود.';
-                    elements.validationMessage.classList.add('error');
+                    state.attempts++;
+                    if (state.attempts >= state.maxAttempts) {
+                        state.lockoutUntil = Date.now() + (60 * 1000); // حظر دقيقة
+                        showError("تم حظر المحاولات مؤقتاً لحماية الحساب.");
+                    } else {
+                        showError(`بيانات غير صحيحة. متبقي ${state.maxAttempts - state.attempts} محاولات.`);
+                    }
                 }
-                feather.replace();
             };
 
-            const openModal = () => elements.recoveryModal.classList.add('open');
-            const closeModal = () => elements.recoveryModal.classList.remove('open');
-
-            const setupCustomSelect = () => {
-                elements.selectTrigger.addEventListener('click', () => elements.selectWrapper.classList.toggle('open'));
-                elements.options.forEach(option => {
-                    option.addEventListener('click', () => {
-                        elements.selectedText.textContent = option.querySelector('span').textContent;
-                        elements.selectWrapper.classList.remove('open');
-                    });
-                });
-                document.addEventListener('click', (e) => {
-                    if (!elements.selectWrapper.contains(e.target)) {
-                        elements.selectWrapper.classList.remove('open');
-                    }
-                });
+            return {
+                init: () => dom.loginForm.addEventListener('submit', handleLogin),
+                toggleRecovery: (show) => {
+                    dom.loginSection.style.display = show ? 'none' : 'block';
+                    dom.recoverySection.style.display = show ? 'block' : 'none';
+                },
+                processRecovery: () => {
+                    const key = document.getElementById('recoveryKey').value;
+                    if(key.length < 5) return showError("يرجى إدخال مفتاح استعادة صحيح.");
+                    alert("نظام الاستعادة يتحقق من المفتاح محلياً...");
+                }
             };
-            
-            const login = (event) => {
-                event.preventDefault();
-                // التوجيه لصفحة المنزل (home.html) بعد تسجيل الدخول الناجح
-                window.location.href = 'home.html';
-            };
-
-            const recover = (event) => {
-                event.preventDefault();
-                alert('تم إرسال طلب التحقق. سيتم مراجعة بياناتك.');
-                closeModal();
-            };
-
-            const init = () => {
-                const faScript = document.createElement('script');
-                faScript.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js";
-                document.head.appendChild(faScript);
-
-                elements.userIdInput.addEventListener('input', () => {
-                    clearTimeout(validationTimeout);
-                    validationTimeout = setTimeout(handleIdValidation, 300);
-                });
-
-                elements.recoveryModal.addEventListener('click', e => {
-                    if (e.target === elements.recoveryModal) closeModal();
-                });
-                
-                document.addEventListener('keydown', e => {
-                    if (e.key === 'Escape' && elements.recoveryModal.classList.contains('open')) {
-                        closeModal();
-                    }
-                });
-
-                setupCustomSelect();
-            };
-
-            init();
-
-            return { login, recover, openModal, closeModal };
         })();
+
+        APP.init();
     </script>
 </body>
 </html>
