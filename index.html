@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>سُكُون — نظام الدخول الآمن</title>
+    <title>سُكُون — تسجيل الدخول</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,14 +19,13 @@
             --white: #fff;
             --ink: #2c3e50;
             --text-sec: #7f8c8d;
-            --danger: #ff6b6b;
-            --success: #4caf93;
             --grad: linear-gradient(135deg, var(--primary), var(--accent));
             --shadow: 0 8px 32px rgba(90, 171, 171, 0.15);
             --radius: 28px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Cairo', sans-serif;
             background: linear-gradient(135deg, var(--bg), #d1e8e8);
@@ -35,212 +34,113 @@
             justify-content: center;
             align-items: center;
             padding: 1rem;
-            overflow: hidden;
         }
 
-        .bg-orbs { position: fixed; inset: 0; z-index: -1; }
-        .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 20s infinite alternate; }
-        .orb1 { width: 400px; height: 400px; background: var(--primary); top: -100px; right: -100px; }
-        .orb2 { width: 300px; height: 300px; background: var(--accent); bottom: -50px; left: -50px; animation-delay: -5s; }
-        @keyframes float { to { transform: translate(30px, 40px) scale(1.1); } }
-
         .glass-card {
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             padding: 2.5rem;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.4);
-            animation: fadeIn 0.6s ease-out;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .logo-section { margin-bottom: 2rem; }
+        .logo-icon { 
+            width: 50px; height: 50px; background: var(--grad); 
+            border-radius: 14px; display: inline-flex; 
+            align-items: center; justify-content: center; color: white;
+            margin-bottom: 1rem;
+        }
 
-        .logo-badge { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; background: var(--white); padding: 8px 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .logo-icon { width: 35px; height: 35px; background: var(--grad); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; }
+        h1 { color: var(--accent-dark); margin-bottom: 0.5rem; font-size: 1.6rem; }
         
-        h1 { color: var(--accent-dark); font-size: 1.8rem; margin-bottom: 0.5rem; }
-        p { color: var(--text-sec); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.6; }
-
-        .input-group { position: relative; margin-bottom: 1rem; }
-        .input-group i { position: absolute; top: 50%; right: 1.2rem; transform: translateY(-50%); color: var(--accent); transition: 0.3s; }
+        .input-group { position: relative; margin-bottom: 1.2rem; }
+        .input-group i { position: absolute; top: 50%; right: 1rem; transform: translateY(-50%); color: var(--accent); }
         .input-group input {
-            width: 100%;
-            padding: 1.1rem 3.5rem 1.1rem 1.2rem;
-            border-radius: 18px;
-            border: 1.5px solid transparent;
-            background: rgba(255, 255, 255, 0.9);
-            font-family: inherit;
-            font-size: 1rem;
-            outline: none;
-            transition: 0.3s;
+            width: 100%; padding: 1rem 3rem 1rem 1rem;
+            border-radius: 16px; border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.9); font-family: inherit;
+            outline: none; transition: 0.3s;
         }
-        .input-group input:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(152, 216, 216, 0.2); }
-        .input-group input:focus + i { color: var(--accent-dark); }
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(152, 216, 216, 0.1); }
 
         .btn {
-            width: 100%;
-            padding: 1.1rem;
-            border-radius: 18px;
-            border: none;
-            font-family: inherit;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 0.8rem;
+            width: 100%; padding: 1rem; border-radius: 16px;
+            border: none; font-family: inherit; font-weight: 700;
+            cursor: pointer; transition: 0.3s; margin-bottom: 1rem;
         }
-        .btn-primary { background: var(--grad); color: white; box-shadow: 0 6px 20px rgba(90, 171, 171, 0.3); }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(90, 171, 171, 0.4); }
-        .btn-primary:disabled { background: #ccc; cursor: not-allowed; opacity: 0.7; }
 
-        .btn-secondary { background: transparent; color: var(--accent-dark); border: 2px solid rgba(152, 216, 216, 0.5); margin-top: 1rem; }
-        .btn-secondary:hover { background: rgba(152, 216, 216, 0.1); }
-
-        .alert {
-            padding: 12px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-            display: none;
-            animation: shake 0.4s ease;
+        /* زر تسجيل الدخول الأساسي */
+        .btn-primary { 
+            background: var(--grad); color: white; 
+            box-shadow: 0 4px 15px rgba(90, 171, 171, 0.3);
         }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        .alert-danger { background: #fff0f0; color: var(--danger); border: 1px solid #ffcccc; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(90, 171, 171, 0.4); }
 
-        #recovery-section { display: none; }
-        .recovery-info { font-size: 0.85rem; color: var(--text-sec); margin-bottom: 1.5rem; }
-        
-        .footer-links { margin-top: 1.5rem; display: flex; justify-content: center; gap: 15px; }
-        .footer-links a { color: var(--text-sec); text-decoration: none; font-size: 0.85rem; transition: 0.3s; }
-        .footer-links a:hover { color: var(--accent-dark); text-decoration: underline; }
+        /* زر إنشاء الحساب (الذي طلبته) */
+        .btn-outline {
+            background: transparent;
+            color: var(--accent-dark);
+            border: 2px solid var(--primary);
+            margin-top: 0.5rem;
+        }
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .divider {
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: center;
+            color: var(--text-sec);
+            font-size: 0.8rem;
+        }
+        .divider::before, .divider::after {
+            content: ""; flex: 1; height: 1px; background: #ddd; margin: 0 10px;
+        }
+
+        .forgot-link { color: var(--text-sec); text-decoration: none; font-size: 0.85rem; }
+        .forgot-link:hover { color: var(--accent-dark); }
     </style>
 </head>
 <body>
 
-    <div class="bg-orbs">
-        <div class="orb orb1"></div>
-        <div class="orb orb2"></div>
-    </div>
-
     <main class="glass-card">
-        <div id="login-section">
-            <div class="logo-badge">
-                <div class="logo-icon"><i data-feather="heart"></i></div>
-                <span style="font-weight: 800; color: var(--accent-dark);">سُ<span>كُون</span></span>
-            </div>
-
-            <h1>مساحتك الآمنة</h1>
-            <p>سجل دخولك لمتابعة رحلة هدوئك وجلساتك الخاصة</p>
-            
-            <div id="login-error" class="alert alert-danger"></div>
-
-            <form id="loginForm">
-                <div class="input-group">
-                    <i data-feather="user"></i>
-                    <input type="text" id="userId" placeholder="المُعرّف الشخصي" required autocomplete="off">
-                </div>
-                <div class="input-group">
-                    <i data-feather="shield"></i>
-                    <input type="password" id="userPin" placeholder="رمز الأمان (PIN)" required maxlength="8">
-                </div>
-                <button type="submit" class="btn btn-primary" id="loginBtn">دخول آمن</button>
-            </form>
-            
-            <button class="btn btn-secondary" onclick="window.location.href='signup.html'">إنشاء حساب جديد</button>
-
-            <div class="footer-links">
-                <a href="javascript:void(0)" onclick="APP.toggleRecovery(true)">نسيت رمز الأمان؟</a>
-            </div>
+        <div class="logo-section">
+            <div class="logo-icon"><i data-feather="wind"></i></div>
+            <h1>مرحباً بك في سُكُون</h1>
+            <p style="color: var(--text-sec); font-size: 0.9rem;">سجل دخولك لتستعيد هدوءك</p>
         </div>
 
-        <div id="recovery-section">
-            <div class="logo-icon" style="margin: 0 auto 1.5rem;"><i data-feather="key"></i></div>
-            <h1>استعادة الوصول</h1>
-            <p class="recovery-info">استخدم "مفتاح الاستعادة" الذي حصلت عليه عند التسجيل لإعادة تعيين الدخول.</p>
-            
+        <form>
             <div class="input-group">
-                <i data-feather="command"></i>
-                <input type="text" id="recoveryKey" placeholder="SK-XXXX-XXXX-XXXX">
+                <i data-feather="user"></i>
+                <input type="text" placeholder="المُعرّف الشخصي">
+            </div>
+            <div class="input-group">
+                <i data-feather="lock"></i>
+                <input type="password" placeholder="كلمة المرور">
             </div>
             
-            <button class="btn btn-primary" onclick="APP.processRecovery()">التحقق من المفتاح</button>
-            <button class="btn btn-secondary" onclick="APP.toggleRecovery(false)">العودة للخلف</button>
-        </div>
+            <button type="submit" class="btn btn-primary">تسجيل الدخول</button>
+            <a href="#" class="forgot-link">نسيت كلمة المرور؟</a>
+        </form>
+
+        <div class="divider">أو</div>
+
+        <button type="button" class="btn btn-outline" onclick="window.location.href='signup.html'">
+            إنشاء حساب جديد
+        </button>
     </main>
 
     <script>
         feather.replace();
-
-        const APP = (() => {
-            const state = {
-                attempts: 0,
-                maxAttempts: 5,
-                lockoutUntil: 0
-            };
-
-            const dom = {
-                loginForm: document.getElementById('loginForm'),
-                loginSection: document.getElementById('login-section'),
-                recoverySection: document.getElementById('recovery-section'),
-                errorBox: document.getElementById('login-error'),
-                loginBtn: document.getElementById('loginBtn')
-            };
-
-            const showError = (msg) => {
-                dom.errorBox.textContent = msg;
-                dom.errorBox.style.display = 'block';
-                setTimeout(() => dom.errorBox.style.display = 'none', 5000);
-            };
-
-            const handleLogin = (e) => {
-                e.preventDefault();
-
-                if (Date.now() < state.lockoutUntil) {
-                    const timeLeft = Math.ceil((state.lockoutUntil - Date.now()) / 1000);
-                    showError(`النظام مقفل حالياً. حاول بعد ${timeLeft} ثانية.`);
-                    return;
-                }
-
-                const id = document.getElementById('userId').value.trim();
-                const pin = document.getElementById('userPin').value;
-
-                // منطق الحماية: محاكاة التشفير والتحقق
-                // في الواقع، نرسل Hash للسيرفر وليس النص الصريح
-                if (id === "demo" && pin === "1234") {
-                    dom.loginBtn.innerHTML = '<i data-feather="loader" class="spin"></i> جاري الدخول...';
-                    feather.replace();
-                    setTimeout(() => alert("مرحباً بك في سكون!"), 1000);
-                } else {
-                    state.attempts++;
-                    if (state.attempts >= state.maxAttempts) {
-                        state.lockoutUntil = Date.now() + (60 * 1000); // حظر دقيقة
-                        showError("تم حظر المحاولات مؤقتاً لحماية الحساب.");
-                    } else {
-                        showError(`بيانات غير صحيحة. متبقي ${state.maxAttempts - state.attempts} محاولات.`);
-                    }
-                }
-            };
-
-            return {
-                init: () => dom.loginForm.addEventListener('submit', handleLogin),
-                toggleRecovery: (show) => {
-                    dom.loginSection.style.display = show ? 'none' : 'block';
-                    dom.recoverySection.style.display = show ? 'block' : 'none';
-                },
-                processRecovery: () => {
-                    const key = document.getElementById('recoveryKey').value;
-                    if(key.length < 5) return showError("يرجى إدخال مفتاح استعادة صحيح.");
-                    alert("نظام الاستعادة يتحقق من المفتاح محلياً...");
-                }
-            };
-        })();
-
-        APP.init();
     </script>
 </body>
 </html>
