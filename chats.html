@@ -4,368 +4,721 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>سُكُون — محادثاتي</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
-        /* ======================================== */
-        /* --- 1. المتغيرات ونظام الألوان --- */
-        /* ======================================== */
         :root {
-            --primary: #98D8D8; --accent: #5aabab; --accent-dark: #3d8a8a;
-            --bg: #eef6f6; --white: #fff; --ink: #2c3e50; --text-sec: #7f8c8d;
-            --danger: #e74c3c;
-            --grad: linear-gradient(135deg, var(--primary), var(--accent));
-            --shadow: 0 8px 32px rgba(90, 171, 171, 0.1);
-            --shadow-lg: 0 16px 45px rgba(90, 171, 171, 0.18);
-            --radius: 28px;
+            --t50:#f0fafa; --t100:#d0eded; --t200:#a8dede;
+            --t300:#98D8D8; --t500:#5aabab; --t700:#3d8a8a; --t900:#1f4f4f;
+            --ink:#162828; --ink60:#4a6363; --ink30:#9ababa;
+            --bg:#e4f0f0; --white:#ffffff;
+            --danger:#d94f4f; --success:#38c08a; --warn:#eda84a;
+            --sh-sm:0 2px 10px rgba(20,70,70,.07);
+            --sh-md:0 6px 28px rgba(20,70,70,.11);
+            --sh-lg:0 16px 52px rgba(20,70,70,.16);
+            --r-sm:12px; --r-md:18px; --r-lg:24px; --r-xl:32px;
         }
 
-        /* ======================================== */
-        /* --- 2. الإعدادات العامة --- */
-        /* ======================================== */
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { font-size: 16px; scroll-behavior: smooth; }
-        body {
-            font-family: 'Cairo', sans-serif; color: var(--ink); min-height: 100vh;
-            overflow-x: hidden;
-            background-color: var(--bg);
-            position: relative;
-            padding-bottom: 110px;
-        }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-
-        /* ======================================== */
-        /* --- 3. الخلفية والأشكال العائمة --- */
-        /* ======================================== */
-        .bg-orbs { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
-        .orb { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; animation: float 40s infinite alternate; }
-        .orb1 { width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(152, 216, 216, 0.18) 0%, transparent 70%); top: -15%; right: -15%; animation-duration: 35s; }
-        .orb2 { width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(90, 171, 171, 0.1) 0%, transparent 70%); bottom: -10%; left: -10%; animation-duration: 45s; animation-direction: alternate-reverse; }
-        @keyframes float { from { transform: translate(0, 0) scale(1); } to { transform: translate(5%, 8%) scale(1.1); } }
-
-        /* ======================================== */
-        /* --- 4. رأس الصفحة وأدوات البحث --- */
-        /* ======================================== */
-        .page-header { padding: 2.5rem 1.5rem 1.5rem; max-width: 800px; margin: 0 auto; }
-        .header-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
-        .header-title h1 { font-size: 2rem; font-weight: 800; color: var(--accent-dark); }
-        .header-title .lock-icon { color: var(--accent); opacity: 0.7; }
-        
-        .search-bar { position: relative; }
-        .search-bar input {
-            width: 100%; height: 56px; padding: 0 4rem 0 1.5rem; border-radius: 18px;
-            border: 1.5px solid #eaf1f1; background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px); font-size: 1rem; font-family: 'Cairo', sans-serif;
-            outline: none; box-shadow: var(--shadow); transition: all 0.3s;
-        }
-        .search-bar input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(152, 216, 216, 0.25); }
-        .search-bar .icon { position: absolute; top: 50%; right: 1.5rem; transform: translateY(-50%); color: var(--text-sec); pointer-events: none; }
-
-        /* ======================================== */
-        /* --- 5. قائمة المحادثات --- */
-        /* ======================================== */
-        .chats-list-container { max-width: 800px; margin: 0 auto; padding: 0 1.5rem; }
-        .chat-item-wrapper { position: relative; } /* حاوية جديدة لدعم القائمة المنسدلة */
-        .chat-item {
-            display: flex; align-items: center; gap: 1rem;
-            padding: 1rem; border-radius: 22px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 1);
-            box-shadow: var(--shadow);
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            text-decoration: none;
-            color: inherit;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: popIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-        @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
-
-        .chat-item:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: var(--shadow-lg);
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+        html{font-size:16px;scroll-behavior:smooth;}
+        body{
+            font-family:'Cairo',sans-serif;
+            background:var(--bg); color:var(--ink);
+            min-height:100vh; overflow-x:hidden;
+            padding-bottom:90px; position:relative;
         }
 
-        .avatar {
-            width: 60px; height: 60px; border-radius: 50%;
-            object-fit: cover; flex-shrink: 0;
-            border: 3px solid var(--white);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        /* ambient orbs */
+        body::before{
+            content:'';position:fixed;top:-100px;right:-100px;
+            width:380px;height:380px;border-radius:50%;
+            background:radial-gradient(circle,rgba(152,216,216,.28) 0%,transparent 70%);
+            pointer-events:none;z-index:0;
         }
-        .chat-content { flex-grow: 1; min-width: 0; }
-        .chat-details-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem; }
-        .chat-name { font-size: 1.1rem; font-weight: 700; color: var(--accent-dark); }
-        .chat-time { font-size: 0.75rem; color: var(--text-sec); font-weight: 600; }
-        
-        .last-message-container { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-        .last-message {
-            font-size: 0.9rem; color: var(--text-sec);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        body::after{
+            content:'';position:fixed;bottom:-80px;left:-60px;
+            width:300px;height:300px;border-radius:50%;
+            background:radial-gradient(circle,rgba(61,138,138,.15) 0%,transparent 70%);
+            pointer-events:none;z-index:0;
         }
-        .unread-indicator {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: var(--accent);
-            flex-shrink: 0;
-            box-shadow: 0 0 10px var(--accent);
-            visibility: hidden;
-        }
-        .chat-item.unread .last-message { color: var(--ink); font-weight: 600; }
-        .chat-item.unread .unread-indicator { visibility: visible; }
 
-        /* --- زر وقائمة الخيارات (الإضافة الجديدة) --- */
-        .chat-options-btn {
-            background: none; border: none; cursor: pointer;
-            padding: 0.5rem; color: var(--text-sec);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            transition: background-color 0.2s;
-        }
-        .chat-options-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .shell{max-width:820px;margin:0 auto;padding:1.5rem 1.25rem;position:relative;z-index:1;}
 
-        .chat-options-menu {
-            position: absolute; top: 50px; left: 20px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(15px);
-            border-radius: 16px;
-            box-shadow: var(--shadow-lg);
-            padding: 0.5rem;
-            z-index: 10;
-            min-width: 200px;
-            border: 1px solid rgba(255,255,255,0.5);
-            list-style: none;
-            opacity: 0; visibility: hidden;
-            transform: translateY(-10px) scale(0.95);
-            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        /* ── Header ── */
+        .page-head{
+            display:flex;align-items:center;justify-content:space-between;
+            margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap;
         }
-        .chat-options-menu.show {
-            opacity: 1; visibility: visible;
-            transform: translateY(0) scale(1);
+        .head-left{display:flex;align-items:center;gap:.6rem;}
+        .brand{font-size:1.6rem;font-weight:900;color:var(--t700);letter-spacing:-1px;}
+        .brand span{color:var(--t300);}
+        .page-title{font-size:1.2rem;font-weight:800;color:var(--t900);}
+        .lock-badge{
+            display:flex;align-items:center;gap:.35rem;
+            font-size:.72rem;color:var(--ink30);padding:.25rem .7rem;
+            border-radius:99px;background:var(--white);border:1px solid var(--t100);
+            box-shadow:var(--sh-sm);
         }
-        .options-item {
-            display: flex; align-items: center; gap: 0.75rem;
-            padding: 0.8rem 1rem;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .options-item:hover { background-color: rgba(152, 216, 216, 0.2); }
-        .options-item.danger { color: var(--danger); }
-        .options-item.danger:hover { background-color: rgba(231, 76, 60, 0.1); }
-        .options-item .icon { width: 18px; height: 18px; }
 
-        /* --- حالة عدم وجود محادثات --- */
-        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-sec); display: none; }
-        .empty-state i { font-size: 3.5rem; color: var(--primary); margin-bottom: 1.5rem; opacity: 0.7; }
-        .empty-state h3 { font-size: 1.2rem; font-weight: 700; color: var(--accent-dark); margin-bottom: 0.5rem; }
-        .empty-state p { line-height: 1.7; }
+        /* ── Search ── */
+        .search-wrap{
+            position:relative;margin-bottom:1.5rem;
+        }
+        .search-wrap input{
+            width:100%;height:50px;
+            padding:0 3rem 0 1.25rem;
+            border:1.5px solid var(--t100);border-radius:var(--r-lg);
+            background:rgba(255,255,255,.85);backdrop-filter:blur(10px);
+            font-family:'Cairo',sans-serif;font-size:.95rem;color:var(--ink);
+            outline:none;box-shadow:var(--sh-sm);
+            transition:border-color .2s,box-shadow .2s,background .2s;
+        }
+        .search-wrap input:focus{
+            border-color:var(--t500);background:var(--white);
+            box-shadow:0 0 0 3px rgba(90,171,171,.18);
+        }
+        .search-wrap input::placeholder{color:var(--ink30);}
+        .search-icon{
+            position:absolute;top:50%;right:1rem;transform:translateY(-50%);
+            color:var(--ink30);pointer-events:none;
+        }
 
-        /* ======================================== */
-        /* --- 6. شريط التنقل السفلي --- */
-        /* ======================================== */
-        .bottom-nav {
-            position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
-            width: calc(100% - 28px); max-width: 460px; background: rgba(255,255,255,.9);
-            backdrop-filter: blur(20px); border-radius: 24px; display: flex;
-            justify-content: space-around; align-items: center; padding: 9px 6px;
-            box-shadow: 0 8px 36px rgba(0,0,0,.1); z-index: 400;
-            border: 1px solid rgba(152, 216, 216, 0.18);
+        /* ── Chat list ── */
+        .chats-list{display:flex;flex-direction:column;gap:.85rem;}
+
+        /* wrapper needed for options menu positioning */
+        .chat-wrap{position:relative;}
+
+        .chat-row{
+            display:flex;align-items:center;gap:.9rem;
+            padding:1rem 1.1rem;
+            background:rgba(255,255,255,.9);backdrop-filter:blur(16px);
+            border:1.5px solid rgba(255,255,255,.95);
+            border-radius:var(--r-xl);box-shadow:var(--sh-md);
+            text-decoration:none;color:inherit;
+            transition:transform .25s,box-shadow .25s;
+            opacity:0;animation:rowIn .35s ease forwards;
+            cursor:pointer;
         }
-        .nav-item {
-            text-decoration: none; display: flex; flex-direction: column; align-items: center;
-            gap: 3px; color: var(--text-sec); transition: color .2s; padding: 4px 12px;
-            border-radius: 14px; position: relative;
+        @keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+        .chat-row:hover{transform:translateY(-4px);box-shadow:var(--sh-lg);}
+
+        /* doctor avatar: base64 image or initials circle */
+        .chat-avatar{
+            width:54px;height:54px;border-radius:50%;
+            border:2.5px solid var(--white);box-shadow:0 3px 10px rgba(20,70,70,.13);
+            flex-shrink:0;object-fit:cover;
+            background:linear-gradient(135deg,var(--t500),var(--t700));
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.2rem;font-weight:900;color:var(--white);overflow:hidden;
         }
-        .nav-item.active { color: var(--accent); }
-        .nav-item i { font-size: 20px; }
-        .nav-item span { font-size: 10px; font-weight: 700; }
-        .nav-item.active::after {
-            content: ''; position: absolute; bottom: -5px; width: 20px; height: 3px;
-            border-radius: 3px; background: var(--grad);
+        .chat-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+
+        .chat-body{flex:1;min-width:0;}
+        .chat-top{
+            display:flex;align-items:baseline;justify-content:space-between;
+            gap:.5rem;margin-bottom:.2rem;
+        }
+        .chat-name{font-weight:800;font-size:.98rem;color:var(--t900);}
+        .chat-time{font-size:.72rem;color:var(--ink30);white-space:nowrap;flex-shrink:0;}
+        .chat-preview-row{
+            display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+        }
+        .chat-preview{
+            font-size:.85rem;color:var(--ink60);
+            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;
+        }
+        .chat-row.unread .chat-preview{color:var(--ink);font-weight:700;}
+        .unread-dot{
+            width:9px;height:9px;border-radius:50%;
+            background:var(--t500);flex-shrink:0;
+            box-shadow:0 0 8px rgba(90,171,171,.6);
+            visibility:hidden;
+        }
+        .chat-row.unread .unread-dot{visibility:visible;}
+
+        /* options button */
+        .chat-options-btn{
+            width:34px;height:34px;border-radius:50%;
+            border:none;background:none;
+            display:flex;align-items:center;justify-content:center;
+            cursor:pointer;color:var(--ink30);flex-shrink:0;
+            transition:background .18s,color .18s;
+        }
+        .chat-options-btn:hover{background:var(--t100);color:var(--t700);}
+
+        /* options dropdown */
+        .options-menu{
+            position:absolute;top:calc(100% - 8px);left:12px;
+            background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+            border:1.5px solid var(--t100);border-radius:var(--r-md);
+            box-shadow:var(--sh-lg);padding:.4rem;min-width:200px;
+            z-index:100;list-style:none;
+            opacity:0;visibility:hidden;
+            transform:translateY(-8px) scale(.96);
+            transition:opacity .18s,transform .18s,visibility .18s;
+        }
+        .options-menu.show{opacity:1;visibility:visible;transform:translateY(0) scale(1);}
+
+        .opt-item{
+            display:flex;align-items:center;gap:.65rem;
+            padding:.65rem 1rem;border-radius:var(--r-sm);
+            font-size:.88rem;font-weight:600;color:var(--ink60);
+            cursor:pointer;transition:background .15s,color .15s;
+        }
+        .opt-item:hover{background:var(--t50);color:var(--t900);}
+        .opt-item.danger{color:var(--danger);}
+        .opt-item.danger:hover{background:rgba(217,79,79,.08);}
+
+        /* ── Confirm dialog (custom, no alert) ── */
+        .confirm-backdrop{
+            position:fixed;inset:0;background:rgba(16,40,40,.5);
+            backdrop-filter:blur(6px);z-index:500;
+            display:flex;align-items:center;justify-content:center;padding:1rem;
+            opacity:0;visibility:hidden;transition:opacity .25s;
+        }
+        .confirm-backdrop.show{opacity:1;visibility:visible;}
+        .confirm-box{
+            background:var(--white);border-radius:var(--r-xl);
+            border:1.5px solid var(--t100);box-shadow:var(--sh-lg);
+            padding:2rem 1.75rem;width:100%;max-width:380px;text-align:center;
+            transform:scale(.92);transition:transform .3s cubic-bezier(.32,1,.5,1);
+        }
+        .confirm-backdrop.show .confirm-box{transform:scale(1);}
+        .confirm-icon{font-size:2.2rem;margin-bottom:.75rem;display:block;}
+        .confirm-title{font-size:1.1rem;font-weight:900;color:var(--t900);margin-bottom:.4rem;}
+        .confirm-msg{font-size:.87rem;color:var(--ink60);line-height:1.6;margin-bottom:1.5rem;}
+        .confirm-actions{display:flex;gap:.75rem;}
+        .confirm-btn{
+            flex:1;padding:.7rem;border-radius:var(--r-md);border:none;
+            font-family:'Cairo',sans-serif;font-size:.9rem;font-weight:800;
+            cursor:pointer;transition:opacity .2s,transform .2s;
+        }
+        .confirm-btn:hover{opacity:.88;transform:translateY(-1px);}
+        .confirm-btn.cancel{background:var(--t50);color:var(--ink60);border:1.5px solid var(--t100);}
+        .confirm-btn.ok{background:var(--danger);color:var(--white);}
+        .confirm-btn.ok.mute{background:var(--t700);}
+
+        /* ── Empty state ── */
+        .empty-state{
+            text-align:center;padding:3.5rem 1rem;
+            color:var(--ink30);display:none;
+        }
+        .empty-state .e-icon{font-size:2.8rem;margin-bottom:.75rem;display:block;}
+        .empty-state h3{font-size:1.05rem;font-weight:800;color:var(--ink60);margin-bottom:.4rem;}
+        .empty-state p{font-size:.85rem;line-height:1.7;}
+
+        /* ── Skeleton ── */
+        .skel-row{
+            display:flex;align-items:center;gap:.9rem;
+            padding:1rem 1.1rem;background:var(--white);
+            border-radius:var(--r-xl);border:1.5px solid var(--t100);
+            margin-bottom:.85rem;
+        }
+        .skel{background:var(--t100);border-radius:var(--r-sm);animation:shimmer 1.4s infinite;}
+        @keyframes shimmer{0%,100%{opacity:.5}50%{opacity:1}}
+        .skel-av{width:54px;height:54px;border-radius:50%;flex-shrink:0;}
+        .skel-lines{flex:1;display:flex;flex-direction:column;gap:.5rem;}
+        .skel-line{height:13px;border-radius:99px;}
+
+        /* ── Sync pill ── */
+        .sync-pill{
+            display:inline-flex;align-items:center;gap:.4rem;
+            font-size:.72rem;color:var(--ink60);padding:.3rem .8rem;
+            border-radius:99px;background:var(--white);border:1px solid var(--t100);
+            box-shadow:var(--sh-sm);margin-top:1rem;
+        }
+        .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--success);}
+        .sync-dot.busy{background:var(--warn);animation:blink 1s infinite;}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+        /* ── Toast ── */
+        .toast{
+            position:fixed;bottom:5.5rem;left:50%;
+            transform:translateX(-50%) translateY(6px);
+            background:var(--t900);color:var(--white);
+            padding:.6rem 1.3rem;border-radius:99px;
+            font-size:.85rem;font-weight:600;
+            z-index:9999;opacity:0;pointer-events:none;
+            transition:opacity .25s,transform .25s;white-space:nowrap;
+        }
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+        .toast.ok{background:var(--success);}
+        .toast.err{background:var(--danger);}
+
+        /* ── Bottom nav ── */
+        .bottom-nav{
+            position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+            width:calc(100% - 28px);max-width:460px;
+            background:rgba(255,255,255,.92);backdrop-filter:blur(20px);
+            border-radius:24px;display:flex;justify-content:space-around;align-items:center;
+            padding:8px 6px;box-shadow:var(--sh-lg);z-index:400;
+            border:1px solid rgba(152,216,216,.2);
+        }
+        .nav-item{
+            text-decoration:none;display:flex;flex-direction:column;align-items:center;
+            gap:3px;color:var(--ink30);transition:color .2s;padding:5px 14px;
+            border-radius:14px;position:relative;font-size:.65rem;font-weight:700;
+        }
+        .nav-item.active{color:var(--t500);}
+        .nav-item.active::after{
+            content:'';position:absolute;bottom:-5px;width:18px;height:3px;
+            border-radius:3px;background:linear-gradient(90deg,var(--t700),var(--t300));
+        }
+
+        @media(max-width:480px){
+            .shell{padding:1rem .9rem;}
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-orbs">
-        <div class="orb orb1"></div>
-        <div class="orb orb2"></div>
-    </div>
+<div class="shell">
 
-    <header class="page-header">
-        <div class="header-title">
-            <h1>محادثاتي</h1>
-            <i class="lock-icon" data-feather="lock" title="جميع محادثاتك مشفرة ومحمية"></i>
+    <!-- ── Header ── -->
+    <header class="page-head">
+        <div class="head-left">
+            <div class="brand">سُ<span>كُون</span></div>
+            <div class="page-title">محادثاتي</div>
         </div>
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="ابحث في محادثاتك...">
-            <i class="icon" data-feather="search"></i>
+        <div class="lock-badge">
+            <i data-feather="lock" style="width:11px;height:11px"></i>
+            مشفّرة
         </div>
     </header>
 
-    <main class="chats-list-container" id="chatsList"></main>
-    
-    <div class="empty-state" id="emptyState">
-        <i class="far fa-moon"></i>
-        <h3>مساحتك هادئة الآن</h3>
-        <p>ابدأ محادثة جديدة عندما تشعر بالاستعداد.</p>
+    <!-- ── Search ── -->
+    <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="ابحث باسم الأخصائي...">
+        <span class="search-icon">
+            <i data-feather="search" style="width:16px;height:16px"></i>
+        </span>
     </div>
 
-    <nav class="bottom-nav">
-        <a href="home.html" class="nav-item"><i class="fas fa-house-medical"></i><span>الرئيسية</span></a>
-        <a href="chats.html" class="nav-item active"><i class="fas fa-comments"></i><span>محادثاتي</span></a>
-        <a href="agenda.html" class="nav-item"><i class="fas fa-calendar-check"></i><span>الأجندة</span></a>
-        <a href="tools.html" class="nav-item"><i class="fas fa-spa"></i><span>الأدوات</span></a>
-    </nav>
+    <!-- ── Skeletons (removed once data loads) ── -->
+    <div id="skels">
+        <div class="skel-row">
+            <div class="skel skel-av"></div>
+            <div class="skel-lines">
+                <div class="skel skel-line" style="width:45%"></div>
+                <div class="skel skel-line" style="width:75%"></div>
+            </div>
+        </div>
+        <div class="skel-row">
+            <div class="skel skel-av"></div>
+            <div class="skel-lines">
+                <div class="skel skel-line" style="width:38%"></div>
+                <div class="skel skel-line" style="width:65%"></div>
+            </div>
+        </div>
+    </div>
 
-    <script>
+    <!-- ── Chats list ── -->
+    <div class="chats-list" id="chatsList"></div>
+
+    <div class="empty-state" id="emptyState">
+        <span class="e-icon">🌙</span>
+        <h3>مساحتك هادئة الآن</h3>
+        <p>ابدأ محادثة مع أحد الأخصائيين عندما تشعر بالاستعداد.</p>
+    </div>
+
+    <div class="sync-pill">
+        <div class="sync-dot" id="syncDot"></div>
+        <span id="syncText">جاري التحميل...</span>
+    </div>
+
+</div><!-- /shell -->
+
+<!-- ── Confirm dialog ── -->
+<div class="confirm-backdrop" id="confirmBackdrop">
+    <div class="confirm-box">
+        <span class="confirm-icon" id="confirmIcon">⚠️</span>
+        <div class="confirm-title" id="confirmTitle"></div>
+        <div class="confirm-msg"   id="confirmMsg"></div>
+        <div class="confirm-actions">
+            <button class="confirm-btn cancel" id="confirmCancel">إلغاء</button>
+            <button class="confirm-btn ok"     id="confirmOk">تأكيد</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ── Bottom nav ── -->
+<nav class="bottom-nav">
+    <a href="patient-home.html" class="nav-item">
+        <i data-feather="home" style="width:19px;height:19px"></i><span>الرئيسية</span>
+    </a>
+    <a href="patient-chats.html" class="nav-item active">
+        <i data-feather="message-circle" style="width:19px;height:19px"></i><span>محادثاتي</span>
+    </a>
+    <a href="patient-agenda.html" class="nav-item">
+        <i data-feather="calendar" style="width:19px;height:19px"></i><span>الأجندة</span>
+    </a>
+    <a href="patient-tools.html" class="nav-item">
+        <i data-feather="wind" style="width:19px;height:19px"></i><span>الأدوات</span>
+    </a>
+</nav>
+
+
+<!-- ══════════════════════════════ SCRIPT ══════════════════════════════ -->
+<script type="module">
+    import { initializeApp }         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore,
+             collection, query, where,
+             onSnapshot, doc,
+             updateDoc, deleteDoc,
+             getDocs, writeBatch }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth,
+             onAuthStateChanged }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    feather.replace();
+
+    // ── Firebase ──────────────────────────────────────────────────────────
+    const app = initializeApp({
+        apiKey:            "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
+        authDomain:        "sakina-937c4.firebaseapp.com",
+        projectId:         "sakina-937c4",
+        storageBucket:     "sakina-937c4.firebasestorage.app",
+        messagingSenderId: "25215790734",
+        appId:             "1:25215790734:web:46c5d893d5818530b3a3df"
+    });
+    const db   = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ── IndexedDB ─────────────────────────────────────────────────────────
+    class IDB {
+        constructor(){ this.db=null; }
+        async init(){
+            return new Promise((res,rej)=>{
+                const r = indexedDB.open('SakoonPatientChatsDB',1);
+                r.onerror=()=>rej(r.error);
+                r.onsuccess=()=>{ this.db=r.result; res(); };
+                r.onupgradeneeded=({target})=>{
+                    const d = target.result;
+                    // conversations: {id, doctorId, doctorName, doctorSpec, doctorAvatar, lastMessage, lastTs, unread, muted}
+                    if(!d.objectStoreNames.contains('convos'))
+                        d.createObjectStore('convos',{keyPath:'id'});
+                    // doctor profiles cache (for name/avatar display)
+                    if(!d.objectStoreNames.contains('doc_profiles'))
+                        d.createObjectStore('doc_profiles',{keyPath:'id'});
+                };
+            });
+        }
+        _tx(s,m='readonly'){ return this.db.transaction([s],m).objectStore(s); }
+        _p(r){ return new Promise((res,rej)=>{ r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+        getAll(s)     { return this._p(this._tx(s).getAll()).then(r=>r||[]); }
+        get(s,id)     { return this._p(this._tx(s).get(id)); }
+        put(s,obj)    { return this._p(this._tx(s,'readwrite').put(obj)); }
+        remove(s,id)  { return this._p(this._tx(s,'readwrite').delete(id)); }
+        clear(s)      { return this._p(this._tx(s,'readwrite').clear()); }
+    }
+    const idb = new IDB();
+
+    // ── Toast ─────────────────────────────────────────────────────────────
+    let _tt;
+    const toast=(msg,type='')=>{
+        const el=document.getElementById('toast');
+        el.textContent=msg; el.className=`toast show ${type}`;
+        clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),3000);
+    };
+
+    // ── Sync indicator ────────────────────────────────────────────────────
+    const setSyncing=(busy,msg)=>{
+        document.getElementById('syncDot').className='sync-dot'+(busy?' busy':'');
+        document.getElementById('syncText').textContent=msg??(busy?'جاري المزامنة...':'محدَّث ✓');
+    };
+
+    // ── Confirm dialog ────────────────────────────────────────────────────
+    const showConfirm=({icon,title,msg,okClass,onOk})=>{
+        document.getElementById('confirmIcon').textContent  = icon||'⚠️';
+        document.getElementById('confirmTitle').textContent = title||'';
+        document.getElementById('confirmMsg').textContent   = msg||'';
+        const okBtn = document.getElementById('confirmOk');
+        okBtn.className = `confirm-btn ok ${okClass||''}`;
+        const backdrop  = document.getElementById('confirmBackdrop');
+        backdrop.classList.add('show');
+        const close=()=>backdrop.classList.remove('show');
+        document.getElementById('confirmCancel').onclick=close;
+        okBtn.onclick=()=>{ close(); onOk&&onOk(); };
+        backdrop.onclick=e=>{ if(e.target===backdrop) close(); };
+    };
+
+    // ── State ─────────────────────────────────────────────────────────────
+    let patientUid  = null;
+    let allConvos   = [];     // [{id, doctorId, doctorName, doctorSpec, doctorAvatar, lastMessage, lastTs, unread, muted}]
+    let searchTerm  = '';
+    let mutedSet    = new Set();   // locally muted conv IDs
+
+    const fmtTime = ts=>{
+        if(!ts) return '';
+        const d = ts.toDate ? ts.toDate() : new Date(ts*1000||ts);
+        const now = new Date();
+        const diff = (now-d)/1000;
+        if(diff < 60)     return 'الآن';
+        if(diff < 3600)   return `${Math.floor(diff/60)} د`;
+        if(diff < 86400)  return d.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+        if(diff < 172800) return 'أمس';
+        return d.toLocaleDateString('ar-EG',{day:'numeric',month:'short'});
+    };
+
+    // ── Remove skeletons ──────────────────────────────────────────────────
+    const removeSkel=()=>{ const s=document.getElementById('skels'); if(s) s.remove(); };
+
+    // ── Render ────────────────────────────────────────────────────────────
+    const render=()=>{
+        removeSkel();
+        const list   = document.getElementById('chatsList');
+        const empty  = document.getElementById('emptyState');
+        const q      = searchTerm.toLowerCase();
+
+        const filtered = allConvos.filter(c=>
+            !q || (c.doctorName||'').includes(q) || (c.doctorSpec||'').includes(q)
+        );
+
+        list.innerHTML='';
+        empty.style.display = filtered.length===0 ? 'block' : 'none';
+
+        filtered.forEach((c,i)=>{
+            const isUnread = c.unread && !c.muted;
+
+            // Avatar
+            const avatarHTML = c.doctorAvatar
+                ? `<div class="chat-avatar"><img src="${c.doctorAvatar}" alt="${c.doctorName}"></div>`
+                : `<div class="chat-avatar">${(c.doctorName||'د').trim().charAt(0)}</div>`;
+
+            const wrap = document.createElement('div');
+            wrap.className='chat-wrap';
+
+            const row = document.createElement('div');
+            row.className='chat-row'+(isUnread?' unread':'');
+            row.style.animationDelay=`${i*.07}s`;
+            row.dataset.convId=c.id;
+
+            row.innerHTML=`
+                ${avatarHTML}
+                <div class="chat-body">
+                    <div class="chat-top">
+                        <span class="chat-name">${c.doctorName||'أخصائي'}</span>
+                        <span class="chat-time">${fmtTime(c.lastTs)}</span>
+                    </div>
+                    <div class="chat-preview-row">
+                        <span class="chat-preview">${c.muted?'🔕 ':''} ${c.lastMessage||'ابدأ المحادثة...'}</span>
+                        <span class="unread-dot"></span>
+                    </div>
+                </div>
+                <button class="chat-options-btn" data-conv-id="${c.id}" title="خيارات">
+                    <i data-feather="more-vertical" style="width:17px;height:17px"></i>
+                </button>`;
+
+            // options menu
+            const menu = document.createElement('ul');
+            menu.className='options-menu';
+            menu.innerHTML=`
+                <li class="opt-item" data-action="mute" data-conv-id="${c.id}">
+                    <i data-feather="${c.muted?'bell':'bell-off'}" style="width:15px;height:15px"></i>
+                    <span>${c.muted?'إلغاء الكتم':'كتم الإشعارات'}</span>
+                </li>
+                <li class="opt-item danger" data-action="delete" data-conv-id="${c.id}">
+                    <i data-feather="trash-2" style="width:15px;height:15px"></i>
+                    <span>حذف المحادثة</span>
+                </li>`;
+
+            wrap.appendChild(row);
+            wrap.appendChild(menu);
+            list.appendChild(wrap);
+        });
+
         feather.replace();
+    };
 
-        const CHAT_LIST_APP = (() => {
-            'use strict';
+    // ── Click on chat row → open conversation ─────────────────────────────
+    document.getElementById('chatsList').addEventListener('click', e=>{
+        // options button
+        const optBtn = e.target.closest('.chat-options-btn');
+        if(optBtn){
+            e.stopPropagation();
+            const allMenus = document.querySelectorAll('.options-menu.show');
+            allMenus.forEach(m=>m.classList.remove('show'));
+            const menu = optBtn.closest('.chat-wrap').querySelector('.options-menu');
+            if(menu) menu.classList.add('show');
+            return;
+        }
 
-            const chatsData = [
-                { id: 'chat_1', name: 'د. أحمد صالح', avatar: 'https://randomuser.me/api/portraits/men/32.jpg', lastMessage: 'تمام، سنناقش هذه النقطة في جلستنا القادمة.', time: '10:45 ص', unread: true },
-                { id: 'chat_2', name: 'د. فاطمة علي', avatar: 'https://randomuser.me/api/portraits/women/44.jpg', lastMessage: 'لا تقلق، هذا الشعور طبيعي وسنتعامل معه.', time: 'أمس', unread: false },
-                { id: 'chat_3', name: 'د. يوسف خالد', avatar: 'https://randomuser.me/api/portraits/men/46.jpg', lastMessage: 'أرسلت لك بعض التمارين المفيدة، ألقِ نظرة عليها.', time: 'منذ يومين', unread: false },
-                { id: 'chat_4', name: 'دعم سُكُون', avatar: 'https://i.pravatar.cc/150?u=sokoon_support', lastMessage: 'أهلاً بك في سُكُون! نحن هنا لمساعدتك.', time: '28/03/2026', unread: true }
-            ];
+        // option menu item
+        const optItem = e.target.closest('.opt-item');
+        if(optItem){
+            e.stopPropagation();
+            const convId = optItem.dataset.convId;
+            const conv   = allConvos.find(c=>c.id===convId);
+            if(!conv) return;
+            optItem.closest('.options-menu').classList.remove('show');
 
-            const $ = id => document.getElementById(id);
-            const elements = {
-                chatsList: $('chatsList'),
-                searchInput: $('searchInput'),
-                emptyState: $('emptyState'),
-            };
+            if(optItem.dataset.action==='mute'){
+                const nowMuted = !conv.muted;
+                conv.muted = nowMuted;
+                if(nowMuted) mutedSet.add(convId); else mutedSet.delete(convId);
+                idb.put('convos',{...conv});
+                render();
+                toast(nowMuted?'🔕 تم كتم الإشعارات':'🔔 تم إلغاء الكتم','ok');
+            }
 
-            const handleMenuAction = (action, chatId, chatName) => {
-                let message = '';
-                switch (action) {
-                    case 'mute': message = `تم كتم إشعارات "${chatName}".`; break;
-                    case 'block': message = `هل أنت متأكد من أنك تريد حظر "${chatName}"؟`; break;
-                    case 'delete': message = `هل أنت متأكد من حذف محادثة "${chatName}" من الطرفين؟`; break;
-                }
-                // للتأكيد في حالات الحظر والمسح
-                if (action === 'block' || action === 'delete') {
-                    if (confirm(message)) {
-                        alert(`تم تنفيذ: ${action} للمحادثة مع ${chatName}`);
-                        // هنا يمكنك إضافة الكود الفعلي للحذف أو الحظر
+            if(optItem.dataset.action==='delete'){
+                showConfirm({
+                    icon:'🗑️',
+                    title:'حذف المحادثة',
+                    msg:`سيتم حذف محادثتك مع ${conv.doctorName||'الأخصائي'} نهائياً.`,
+                    onOk: async()=>{
+                        // delete from Firestore (messages sub-collection + conversation doc)
+                        try {
+                            // delete messages
+                            const msgsSnap = await getDocs(collection(db,'conversations',convId,'messages'));
+                            const batch    = writeBatch(db);
+                            msgsSnap.docs.forEach(d=>batch.delete(d.ref));
+                            await batch.commit();
+                            // delete conversation doc
+                            await deleteDoc(doc(db,'conversations',convId));
+                        } catch(err){ console.warn('Firestore delete:',err); }
+
+                        // remove from cache
+                        allConvos = allConvos.filter(c=>c.id!==convId);
+                        await idb.remove('convos',convId);
+                        render();
+                        toast('تم حذف المحادثة');
                     }
-                } else {
-                    alert(message);
-                }
-            };
+                });
+            }
+            return;
+        }
 
-            const renderChats = (filter = '') => {
-                elements.chatsList.innerHTML = '';
-                const filteredChats = chatsData.filter(chat => 
-                    chat.name.toLowerCase().includes(filter.toLowerCase())
+        // close any open menus on general click
+        document.querySelectorAll('.options-menu.show').forEach(m=>m.classList.remove('show'));
+
+        // nav to conversation
+        const row = e.target.closest('.chat-row');
+        if(row){
+            const convId = row.dataset.convId;
+            const conv   = allConvos.find(c=>c.id===convId);
+            if(!conv) return;
+            window.location.href=`patient-conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
+        }
+    });
+
+    // close menus on outside click
+    document.addEventListener('click',()=>{
+        document.querySelectorAll('.options-menu.show').forEach(m=>m.classList.remove('show'));
+    });
+
+    // ── Search ────────────────────────────────────────────────────────────
+    document.getElementById('searchInput').addEventListener('input',e=>{
+        searchTerm=e.target.value.trim(); render();
+    });
+
+    // ── Load doctor profile (name/avatar) from cache or Firestore ─────────
+    const enrichWithDoctorData = async(convos)=>{
+        for(const c of convos){
+            if(c.doctorName && c.doctorAvatar) continue; // already enriched
+
+            // try local cache first
+            const cached = await idb.get('doc_profiles', c.doctorId);
+            if(cached){
+                c.doctorName   = cached.name   || c.doctorName;
+                c.doctorSpec   = cached.specialty || '';
+                c.doctorAvatar = cached.avatarB64 || '';
+                continue;
+            }
+
+            // fetch from Firestore doctors collection
+            try {
+                const snap = await getDocs(
+                    query(collection(db,'doctors'), where('uid','==',c.doctorId))
                 );
-
-                if (filteredChats.length === 0) {
-                    elements.emptyState.style.display = 'block';
-                    return;
-                }
-                elements.emptyState.style.display = 'none';
-
-                filteredChats.forEach((chat, index) => {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'chat-item-wrapper';
-
-                    const chatElement = document.createElement('div');
-                    chatElement.className = 'chat-item';
-                    if (chat.unread) chatElement.classList.add('unread');
-                    chatElement.style.animationDelay = `${index * 0.08}s`;
-                    
-                    chatElement.innerHTML = `
-                        <a href="conversation.html?id=${chat.id}" style="display: contents; text-decoration: none; color: inherit;">
-                            <img src="${chat.avatar}" alt="${chat.name}" class="avatar">
-                            <div class="chat-content">
-                                <div class="chat-details-header">
-                                    <span class="chat-name">${chat.name}</span>
-                                    <span class="chat-time">${chat.time}</span>
-                                </div>
-                                <div class="last-message-container">
-                                    <p class="last-message">${chat.lastMessage}</p>
-                                    <div class="unread-indicator"></div>
-                                </div>
-                            </div>
-                        </a>
-                        <button class="chat-options-btn" data-chat-id="${chat.id}">
-                            <i data-feather="more-vertical"></i>
-                        </button>
-                    `;
-
-                    const menu = document.createElement('ul');
-                    menu.className = 'chat-options-menu';
-                    menu.innerHTML = `
-                        <li class="options-item" data-action="mute">
-                            <i class="icon" data-feather="bell-off"></i><span>كتم الإشعارات</span>
-                        </li>
-                        <li class="options-item danger" data-action="block">
-                            <i class="icon" data-feather="slash"></i><span>حظر المستخدم</span>
-                        </li>
-                        <li class="options-item danger" data-action="delete">
-                            <i class="icon" data-feather="trash-2"></i><span>مسح من الطرفين</span>
-                        </li>
-                    `;
-
-                    wrapper.appendChild(chatElement);
-                    wrapper.appendChild(menu);
-                    elements.chatsList.appendChild(wrapper);
-
-                    // إضافة الأحداث للقائمة
-                    menu.querySelectorAll('.options-item').forEach(item => {
-                        item.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            handleMenuAction(item.dataset.action, chat.id, chat.name);
-                            menu.classList.remove('show');
-                        });
+                if(!snap.empty){
+                    const data = snap.docs[0].data();
+                    c.doctorName   = data.name||'';
+                    c.doctorSpec   = data.specialty||'';
+                    c.doctorAvatar = data.avatarB64||'';
+                    await idb.put('doc_profiles',{
+                        id: c.doctorId,
+                        name:      data.name||'',
+                        specialty: data.specialty||'',
+                        avatarB64: data.avatarB64||''
                     });
-                });
-                feather.replace(); // إعادة تفعيل الأيقونات بعد إضافتها
-            };
+                }
+            } catch(err){ console.warn('Doctor fetch:',err); }
+        }
+    };
 
-            const init = () => {
-                renderChats();
+    // ── Bootstrap ─────────────────────────────────────────────────────────
+    const bootstrap = async user=>{
+        patientUid = user.uid;
+        await idb.init();
 
-                elements.searchInput.addEventListener('input', (e) => {
-                    renderChats(e.target.value);
-                });
+        // ① show cached convos immediately
+        const cached = await idb.getAll('convos');
+        if(cached.length){
+            allConvos = cached;
+            cached.forEach(c=>{ if(c.muted) mutedSet.add(c.id); });
+            render();
+            setSyncing(false,'من الكاش');
+        }
 
-                // --- منطق فتح وإغلاق قائمة الخيارات ---
-                document.addEventListener('click', (e) => {
-                    const openMenu = document.querySelector('.chat-options-menu.show');
-                    const optionsBtn = e.target.closest('.chat-options-btn');
+        // ② live listener — conversations where patientId === current user
+        setSyncing(true,'جاري المزامنة...');
+        const q = query(collection(db,'conversations'), where('patientId','==',patientUid));
 
-                    // إغلاق القائمة المفتوحة حالياً
-                    if (openMenu) {
-                        openMenu.classList.remove('show');
-                    }
+        onSnapshot(q, async snap=>{
+            setSyncing(true,'تحديث...');
 
-                    // إذا تم الضغط على زر قائمة جديد (وليس نفس الزر الذي أغلقنا قائمته)
-                    if (optionsBtn && openMenu?.previousElementSibling?.querySelector('.chat-options-btn') !== optionsBtn) {
-                        const menu = optionsBtn.closest('.chat-item').nextElementSibling;
-                        if (menu) {
-                            menu.classList.add('show');
-                        }
-                    }
-                });
-            };
+            const fresh=[];
+            for(const d of snap.docs){
+                const data = d.data();
+                // preserve local mute state
+                const muted = mutedSet.has(d.id);
+                const entry={
+                    id:           d.id,
+                    doctorId:     data.doctorId   || '',
+                    doctorName:   data.doctorName || '',
+                    doctorSpec:   data.doctorSpec  || '',
+                    doctorAvatar: data.doctorAvatar||'',
+                    lastMessage:  data.lastMessage ||'',
+                    lastTs:       data.lastMessageTime || null,
+                    unread:       data.unreadPatient   || false,
+                    muted
+                };
+                fresh.push(entry);
+                await idb.put('convos',entry);
+            }
 
-            init();
+            // remove deleted conversations from cache
+            const freshIds = new Set(fresh.map(c=>c.id));
+            const old = await idb.getAll('convos');
+            for(const o of old){
+                if(!freshIds.has(o.id)) await idb.remove('convos',o.id);
+            }
 
-        })();
-    </script>
+            allConvos = fresh;
+
+            // enrich with doctor name/avatar if missing
+            await enrichWithDoctorData(allConvos);
+            render();
+            setSyncing(false);
+        }, err=>{
+            console.error('Convos listener:',err);
+            setSyncing(false,'⚠️ لا يوجد اتصال');
+        });
+    };
+
+    // ── Auth gate ─────────────────────────────────────────────────────────
+    onAuthStateChanged(auth, user=>{
+        if(user) bootstrap(user);
+        else window.location.href='patient-login.html';
+    });
+</script>
 </body>
 </html>
