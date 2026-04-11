@@ -3,175 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>سُكُون — أجندتي المحلية</title>
+    <title>سُكُون — أجندتي</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
         :root {
-            --primary: #98D8D8;
-            --accent: #5aabab;
-            --accent-dark: #3d8a8a;
-            --bg: #eef6f6;
-            --white: #fff;
-            --ink: #2c3e50;
-            --text-sec: #7f8c8d;
-            --danger: #ff6b6b;
-            --success: #4caf93;
-            --warn: #f0a500;
-            --appt: #f3a683;
-            --task: #8e94f2;
-            --grad: linear-gradient(135deg, #98D8D8, #5aabab);
-            --shadow: 0 8px 24px rgba(90, 171, 171, 0.08);
-            --radius: 26px;
+            --primary:#98D8D8; --accent:#5aabab; --accent-dark:#3d8a8a;
+            --bg:#eef6f6; --white:#fff; --ink:#2c3e50; --text-sec:#7f8c8d;
+            --danger:#ff6b6b; --success:#4caf93; --warn:#f0a500;
+            --appt:#f3a683; --task:#8e94f2;
+            --grad:linear-gradient(135deg,#98D8D8,#5aabab);
+            --shadow:0 8px 24px rgba(90,171,171,0.08); --radius:26px;
         }
-        body {
-            background: var(--bg);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: var(--ink);
-            min-height: 100vh;
-            padding-bottom: 100px;
-        }
-        .bg-c { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
-        .bo { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; animation: orbF 25s infinite alternate; }
-        .bo1 { width: 55vw; height: 55vw; background: radial-gradient(circle, rgba(152, 216, 216, 0.2) 0%, transparent 70%); top: -15%; right: -10%; }
-        .bo2 { width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(90, 171, 171, 0.12) 0%, transparent 70%); bottom: -10%; left: -10%; }
-        @keyframes orbF { from { transform: translate(0,0) scale(1); } to { transform: translate(2%, 3%) scale(1.05); } }
-
-        /* header */
-        .ph { text-align: center; padding: 36px 20px 16px; }
-        .logo-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border-radius: 20px; padding: 8px 20px; box-shadow: var(--shadow); margin-bottom: 12px; }
-        .lb-i { width: 32px; height: 32px; border-radius: 10px; background: var(--grad); display: flex; align-items: center; justify-content: center; color: #fff; }
-        .lb-t { font-size: 18px; font-weight: 900; color: var(--accent-dark); }
-        .ph h1 { font-size: 2rem; font-weight: 200; color: var(--accent); letter-spacing: 3px; }
-        .ph p { font-size: 12px; color: var(--text-sec); }
-
-        .wrap { max-width: 860px; margin: 0 auto; padding: 0 18px; }
-
-        /* calendar card */
-        .cal-card {
-            background: rgba(255,255,255,0.88);
-            backdrop-filter: blur(20px);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 20px 16px;
-            margin-bottom: 20px;
-            transition: box-shadow 0.2s;
-        }
-        .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .cal-header h2 { font-size: 1.2rem; font-weight: 700; color: var(--accent-dark); }
-        .cal-nav { width: 36px; height: 36px; border: none; background: rgba(152,216,216,0.2); border-radius: 12px; cursor: pointer; font-size: 1rem; color: var(--accent); transition: 0.2s; }
-        .cal-nav:hover { background: rgba(152,216,216,0.4); transform: scale(1.03); }
-        .month-summary { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-        .ms-pill { background: #f4fbfb; border-radius: 30px; padding: 4px 12px; font-size: 11px; color: var(--text-sec); display: flex; align-items: center; gap: 5px; }
-        .ms-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
-        .dn { font-size: 11px; font-weight: 700; color: var(--accent); opacity: 0.7; padding-bottom: 5px; }
-        .day {
-            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: white; border-radius: 16px; cursor: pointer; position: relative;
-            border: 2px solid transparent; font-size: 0.85rem; transition: 0.2s ease;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
-        }
-        .day:hover { transform: translateY(-3px); background: #fefefe; box-shadow: 0 8px 20px rgba(90,171,171,0.15); }
-        .day.today { background: var(--grad); color: white; font-weight: bold; }
-        .day.selected { border-color: var(--accent); transform: scale(1.02); background: #fff; }
-        .day.other-month { opacity: 0.2; pointer-events: none; background: transparent; }
-        .mood-dot { position: absolute; top: 4px; right: 4px; font-size: 12px; }
-        .event-dots { position: absolute; bottom: 4px; display: flex; gap: 3px; }
-        .ev-dot { width: 5px; height: 5px; border-radius: 50%; }
-        .ev-dot.appt { background: var(--appt); }
-        .ev-dot.task { background: var(--task); }
-        .ev-dot.completed { background: var(--success); }
-
-        /* agenda area */
-        .agenda-area {
-            background: rgba(255,255,255,0.88);
-            backdrop-filter: blur(20px);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            display: none;
-            animation: fadeUp 0.3s ease;
-        }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .agenda-title { font-size: 1.1rem; font-weight: 800; color: var(--accent-dark); display: flex; justify-content: space-between; margin-bottom: 16px; }
-        .mood-section { background: #f8fdfd; border-radius: 20px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(152,216,216,0.3); }
-        .sec-label { font-size: 13px; font-weight: 700; color: var(--text-sec); margin-bottom: 10px; }
-        .mood-emojis { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
-        .moji { font-size: 28px; cursor: pointer; filter: grayscale(0.7); opacity: 0.6; transition: all 0.2s; }
-        .moji.sel, .moji:hover { filter: grayscale(0); opacity: 1; transform: scale(1.2); }
-        .mood-note-inp { width: 100%; padding: 10px 14px; border-radius: 18px; border: 1.5px solid #e0ecec; font-family: inherit; resize: vertical; background: white; margin-top: 4px; outline: none; }
-        .save-mood-btn { margin-top: 10px; background: var(--grad); border: none; padding: 10px 20px; border-radius: 28px; color: white; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
-        .save-mood-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .add-btns-row { display: flex; gap: 12px; margin-bottom: 18px; }
-        .add-inline-btn { flex: 1; padding: 10px; border-radius: 30px; border: 1.5px solid rgba(152,216,216,0.5); background: transparent; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .add-inline-btn.task { color: var(--task); border-color: rgba(142,148,242,0.4); }
-        .add-inline-btn.appt { color: var(--appt); border-color: rgba(243,166,131,0.4); }
-        .events-list { display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; }
-        .ev-item { background: white; border-radius: 18px; padding: 12px; display: flex; align-items: center; gap: 12px; border-right: 5px solid; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-        .ev-item.appt-item { border-color: var(--appt); }
-        .ev-item.task-item { border-color: var(--task); }
-        .ev-item.done { opacity: 0.55; }
-        .ev-icon { width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .ev-icon.appt { background: rgba(243,166,131,0.15); color: var(--appt); }
-        .ev-icon.task { background: rgba(142,148,242,0.15); color: var(--task); }
-        .ev-body { flex: 1; }
-        .ev-title { font-weight: 800; font-size: 14px; margin-bottom: 3px; }
-        .ev-desc { font-size: 11px; color: var(--text-sec); }
-        .ev-time { font-size: 12px; font-weight: bold; color: var(--accent); }
-        .ev-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .ev-check.done { background: var(--success); border-color: var(--success); color: white; }
-        .ev-del { background: none; border: none; font-size: 16px; color: #bbb; cursor: pointer; width: 32px; border-radius: 12px; transition: 0.2s; }
-        .ev-del:hover { color: var(--danger); background: rgba(255,107,107,0.1); }
-        .ev-empty { text-align: center; padding: 30px; color: var(--text-sec); }
-
-        /* modal */
-        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s; }
-        .modal-bg.open { opacity: 1; pointer-events: auto; }
-        .modal-sheet { background: white; width: 100%; max-width: 520px; border-radius: 30px 30px 0 0; padding: 22px 20px 35px; transform: translateY(100%); transition: 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1); max-height: 92vh; overflow-y: auto; }
-        .modal-bg.open .modal-sheet { transform: translateY(0); }
-        .sh-handle { width: 45px; height: 5px; background: #ddd; border-radius: 4px; margin: 0 auto 18px; }
-        .form-label { font-size: 12px; font-weight: 700; margin: 8px 0 4px; display: block; color: var(--text-sec); }
-        .form-input, .form-textarea { width: 100%; padding: 12px; border-radius: 18px; border: 1.5px solid #e0ecec; font-family: inherit; background: #fafdfd; margin-bottom: 10px; outline: none; }
-        .type-toggle { display: flex; gap: 12px; margin-bottom: 18px; }
-        .tt-btn { flex: 1; padding: 10px; border-radius: 30px; border: 1.5px solid #ddd; background: none; font-weight: bold; cursor: pointer; }
-        .tt-btn.task-t.sel { background: rgba(142,148,242,0.2); border-color: var(--task); color: var(--task); }
-        .tt-btn.appt-t.sel { background: rgba(243,166,131,0.2); border-color: var(--appt); color: var(--appt); }
-        .prio-row, .recur-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-        .prio-btn, .rec-pill { padding: 6px 16px; border-radius: 40px; border: 1.5px solid rgba(0,0,0,0.1); background: white; cursor: pointer; font-size: 12px; }
-        .prio-btn.sel, .rec-pill.sel { background: var(--grad); color: white; border: none; }
-        .sh-cta { background: var(--grad); width: 100%; padding: 14px; border: none; border-radius: 30px; color: white; font-weight: bold; font-size: 16px; margin-top: 12px; cursor: pointer; }
-        .toast-container { position: fixed; bottom: 90px; left: 0; right: 0; display: flex; justify-content: center; z-index: 2000; pointer-events: none; }
-        .toast { background: rgba(44,62,80,0.95); color: white; padding: 10px 20px; border-radius: 40px; font-size: 13px; backdrop-filter: blur(8px); animation: toastFade 2.5s forwards; margin-top: 8px; }
-        .toast.ok { background: var(--success); }
-        @keyframes toastFade { 0% { opacity: 0; transform: translateY(10px); } 10% { opacity: 1; transform: translateY(0); } 90% { opacity: 1; } 100% { opacity: 0; display: none; } }
-        .bnav { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 30px); max-width: 460px; background: rgba(255,255,255,0.94); backdrop-filter: blur(16px); border-radius: 34px; display: flex; justify-content: space-around; padding: 8px 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); z-index: 300; }
-        .navi { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-sec); text-decoration: none; font-size: 11px; font-weight: 600; }
-        .navi.active { color: var(--accent); }
-        .fab-wrap { position: fixed; bottom: 80px; left: 20px; z-index: 400; }
-        .fab { width: 56px; height: 56px; border-radius: 50%; background: var(--grad); border: none; color: white; font-size: 22px; box-shadow: 0 6px 18px rgba(90,171,171,0.4); cursor: pointer; transition: 0.2s; }
-        .fab-opts { position: absolute; bottom: 68px; left: 5px; display: flex; flex-direction: column; gap: 10px; opacity: 0; pointer-events: none; transition: 0.2s; transform: translateY(8px); }
-        .fab-wrap.open .fab-opts { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .fab-opt { width: 46px; height: 46px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 18px; cursor: pointer; }
-        .loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; transition: 0.3s; flex-direction: column; gap: 12px; }
-        .loading-overlay.hide { opacity: 0; pointer-events: none; }
-        .sync-badge { position: fixed; top: 12px; left: 12px; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); border-radius: 30px; padding: 5px 12px; font-size: 10px; color: var(--accent-dark); font-weight: bold; z-index: 200; display: flex; align-items: center; gap: 5px; }
+        body { background:var(--bg); font-family:'Segoe UI',system-ui,sans-serif; color:var(--ink); min-height:100vh; padding-bottom:100px; }
+        .bg-c { position:fixed; inset:0; z-index:-1; overflow:hidden; }
+        .bo { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; animation:orbF 25s infinite alternate; }
+        .bo1 { width:55vw; height:55vw; background:radial-gradient(circle,rgba(152,216,216,0.2) 0%,transparent 70%); top:-15%; right:-10%; }
+        .bo2 { width:40vw; height:40vw; background:radial-gradient(circle,rgba(90,171,171,0.12) 0%,transparent 70%); bottom:-10%; left:-10%; }
+        @keyframes orbF { from{transform:translate(0,0) scale(1)} to{transform:translate(2%,3%) scale(1.05)} }
+        .ph { text-align:center; padding:36px 20px 16px; }
+        .logo-badge { display:inline-flex; align-items:center; gap:10px; background:rgba(255,255,255,0.8); backdrop-filter:blur(12px); border-radius:20px; padding:8px 20px; box-shadow:var(--shadow); margin-bottom:12px; }
+        .lb-i { width:32px; height:32px; border-radius:10px; background:var(--grad); display:flex; align-items:center; justify-content:center; color:#fff; }
+        .lb-t { font-size:18px; font-weight:900; color:var(--accent-dark); }
+        .ph h1 { font-size:2rem; font-weight:200; color:var(--accent); letter-spacing:3px; }
+        .ph p { font-size:12px; color:var(--text-sec); }
+        .wrap { max-width:860px; margin:0 auto; padding:0 18px; }
+        .cal-card { background:rgba(255,255,255,0.88); backdrop-filter:blur(20px); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px 16px; margin-bottom:20px; }
+        .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+        .cal-header h2 { font-size:1.2rem; font-weight:700; color:var(--accent-dark); }
+        .cal-nav { width:36px; height:36px; border:none; background:rgba(152,216,216,0.2); border-radius:12px; cursor:pointer; font-size:1rem; color:var(--accent); transition:.2s; }
+        .cal-nav:hover { background:rgba(152,216,216,0.4); transform:scale(1.03); }
+        .month-summary { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+        .ms-pill { background:#f4fbfb; border-radius:30px; padding:4px 12px; font-size:11px; color:var(--text-sec); display:flex; align-items:center; gap:5px; }
+        .ms-dot { width:8px; height:8px; border-radius:50%; }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; text-align:center; }
+        .dn { font-size:11px; font-weight:700; color:var(--accent); opacity:.7; padding-bottom:5px; }
+        .day { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; background:white; border-radius:16px; cursor:pointer; position:relative; border:2px solid transparent; font-size:.85rem; transition:.2s ease; box-shadow:0 1px 4px rgba(0,0,0,.02); }
+        .day:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(90,171,171,.15); }
+        .day.today { background:var(--grad); color:white; font-weight:bold; }
+        .day.selected { border-color:var(--accent); transform:scale(1.02); }
+        .day.other-month { opacity:.2; pointer-events:none; background:transparent; }
+        .mood-dot { position:absolute; top:4px; right:4px; font-size:12px; }
+        .event-dots { position:absolute; bottom:4px; display:flex; gap:3px; }
+        .ev-dot { width:5px; height:5px; border-radius:50%; }
+        .ev-dot.appt { background:var(--appt); }
+        .ev-dot.task { background:var(--task); }
+        .ev-dot.completed { background:var(--success); }
+        .agenda-area { background:rgba(255,255,255,0.88); backdrop-filter:blur(20px); border-radius:var(--radius); padding:20px; margin-bottom:20px; display:none; animation:fadeUp .3s ease; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        .agenda-title { font-size:1.1rem; font-weight:800; color:var(--accent-dark); display:flex; justify-content:space-between; margin-bottom:16px; }
+        .mood-section { background:#f8fdfd; border-radius:20px; padding:16px; margin-bottom:20px; border:1px solid rgba(152,216,216,.3); }
+        .sec-label { font-size:13px; font-weight:700; color:var(--text-sec); margin-bottom:10px; }
+        .mood-emojis { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:12px; }
+        .moji { font-size:28px; cursor:pointer; filter:grayscale(.7); opacity:.6; transition:all .2s; }
+        .moji.sel, .moji:hover { filter:grayscale(0); opacity:1; transform:scale(1.2); }
+        .mood-note-inp { width:100%; padding:10px 14px; border-radius:18px; border:1.5px solid #e0ecec; font-family:inherit; resize:vertical; background:white; margin-top:4px; outline:none; }
+        .save-mood-btn { margin-top:10px; background:var(--grad); border:none; padding:10px 20px; border-radius:28px; color:white; font-weight:bold; cursor:pointer; width:100%; transition:.2s; }
+        .save-mood-btn:hover { opacity:.9; transform:translateY(-1px); }
+        .add-btns-row { display:flex; gap:12px; margin-bottom:18px; }
+        .add-inline-btn { flex:1; padding:10px; border-radius:30px; border:1.5px solid rgba(152,216,216,.5); background:transparent; font-weight:600; cursor:pointer; transition:.2s; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; }
+        .add-inline-btn.task { color:var(--task); border-color:rgba(142,148,242,.4); }
+        .add-inline-btn.appt { color:var(--appt); border-color:rgba(243,166,131,.4); }
+        .events-list { display:flex; flex-direction:column; gap:10px; max-height:380px; overflow-y:auto; }
+        .ev-item { background:white; border-radius:18px; padding:12px; display:flex; align-items:center; gap:12px; border-right:5px solid; box-shadow:0 2px 8px rgba(0,0,0,.02); }
+        .ev-item.appt-item { border-color:var(--appt); }
+        .ev-item.task-item { border-color:var(--task); }
+        .ev-item.done { opacity:.55; }
+        .ev-icon { width:40px; height:40px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+        .ev-icon.appt { background:rgba(243,166,131,.15); color:var(--appt); }
+        .ev-icon.task { background:rgba(142,148,242,.15); color:var(--task); }
+        .ev-body { flex:1; }
+        .ev-title { font-weight:800; font-size:14px; margin-bottom:3px; }
+        .ev-desc { font-size:11px; color:var(--text-sec); }
+        .ev-time { font-size:12px; font-weight:bold; color:var(--accent); }
+        .ev-check { width:28px; height:28px; border-radius:50%; border:2px solid #ccc; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+        .ev-check.done { background:var(--success); border-color:var(--success); color:white; }
+        .ev-del { background:none; border:none; font-size:16px; color:#bbb; cursor:pointer; width:32px; border-radius:12px; transition:.2s; }
+        .ev-del:hover { color:var(--danger); background:rgba(255,107,107,.1); }
+        .ev-empty { text-align:center; padding:30px; color:var(--text-sec); }
+        .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.3); backdrop-filter:blur(5px); z-index:1000; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:.2s; }
+        .modal-bg.open { opacity:1; pointer-events:auto; }
+        .modal-sheet { background:white; width:100%; max-width:520px; border-radius:30px 30px 0 0; padding:22px 20px 35px; transform:translateY(100%); transition:.35s cubic-bezier(.2,.9,.4,1.1); max-height:92vh; overflow-y:auto; }
+        .modal-bg.open .modal-sheet { transform:translateY(0); }
+        .sh-handle { width:45px; height:5px; background:#ddd; border-radius:4px; margin:0 auto 18px; }
+        .form-label { font-size:12px; font-weight:700; margin:8px 0 4px; display:block; color:var(--text-sec); }
+        .form-input, .form-textarea { width:100%; padding:12px; border-radius:18px; border:1.5px solid #e0ecec; font-family:inherit; background:#fafdfd; margin-bottom:10px; outline:none; }
+        .type-toggle { display:flex; gap:12px; margin-bottom:18px; }
+        .tt-btn { flex:1; padding:10px; border-radius:30px; border:1.5px solid #ddd; background:none; font-weight:bold; cursor:pointer; }
+        .tt-btn.task-t.sel { background:rgba(142,148,242,.2); border-color:var(--task); color:var(--task); }
+        .tt-btn.appt-t.sel { background:rgba(243,166,131,.2); border-color:var(--appt); color:var(--appt); }
+        .prio-row, .recur-row { display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+        .prio-btn, .rec-pill { padding:6px 16px; border-radius:40px; border:1.5px solid rgba(0,0,0,.1); background:white; cursor:pointer; font-size:12px; }
+        .prio-btn.sel, .rec-pill.sel { background:var(--grad); color:white; border:none; }
+        .sh-cta { background:var(--grad); width:100%; padding:14px; border:none; border-radius:30px; color:white; font-weight:bold; font-size:16px; margin-top:12px; cursor:pointer; }
+        .toast-container { position:fixed; bottom:90px; left:0; right:0; display:flex; justify-content:center; z-index:2000; pointer-events:none; flex-direction:column; align-items:center; gap:6px; }
+        .toast { background:rgba(44,62,80,.95); color:white; padding:10px 20px; border-radius:40px; font-size:13px; backdrop-filter:blur(8px); animation:toastFade 2.5s forwards; }
+        .toast.ok { background:var(--success); }
+        .toast.err { background:var(--danger); }
+        @keyframes toastFade { 0%{opacity:0;transform:translateY(10px)} 10%{opacity:1;transform:translateY(0)} 90%{opacity:1} 100%{opacity:0} }
+        .bnav { position:fixed; bottom:12px; left:50%; transform:translateX(-50%); width:calc(100% - 30px); max-width:460px; background:rgba(255,255,255,.94); backdrop-filter:blur(16px); border-radius:34px; display:flex; justify-content:space-around; padding:8px 12px; box-shadow:0 6px 20px rgba(0,0,0,.08); z-index:300; }
+        .navi { display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--text-sec); text-decoration:none; font-size:11px; font-weight:600; }
+        .navi.active { color:var(--accent); }
+        .fab-wrap { position:fixed; bottom:80px; left:20px; z-index:400; }
+        .fab { width:56px; height:56px; border-radius:50%; background:var(--grad); border:none; color:white; font-size:22px; box-shadow:0 6px 18px rgba(90,171,171,.4); cursor:pointer; transition:.2s; }
+        .fab-opts { position:absolute; bottom:68px; left:5px; display:flex; flex-direction:column; gap:10px; opacity:0; pointer-events:none; transition:.2s; transform:translateY(8px); }
+        .fab-wrap.open .fab-opts { opacity:1; pointer-events:auto; transform:translateY(0); }
+        .fab-opt { width:46px; height:46px; border-radius:50%; background:white; border:none; box-shadow:0 4px 12px rgba(0,0,0,.15); font-size:18px; cursor:pointer; }
+        .sync-badge { position:fixed; top:12px; left:12px; background:rgba(255,255,255,.7); backdrop-filter:blur(8px); border-radius:30px; padding:5px 12px; font-size:10px; color:var(--accent-dark); font-weight:bold; z-index:200; display:flex; align-items:center; gap:5px; }
+        .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--success); }
+        .sync-dot.busy { background:var(--warn); animation:blink 1s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
     </style>
 </head>
 <body>
-<div class="loading-overlay" id="loadingOverlay"><i class="fas fa-spinner fa-spin fa-2x"></i><p>جاري تحضير أجندتك المحلية...</p></div>
-<div class="sync-badge" id="syncBadge"><i class="fas fa-database"></i> <span>محلي</span></div>
+
+<div class="sync-badge" id="syncBadge">
+    <div class="sync-dot" id="syncDot"></div>
+    <span id="syncText">محلي</span>
+</div>
+
 <div class="bg-c"><div class="bo bo1"></div><div class="bo bo2"></div></div>
 <div class="toast-container" id="toastContainer"></div>
 
 <div class="ph">
-    <div class="logo-badge"><div class="lb-i"><i class="fas fa-moon"></i></div><span class="lb-t">سُكُون</span></div>
+    <div class="logo-badge">
+        <div class="lb-i"><i class="fas fa-moon"></i></div>
+        <span class="lb-t">سُكُون</span>
+    </div>
     <h1>أجندتي</h1>
     <p>مواعيدك ومهامك وحالتك المزاجية</p>
 </div>
@@ -186,8 +144,12 @@
         <div class="month-summary" id="monthSummary"></div>
         <div class="cal-grid" id="calGrid"></div>
     </div>
+
     <div class="agenda-area" id="agendaArea">
-        <div class="agenda-title"><span id="agendaTitle">اليوم</span><span id="streakBadge"></span></div>
+        <div class="agenda-title">
+            <span id="agendaTitle">اليوم</span>
+            <span id="streakBadge"></span>
+        </div>
         <div class="mood-section">
             <div class="sec-label"><i class="fas fa-face-smile"></i> كيف تشعر اليوم؟</div>
             <div class="mood-emojis" id="moodEmojis"></div>
@@ -204,35 +166,38 @@
 
 <div class="fab-wrap" id="fabWrap">
     <div class="fab-opts">
-        <button class="fab-opt" id="fabTask"><i class="fas fa-tasks"></i></button>
-        <button class="fab-opt" id="fabAppt"><i class="fas fa-calendar-plus"></i></button>
+        <button class="fab-opt" id="fabTask" title="مهمة"><i class="fas fa-tasks"></i></button>
+        <button class="fab-opt" id="fabAppt" title="موعد"><i class="fas fa-calendar-plus"></i></button>
     </div>
     <button class="fab" id="mainFab"><i class="fas fa-plus"></i></button>
 </div>
 
 <nav class="bnav">
-    <a href="#" class="navi"><i class="fas fa-home"></i><span>الرئيسية</span></a>
-    <a href="#" class="navi"><i class="fas fa-comments"></i><span>محادثات</span></a>
-    <a href="#" class="navi active"><i class="fas fa-calendar-check"></i><span>الأجندة</span></a>
-    <a href="#" class="navi"><i class="fas fa-brain"></i><span>أدوات</span></a>
+    <a href="patient-home.html"   class="navi"><i class="fas fa-home"></i><span>الرئيسية</span></a>
+    <a href="patient-chats.html"  class="navi"><i class="fas fa-comments"></i><span>محادثات</span></a>
+    <a href="patient-agenda.html" class="navi active"><i class="fas fa-calendar-check"></i><span>الأجندة</span></a>
+    <a href="patient-tools.html"  class="navi"><i class="fas fa-brain"></i><span>أدوات</span></a>
 </nav>
 
-<!-- Modal for add/edit -->
+<!-- Add/Edit Modal -->
 <div class="modal-bg" id="eventModal">
     <div class="modal-sheet">
         <div class="sh-handle"></div>
-        <h3 id="modalTitle" style="margin-bottom: 16px;">إضافة حدث</h3>
+        <h3 id="modalTitle" style="margin-bottom:16px">إضافة حدث</h3>
         <div class="type-toggle">
             <button class="tt-btn task-t" id="modalTaskType">📋 مهمة</button>
             <button class="tt-btn appt-t" id="modalApptType">🩺 موعد</button>
         </div>
         <label class="form-label">العنوان *</label>
-        <input type="text" id="eventTitle" class="form-input" placeholder="مثال: مراجعة طبيب الأسنان">
+        <input type="text"  id="eventTitle" class="form-input" placeholder="مثال: مراجعة طبيب الأسنان">
         <label class="form-label">الوصف (اختياري)</label>
         <textarea id="eventDesc" class="form-textarea" rows="2"></textarea>
         <label class="form-label">التاريخ *</label>
         <input type="date" id="eventDate" class="form-input">
-        <div id="timeRow"><label class="form-label">الوقت</label><input type="time" id="eventTime" class="form-input"></div>
+        <div id="timeRow">
+            <label class="form-label">الوقت</label>
+            <input type="time" id="eventTime" class="form-input">
+        </div>
         <label class="form-label">الأولوية</label>
         <div class="prio-row" id="prioRow"></div>
         <label class="form-label">التكرار</label>
@@ -241,284 +206,451 @@
     </div>
 </div>
 
+<!-- ══════════════════════ SCRIPT ══════════════════════ -->
 <script type="module">
-    // Import Firebase modular SDK (v12)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
-    
-    const firebaseConfig = {
-        apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
-        authDomain: "sakina-937c4.firebaseapp.com",
-        databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
-        projectId: "sakina-937c4",
-        storageBucket: "sakina-937c4.firebasestorage.app",
+    import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore,
+             collection, doc,
+             setDoc, getDoc, getDocs,
+             updateDoc, deleteDoc,
+             serverTimestamp,
+             query, where,
+             onSnapshot }             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth,
+             onAuthStateChanged }     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // ── Firebase ────────────────────────────────────────────────────────
+    const app = initializeApp({
+        apiKey:            "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
+        authDomain:        "sakina-937c4.firebaseapp.com",
+        projectId:         "sakina-937c4",
+        storageBucket:     "sakina-937c4.firebasestorage.app",
         messagingSenderId: "25215790734",
-        appId: "1:25215790734:web:46c5d893d5818530b3a3df",
-        measurementId: "G-K40TE1DCVV"
+        appId:             "1:25215790734:web:46c5d893d5818530b3a3df"
+    });
+    const db   = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ── Sync badge ──────────────────────────────────────────────────────
+    const setSyncing=(busy,msg)=>{
+        document.getElementById('syncDot').className='sync-dot'+(busy?' busy':'');
+        document.getElementById('syncText').textContent=msg??(busy?'مزامنة...':'محلي ✓');
     };
-    
-    const app = initializeApp(firebaseConfig);
-    let db = null;
-    let cloudEnabled = false;
-    try { db = getFirestore(app); cloudEnabled = true; } catch(e) { console.warn("offline mode"); }
-    
-    // Patient ID
-    const PID = localStorage.getItem('sokoon_pid') || ('pat_' + Math.random().toString(36).substr(2, 8));
-    localStorage.setItem('sokoon_pid', PID);
-    
-    let DB = { events: [], moods: {} };
-    const STORAGE_KEY = 'sokoon_cal_local_v2';
-    function loadLocal() { try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)); if(d) DB = d; } catch(e){} }
-    function saveLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }
+
+    // ── Local state ─────────────────────────────────────────────────────
+    const STORAGE_KEY='sokoon_agenda_v3';
+    let DB  = { events:[], moods:{} };
+    let PID = null;   // patient Firebase UID
+
+    const loadLocal=()=>{ try{ const d=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(d) DB=d; }catch(e){} };
+    const saveLocal=()=>{ localStorage.setItem(STORAGE_KEY,JSON.stringify(DB)); };
     loadLocal();
-    
-    // sync badge
-    const syncSpan = document.querySelector('#syncBadge span');
-    function updateSyncBadge() { if(cloudEnabled) syncSpan.innerText = 'سحابي + محلي'; else syncSpan.innerText = 'محلي فقط'; }
-    updateSyncBadge();
-    
-    let currentDate = new Date();
+
+    // ── Calendar state ──────────────────────────────────────────────────
+    let currentDate  = new Date();
     let selectedDate = new Date().toISOString().split('T')[0];
-    let currentType = 'task';
-    let currentPrio = 'med';
+    let currentType  = 'task';
+    let currentPrio  = 'med';
     let currentRecur = 'none';
-    
-    // helper
-    function isOnDate(ev, dateStr) {
-        if(ev.date === dateStr) return true;
-        if(!ev.recur || ev.recur === 'none') return false;
-        const evDate = new Date(ev.date + 'T00:00:00');
-        const checkDate = new Date(dateStr + 'T00:00:00');
-        if(checkDate < evDate) return false;
-        if(ev.recur === 'daily') return true;
-        if(ev.recur === 'weekly') return evDate.getDay() === checkDate.getDay();
-        if(ev.recur === 'monthly') return evDate.getDate() === checkDate.getDate();
+
+    // ── Helpers ─────────────────────────────────────────────────────────
+    const escHtml=s=>(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+
+    const isOnDate=(ev,ds)=>{
+        if(ev.date===ds) return true;
+        if(!ev.recur||ev.recur==='none') return false;
+        const ed=new Date(ev.date+'T00:00:00'), cd=new Date(ds+'T00:00:00');
+        if(cd<ed) return false;
+        if(ev.recur==='daily')   return true;
+        if(ev.recur==='weekly')  return ed.getDay()===cd.getDay();
+        if(ev.recur==='monthly') return ed.getDate()===cd.getDate();
         return false;
-    }
-    
-    function formatDateTitle(ds) { 
-        const d = new Date(ds+'T00:00:00');
-        const today = new Date().toISOString().split('T')[0];
-        if(ds === today) return 'اليوم';
-        return d.toLocaleDateString('ar-EG', { weekday:'long', day:'numeric', month:'long' });
-    }
-    
-    // render calendar
-    function renderCalendar() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month+1, 0).getDate();
-        const todayStr = new Date().toISOString().split('T')[0];
-        const grid = document.getElementById('calGrid');
-        grid.innerHTML = '';
-        ['أحد','إثن','ثلاث','أربع','خميس','جمع','سبت'].forEach(d => { const div = document.createElement('div'); div.className='dn'; div.innerText=d; grid.appendChild(div); });
-        for(let i=0;i<firstDay;i++) { const empty = document.createElement('div'); empty.className='day other-month'; grid.appendChild(empty); }
-        for(let d=1; d<=daysInMonth; d++) {
-            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const eventsToday = DB.events.filter(e => isOnDate(e, dateStr));
-            const moodToday = DB.moods[dateStr];
-            const dayDiv = document.createElement('div'); dayDiv.className='day';
-            if(dateStr === todayStr) dayDiv.classList.add('today');
-            if(dateStr === selectedDate) dayDiv.classList.add('selected');
-            const numSpan = document.createElement('span'); numSpan.innerText = d; dayDiv.appendChild(numSpan);
-            if(moodToday) { const moodSpan = document.createElement('div'); moodSpan.className='mood-dot'; moodSpan.innerText = moodToday.emoji; dayDiv.appendChild(moodSpan); }
-            const hasTask = eventsToday.some(e=> e.type==='task' && !e.completed);
-            const hasAppt = eventsToday.some(e=> e.type==='appt');
-            const hasDone = eventsToday.some(e=> e.type==='task' && e.completed);
-            if(hasTask || hasAppt || hasDone){
-                const dotDiv = document.createElement('div'); dotDiv.className='event-dots';
-                if(hasTask) dotDiv.innerHTML += `<div class="ev-dot task"></div>`;
-                if(hasAppt) dotDiv.innerHTML += `<div class="ev-dot appt"></div>`;
-                if(hasDone) dotDiv.innerHTML += `<div class="ev-dot completed"></div>`;
-                dayDiv.appendChild(dotDiv);
-            }
-            dayDiv.addEventListener('click', () => { selectedDate = dateStr; renderCalendar(); showAgendaForDate(selectedDate); });
-            grid.appendChild(dayDiv);
+    };
+
+    const fmtDate=ds=>{
+        const d=new Date(ds+'T00:00:00');
+        const today=new Date().toISOString().split('T')[0];
+        if(ds===today) return 'اليوم';
+        return d.toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'});
+    };
+
+    // ── Toast ────────────────────────────────────────────────────────────
+    const showToast=(msg,type='info')=>{
+        const cont=document.getElementById('toastContainer');
+        const t=document.createElement('div');
+        t.className=`toast ${type}`;
+        t.innerHTML=`<i class="fas ${type==='ok'?'fa-check-circle':'fa-exclamation-circle'}"></i> ${msg}`;
+        cont.appendChild(t);
+        setTimeout(()=>t.remove(),2600);
+    };
+
+    // ── Calendar render ──────────────────────────────────────────────────
+    const renderCalendar=()=>{
+        const year=currentDate.getFullYear(), month=currentDate.getMonth();
+        const firstDay=new Date(year,month,1).getDay();
+        const daysInMonth=new Date(year,month+1,0).getDate();
+        const todayStr=new Date().toISOString().split('T')[0];
+        const grid=document.getElementById('calGrid');
+        grid.innerHTML='';
+
+        ['أحد','إثن','ثلاث','أربع','خميس','جمع','سبت'].forEach(d=>{
+            const el=document.createElement('div'); el.className='dn'; el.innerText=d; grid.appendChild(el);
+        });
+
+        for(let i=0;i<firstDay;i++){
+            const el=document.createElement('div'); el.className='day other-month'; grid.appendChild(el);
         }
-        document.getElementById('calTitle').innerText = `${currentDate.toLocaleString('ar-EG', { month:'long' })} ${year}`;
-        const monthEvs = DB.events.filter(e => e.date.startsWith(`${year}-${String(month+1).padStart(2,'0')}`));
-        const apptCount = monthEvs.filter(e=>e.type==='appt').length;
-        const taskCount = monthEvs.filter(e=>e.type==='task').length;
-        const doneCount = monthEvs.filter(e=>e.type==='task' && e.completed).length;
-        const moodDays = Object.keys(DB.moods).filter(k=>k.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)).length;
-        document.getElementById('monthSummary').innerHTML = `
-            <div class="ms-pill"><div class="ms-dot" style="background:var(--appt)"></div>${apptCount} موعد</div>
-            <div class="ms-pill"><div class="ms-dot" style="background:var(--task)"></div>${taskCount} مهمة</div>
-            <div class="ms-pill"><div class="ms-dot" style="background:var(--success)"></div>${doneCount} منجزة</div>
-            <div class="ms-pill"><div class="ms-dot" style="background:var(--primary)"></div>${moodDays} يوم مزاج</div>`;
-    }
-    
-    function showAgendaForDate(dateStr) {
-        const area = document.getElementById('agendaArea');
-        area.style.display = 'block';
-        document.getElementById('agendaTitle').innerHTML = formatDateTitle(dateStr);
-        // show mood
-        const mood = DB.moods[dateStr] || {};
-        document.querySelectorAll('.moji').forEach(el => el.classList.remove('sel'));
-        if(mood.emoji) { document.querySelectorAll(`.moji[data-m="${mood.emoji}"]`).forEach(el => el.classList.add('sel')); }
-        document.getElementById('moodNote').value = mood.note || '';
-        // render events list
-        const evContainer = document.getElementById('evList');
-        const dayEvents = DB.events.filter(e => isOnDate(e, dateStr)).sort((a,b)=> (a.time||'99:99').localeCompare(b.time||'99:99'));
-        if(dayEvents.length === 0) { evContainer.innerHTML = `<div class="ev-empty"><i class="far fa-calendar-times"></i><br/>لا توجد أحداث لهذا اليوم</div>`; return; }
-        evContainer.innerHTML = '';
-        dayEvents.forEach(ev => {
-            const div = document.createElement('div');
-            div.className = `ev-item ${ev.type === 'task' ? 'task-item' : 'appt-item'} ${ev.completed ? 'done' : ''}`;
-            const prioIcon = ev.prio === 'high' ? '🔴' : (ev.prio === 'low' ? '🟢' : '🟡');
-            div.innerHTML = `
-                ${ev.type === 'task' ? `<div class="ev-check ${ev.completed ? 'done' : ''}" data-id="${ev.id}">${ev.completed ? '<i class="fas fa-check"></i>' : ''}</div>` : ''}
-                <div class="ev-icon ${ev.type}"><i class="fas ${ev.type === 'task' ? 'fa-check-double' : 'fa-stethoscope'}"></i></div>
-                <div class="ev-body"><div class="ev-title">${prioIcon} ${escapeHtml(ev.title)}</div>${ev.desc ? `<div class="ev-desc">${escapeHtml(ev.desc)}</div>` : ''}${ev.recur && ev.recur !== 'none' ? `<div class="ev-desc">🔄 ${ev.recur === 'daily' ? 'يومي' : ev.recur === 'weekly' ? 'أسبوعي' : 'شهري'}</div>` : ''}</div>
-                ${ev.time ? `<div class="ev-time">${ev.time}</div>` : ''}
-                <button class="ev-del" data-id="${ev.id}"><i class="fas fa-trash-alt"></i></button>
-            `;
-            evContainer.appendChild(div);
-            if(ev.type === 'task') {
-                const checkDiv = div.querySelector('.ev-check');
-                checkDiv?.addEventListener('click', (e) => { e.stopPropagation(); toggleTaskDone(ev.id); });
+
+        for(let d=1;d<=daysInMonth;d++){
+            const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const evs=DB.events.filter(e=>isOnDate(e,ds));
+            const mood=DB.moods[ds];
+            const div=document.createElement('div'); div.className='day';
+            if(ds===todayStr)    div.classList.add('today');
+            if(ds===selectedDate)div.classList.add('selected');
+            div.innerHTML=`<span>${d}</span>`;
+            if(mood){ const md=document.createElement('div'); md.className='mood-dot'; md.innerText=mood.emoji; div.appendChild(md); }
+            const hasTask=evs.some(e=>e.type==='task'&&!e.completed);
+            const hasAppt=evs.some(e=>e.type==='appt');
+            const hasDone=evs.some(e=>e.type==='task'&&e.completed);
+            if(hasTask||hasAppt||hasDone){
+                const dots=document.createElement('div'); dots.className='event-dots';
+                if(hasTask) dots.innerHTML+=`<div class="ev-dot task"></div>`;
+                if(hasAppt) dots.innerHTML+=`<div class="ev-dot appt"></div>`;
+                if(hasDone) dots.innerHTML+=`<div class="ev-dot completed"></div>`;
+                div.appendChild(dots);
             }
-            div.querySelector('.ev-del')?.addEventListener('click', (e) => { e.stopPropagation(); deleteEventById(ev.id); });
+            div.addEventListener('click',()=>{ selectedDate=ds; renderCalendar(); showAgenda(ds); });
+            grid.appendChild(div);
+        }
+
+        document.getElementById('calTitle').innerText=`${currentDate.toLocaleString('ar-EG',{month:'long'})} ${year}`;
+        const prefix=`${year}-${String(month+1).padStart(2,'0')}`;
+        const mEvs=DB.events.filter(e=>e.date.startsWith(prefix));
+        const moodDays=Object.keys(DB.moods).filter(k=>k.startsWith(prefix)).length;
+        document.getElementById('monthSummary').innerHTML=`
+            <div class="ms-pill"><div class="ms-dot" style="background:var(--appt)"></div>${mEvs.filter(e=>e.type==='appt').length} موعد</div>
+            <div class="ms-pill"><div class="ms-dot" style="background:var(--task)"></div>${mEvs.filter(e=>e.type==='task').length} مهمة</div>
+            <div class="ms-pill"><div class="ms-dot" style="background:var(--success)"></div>${mEvs.filter(e=>e.completed).length} منجزة</div>
+            <div class="ms-pill"><div class="ms-dot" style="background:var(--primary)"></div>${moodDays} يوم مزاج</div>`;
+    };
+
+    // ── Agenda for selected date ─────────────────────────────────────────
+    const showAgenda=ds=>{
+        const area=document.getElementById('agendaArea');
+        area.style.display='block';
+        document.getElementById('agendaTitle').innerHTML=fmtDate(ds);
+
+        // mood
+        const mood=DB.moods[ds]||{};
+        document.querySelectorAll('.moji').forEach(el=>el.classList.remove('sel'));
+        if(mood.emoji) document.querySelectorAll(`.moji[data-m="${mood.emoji}"]`).forEach(el=>el.classList.add('sel'));
+        document.getElementById('moodNote').value=mood.note||'';
+
+        // events
+        const evContainer=document.getElementById('evList');
+        const dayEvs=DB.events.filter(e=>isOnDate(e,ds)).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+        if(!dayEvs.length){ evContainer.innerHTML=`<div class="ev-empty"><i class="far fa-calendar-times"></i><br/>لا توجد أحداث لهذا اليوم</div>`; updateStreak(); return; }
+        evContainer.innerHTML='';
+        dayEvs.forEach(ev=>{
+            const div=document.createElement('div');
+            div.className=`ev-item ${ev.type==='task'?'task-item':'appt-item'} ${ev.completed?'done':''}`;
+            const prioIcon=ev.prio==='high'?'🔴':ev.prio==='low'?'🟢':'🟡';
+            div.innerHTML=`
+                ${ev.type==='task'?`<div class="ev-check ${ev.completed?'done':''}" data-id="${ev.id}">${ev.completed?'<i class="fas fa-check"></i>':''}</div>`:''}
+                <div class="ev-icon ${ev.type}"><i class="fas ${ev.type==='task'?'fa-check-double':'fa-stethoscope'}"></i></div>
+                <div class="ev-body">
+                    <div class="ev-title">${prioIcon} ${escHtml(ev.title)}</div>
+                    ${ev.desc?`<div class="ev-desc">${escHtml(ev.desc)}</div>`:''}
+                    ${ev.recur&&ev.recur!=='none'?`<div class="ev-desc">🔄 ${ev.recur==='daily'?'يومي':ev.recur==='weekly'?'أسبوعي':'شهري'}</div>`:''}
+                </div>
+                ${ev.time?`<div class="ev-time">${ev.time}</div>`:''}
+                <button class="ev-del" data-id="${ev.id}"><i class="fas fa-trash-alt"></i></button>`;
+            evContainer.appendChild(div);
+            if(ev.type==='task') div.querySelector('.ev-check')?.addEventListener('click',e=>{ e.stopPropagation(); toggleDone(ev.id); });
+            div.querySelector('.ev-del')?.addEventListener('click',e=>{ e.stopPropagation(); deleteEvent(ev.id); });
         });
         updateStreak();
-    }
-    
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-    
-    async function toggleTaskDone(id) {
-        const ev = DB.events.find(e => e.id === id);
-        if(ev) { ev.completed = !ev.completed; saveLocal(); renderCalendar(); showAgendaForDate(selectedDate); }
-        if(cloudEnabled && db) { try { await updateDoc(doc(db, 'patients', PID, 'events', id), { completed: ev.completed }); } catch(e){} }
-    }
-    async function deleteEventById(id) {
-        if(!confirm('حذف هذا الحدث؟')) return;
-        DB.events = DB.events.filter(e => e.id !== id);
-        saveLocal(); renderCalendar(); showAgendaForDate(selectedDate);
-        if(cloudEnabled && db) { try { await deleteDoc(doc(db, 'patients', PID, 'events', id)); } catch(e){} }
-    }
-    
-    function updateStreak() {
-        const sortedDates = Object.keys(DB.moods).sort((a,b)=>b.localeCompare(a));
-        let streak = 0; const today = new Date().toISOString().split('T')[0];
-        for(let i=0; i<sortedDates.length; i++) {
-            const diff = (new Date(today) - new Date(sortedDates[i]+'T00:00:00')) / (1000*3600*24);
-            if(diff === i) streak++; else break;
+    };
+
+    // ── Streak ───────────────────────────────────────────────────────────
+    const updateStreak=()=>{
+        const sorted=Object.keys(DB.moods).sort((a,b)=>b.localeCompare(a));
+        const today=new Date().toISOString().split('T')[0];
+        let streak=0;
+        for(let i=0;i<sorted.length;i++){
+            const diff=(new Date(today)-new Date(sorted[i]+'T00:00:00'))/(1000*3600*24);
+            if(diff===i) streak++; else break;
         }
-        document.getElementById('streakBadge').innerHTML = streak>1 ? `🔥 ${streak} أيام متتالية` : '';
-    }
-    
-    // Mood
-    function initMoodSelector() {
-        const moods = ['😁','😊','😐','😔','😢','😰','😠','😌'];
-        const container = document.getElementById('moodEmojis');
-        container.innerHTML = '';
-        moods.forEach(m => {
-            const span = document.createElement('span'); span.className='moji'; span.setAttribute('data-m', m); span.innerText = m;
-            span.addEventListener('click', () => { document.querySelectorAll('.moji').forEach(el=>el.classList.remove('sel')); span.classList.add('sel'); });
-            container.appendChild(span);
-        });
-    }
-    document.getElementById('saveMoodBtn').addEventListener('click', async () => {
-        const selected = document.querySelector('.moji.sel');
-        if(!selected) { showToast('اختر حالتك المزاجية أولاً', 'warn'); return; }
-        const emoji = selected.dataset.m;
-        const note = document.getElementById('moodNote').value;
-        DB.moods[selectedDate] = { emoji, note, updatedAt: new Date().toISOString() };
-        saveLocal(); renderCalendar(); showAgendaForDate(selectedDate); updateStreak();
-        showToast('تم تسجيل الحالة المزاجية', 'ok');
-        if(cloudEnabled && db) { try { await setDoc(doc(db, 'patients', PID, 'moods', selectedDate), { emoji, note }); } catch(e){} }
+        document.getElementById('streakBadge').innerHTML=streak>1?`🔥 ${streak} أيام متتالية`:'';
+    };
+
+    // ── Toggle task done ─────────────────────────────────────────────────
+    const toggleDone=async id=>{
+        const ev=DB.events.find(e=>e.id===id);
+        if(!ev) return;
+        ev.completed=!ev.completed;
+        saveLocal(); renderCalendar(); showAgenda(selectedDate);
+
+        // ── Cloud sync → 'tasks' collection (same as doctor's profile page reads) ──
+        if(PID){
+            try {
+                await updateDoc(doc(db,'tasks',id),{ done:ev.completed });
+            } catch(e){ console.warn('toggle sync:',e); }
+        }
+    };
+
+    // ── Delete event ─────────────────────────────────────────────────────
+    const deleteEvent=async id=>{
+        if(!confirm('حذف هذا الحدث؟')) return;
+        const ev=DB.events.find(e=>e.id===id);
+        DB.events=DB.events.filter(e=>e.id!==id);
+        saveLocal(); renderCalendar(); showAgenda(selectedDate);
+
+        if(PID && ev){
+            try {
+                // delete from the correct collection
+                const col = ev.type==='appt' ? 'doctors_agenda' : 'tasks';
+                await deleteDoc(doc(db,col,id));
+            } catch(e){ console.warn('delete sync:',e); }
+        }
+    };
+
+    // ── Save mood ────────────────────────────────────────────────────────
+    document.getElementById('saveMoodBtn').addEventListener('click',async()=>{
+        const sel=document.querySelector('.moji.sel');
+        if(!sel){ showToast('اختر حالتك المزاجية أولاً','warn'); return; }
+        const emoji=sel.dataset.m;
+        const note=document.getElementById('moodNote').value.trim();
+
+        DB.moods[selectedDate]={ emoji, note, updatedAt:new Date().toISOString() };
+        saveLocal(); renderCalendar(); showAgenda(selectedDate); updateStreak();
+        showToast('تم تسجيل الحالة المزاجية','ok');
+
+        // ── Cloud sync → 'mood_logs' collection (doctor's profile page reads this) ──
+        if(PID){
+            setSyncing(true,'حفظ المزاج...');
+            try {
+                // doc ID = patientId_date for easy lookup
+                await setDoc(doc(db,'mood_logs',`${PID}_${selectedDate}`),{
+                    patientId: PID,
+                    date:      selectedDate,
+                    score:     emojiToScore(emoji),
+                    emoji,
+                    note,
+                    updatedAt: serverTimestamp()
+                },{merge:true});
+                setSyncing(false);
+            } catch(e){
+                console.warn('mood sync:',e);
+                setSyncing(false,'⚠️ لم يتزامن');
+            }
+        }
     });
-    
-    // modal logic
-    function openModal(type) {
-        currentType = type;
-        document.getElementById('eventTitle').value = '';
-        document.getElementById('eventDesc').value = '';
-        document.getElementById('eventDate').value = selectedDate;
-        document.getElementById('eventTime').value = '';
-        document.getElementById('modalTaskType').classList.toggle('sel', type==='task');
-        document.getElementById('modalApptType').classList.toggle('sel', type==='appt');
-        document.getElementById('timeRow').style.display = type==='appt' ? 'block' : 'none';
-        document.getElementById('modalTitle').innerText = type==='task' ? '➕ إضافة مهمة' : '🩺 إضافة موعد';
-        currentPrio = 'med'; currentRecur = 'none';
-        renderPrioButtons(); renderRecurButtons();
-        document.getElementById('eventModal').classList.add('open');
-    }
-    function renderPrioButtons() {
-        const container = document.getElementById('prioRow');
-        const prios = [{val:'low',label:'منخفضة'},{val:'med',label:'متوسطة'},{val:'high',label:'عالية'}];
-        container.innerHTML = '';
-        prios.forEach(p => { const btn = document.createElement('button'); btn.innerText = p.label; btn.classList.add('prio-btn'); if(currentPrio === p.val) btn.classList.add('sel'); btn.addEventListener('click', () => { currentPrio = p.val; renderPrioButtons(); }); container.appendChild(btn); });
-    }
-    function renderRecurButtons() {
-        const container = document.getElementById('recurRow');
-        const recs = [{val:'none',label:'مرة'},{val:'daily',label:'يومي'},{val:'weekly',label:'أسبوعي'},{val:'monthly',label:'شهري'}];
-        container.innerHTML = '';
-        recs.forEach(r => { const btn = document.createElement('button'); btn.innerText = r.label; btn.classList.add('rec-pill'); if(currentRecur === r.val) btn.classList.add('sel'); btn.addEventListener('click', () => { currentRecur = r.val; renderRecurButtons(); }); container.appendChild(btn); });
-    }
-    document.getElementById('saveEventBtn').addEventListener('click', async () => {
-        const title = document.getElementById('eventTitle').value.trim();
-        const date = document.getElementById('eventDate').value;
-        if(!title || !date) { showToast('العنوان والتاريخ مطلوبان', 'err'); return; }
-        const newEvent = {
-            id: Date.now().toString(),
-            type: currentType,
+
+    // emoji → numeric score (1–5) for doctor's mood calendar
+    const emojiToScore=emoji=>{
+        const map={'😁':5,'😊':4,'😐':3,'😌':3,'😔':2,'😢':2,'😰':1,'😠':1};
+        return map[emoji]||3;
+    };
+
+    // ── Save event ───────────────────────────────────────────────────────
+    document.getElementById('saveEventBtn').addEventListener('click',async()=>{
+        const title=document.getElementById('eventTitle').value.trim();
+        const date =document.getElementById('eventDate').value;
+        if(!title||!date){ showToast('العنوان والتاريخ مطلوبان','err'); return; }
+
+        const newEv={
+            id:        `ev_${Date.now()}`,
+            type:      currentType,
             title,
-            desc: document.getElementById('eventDesc').value.trim(),
+            desc:      document.getElementById('eventDesc').value.trim(),
             date,
-            time: document.getElementById('eventTime').value || null,
-            prio: currentPrio,
-            recur: currentRecur,
+            time:      document.getElementById('eventTime').value||null,
+            prio:      currentPrio,
+            recur:     currentRecur,
             completed: false,
             createdAt: new Date().toISOString()
         };
-        DB.events.push(newEvent);
+
+        DB.events.push(newEv);
         saveLocal();
+        selectedDate=date;
         renderCalendar();
-        showAgendaForDate(date);
-        selectedDate = date;
+        showAgenda(date);
         document.getElementById('eventModal').classList.remove('open');
-        showToast(`تمت إضافة ${currentType==='task' ? 'المهمة' : 'الموعد'} بنجاح`, 'ok');
-        if(cloudEnabled && db) { try { await setDoc(doc(db, 'patients', PID, 'events', newEvent.id), newEvent); } catch(e){} }
+        showToast(`تمت إضافة ${currentType==='task'?'المهمة':'الموعد'} بنجاح`,'ok');
+
+        // ── Cloud sync ──
+        // tasks   → 'tasks' collection    (doctor sees these in his profile tasks)
+        // appointments → 'doctors_agenda' (doctor sees appointments there)
+        if(PID){
+            setSyncing(true,'رفع الحدث...');
+            try {
+                if(currentType==='task'){
+                    // matches doctor-profile tasks schema: { text, done, date, doctorUid?, createdAt }
+                    // for patient tasks we store patientId instead of doctorUid
+                    await setDoc(doc(db,'tasks',newEv.id),{
+                        id:        newEv.id,
+                        text:      newEv.title,
+                        done:      false,
+                        date:      newEv.date,
+                        patientId: PID,
+                        prio:      newEv.prio,
+                        recur:     newEv.recur,
+                        desc:      newEv.desc||'',
+                        createdAt: serverTimestamp()
+                    });
+                } else {
+                    // appointment → doctors_agenda (same collection doctor's profile reads)
+                    await setDoc(doc(db,'doctors_agenda',newEv.id),{
+                        id:        newEv.id,
+                        type:      'appointment',
+                        title:     newEv.title,
+                        date:      newEv.date,
+                        time:      newEv.time||null,
+                        patientId: PID,
+                        prio:      newEv.prio,
+                        desc:      newEv.desc||'',
+                        completed: false,
+                        createdAt: serverTimestamp()
+                    });
+                }
+                setSyncing(false);
+            } catch(e){
+                console.warn('event sync:',e);
+                setSyncing(false,'⚠️ لم يتزامن');
+            }
+        }
     });
-    
-    document.getElementById('modalTaskType').addEventListener('click', () => openModal('task'));
-    document.getElementById('modalApptType').addEventListener('click', () => openModal('appt'));
-    document.getElementById('addTaskBtn').addEventListener('click', () => openModal('task'));
-    document.getElementById('addApptBtn').addEventListener('click', () => openModal('appt'));
-    document.getElementById('fabTask').addEventListener('click', () => { openModal('task'); document.getElementById('fabWrap').classList.remove('open'); });
-    document.getElementById('fabAppt').addEventListener('click', () => { openModal('appt'); document.getElementById('fabWrap').classList.remove('open'); });
-    document.getElementById('mainFab').addEventListener('click', () => { document.getElementById('fabWrap').classList.toggle('open'); });
-    document.getElementById('eventModal').addEventListener('click', (e) => { if(e.target === document.getElementById('eventModal')) document.getElementById('eventModal').classList.remove('open'); });
-    document.getElementById('prevMonthBtn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth()-1); renderCalendar(); });
-    document.getElementById('nextMonthBtn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
-    
-    function showToast(msg, type='info') { const cont = document.getElementById('toastContainer'); const t = document.createElement('div'); t.className = `toast ${type}`; t.innerHTML = `<i class="fas ${type==='ok' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`; cont.appendChild(t); setTimeout(() => t.remove(), 2500); }
-    
-    // cloud sync (pull once, non-blocking)
-    async function syncFromCloud() {
-        if(!cloudEnabled || !db) return;
+
+    // ── Pull from cloud on first load ────────────────────────────────────
+    const syncFromCloud=async()=>{
+        if(!PID) return;
+        setSyncing(true,'جلب البيانات...');
         try {
-            const eventsSnap = await getDocs(collection(db, 'patients', PID, 'events'));
-            const cloudEvents = eventsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            DB.events = cloudEvents;
-            const moodsSnap = await getDocs(collection(db, 'patients', PID, 'moods'));
-            const moodMap = {};
-            moodsSnap.forEach(d => { moodMap[d.id] = d.data(); });
-            DB.moods = moodMap;
+            // fetch patient's tasks
+            const taskSnap=await getDocs(query(collection(db,'tasks'),where('patientId','==',PID)));
+            const cloudTasks=taskSnap.docs.map(d=>({
+                id:d.id, type:'task',
+                title: d.data().text||d.data().title||'',
+                desc:  d.data().desc||'',
+                date:  d.data().date||'',
+                time:  d.data().time||null,
+                prio:  d.data().prio||'med',
+                recur: d.data().recur||'none',
+                completed: d.data().done||false,
+                createdAt: d.data().createdAt?.toDate?.()?.toISOString()||d.data().createdAt||''
+            }));
+
+            // fetch patient's appointments from doctors_agenda
+            const apptSnap=await getDocs(query(collection(db,'doctors_agenda'),where('patientId','==',PID)));
+            const cloudAppts=apptSnap.docs.map(d=>({
+                id:d.id, type:'appt',
+                title: d.data().title||'',
+                desc:  d.data().desc||'',
+                date:  d.data().date||'',
+                time:  d.data().time||null,
+                prio:  d.data().prio||'med',
+                recur: 'none',
+                completed: d.data().completed||false,
+                createdAt: ''
+            }));
+
+            // fetch moods
+            const moodSnap=await getDocs(query(collection(db,'mood_logs'),where('patientId','==',PID)));
+            const cloudMoods={};
+            moodSnap.forEach(d=>{
+                const data=d.data();
+                cloudMoods[data.date]={ emoji:data.emoji||'😐', note:data.note||'', updatedAt:'' };
+            });
+
+            DB.events=[...cloudTasks,...cloudAppts];
+            DB.moods=cloudMoods;
             saveLocal();
             renderCalendar();
-            showAgendaForDate(selectedDate);
-        } catch(e) { console.warn("cloud sync error, using local", e); }
-    }
-    
-    setTimeout(() => { document.getElementById('loadingOverlay')?.classList.add('hide'); }, 300);
+            showAgenda(selectedDate);
+            setSyncing(false,'مزامن ✓');
+        } catch(e){
+            console.warn('cloud pull:',e);
+            setSyncing(false,'محلي فقط');
+        }
+    };
+
+    // ── Modal helpers ─────────────────────────────────────────────────────
+    const openModal=type=>{
+        currentType=type;
+        document.getElementById('eventTitle').value='';
+        document.getElementById('eventDesc').value='';
+        document.getElementById('eventDate').value=selectedDate;
+        document.getElementById('eventTime').value='';
+        document.getElementById('modalTaskType').classList.toggle('sel',type==='task');
+        document.getElementById('modalApptType').classList.toggle('sel',type==='appt');
+        document.getElementById('timeRow').style.display=type==='appt'?'block':'none';
+        document.getElementById('modalTitle').innerText=type==='task'?'➕ إضافة مهمة':'🩺 إضافة موعد';
+        currentPrio='med'; currentRecur='none';
+        renderPrio(); renderRecur();
+        document.getElementById('eventModal').classList.add('open');
+    };
+
+    const renderPrio=()=>{
+        const c=document.getElementById('prioRow'); c.innerHTML='';
+        [{val:'low',lbl:'منخفضة'},{val:'med',lbl:'متوسطة'},{val:'high',lbl:'عالية'}].forEach(p=>{
+            const b=document.createElement('button'); b.innerText=p.lbl; b.className='prio-btn';
+            if(currentPrio===p.val) b.classList.add('sel');
+            b.addEventListener('click',()=>{ currentPrio=p.val; renderPrio(); }); c.appendChild(b);
+        });
+    };
+
+    const renderRecur=()=>{
+        const c=document.getElementById('recurRow'); c.innerHTML='';
+        [{val:'none',lbl:'مرة'},{val:'daily',lbl:'يومي'},{val:'weekly',lbl:'أسبوعي'},{val:'monthly',lbl:'شهري'}].forEach(r=>{
+            const b=document.createElement('button'); b.innerText=r.lbl; b.className='rec-pill';
+            if(currentRecur===r.val) b.classList.add('sel');
+            b.addEventListener('click',()=>{ currentRecur=r.val; renderRecur(); }); c.appendChild(b);
+        });
+    };
+
+    // ── Mood selector init ────────────────────────────────────────────────
+    const initMoodSelector=()=>{
+        const moods=['😁','😊','😐','😌','😔','😢','😰','😠'];
+        const c=document.getElementById('moodEmojis'); c.innerHTML='';
+        moods.forEach(m=>{
+            const s=document.createElement('span'); s.className='moji'; s.setAttribute('data-m',m); s.innerText=m;
+            s.addEventListener('click',()=>{ document.querySelectorAll('.moji').forEach(e=>e.classList.remove('sel')); s.classList.add('sel'); });
+            c.appendChild(s);
+        });
+    };
+
+    // ── Events wiring ─────────────────────────────────────────────────────
+    document.getElementById('addTaskBtn').addEventListener('click',()=>openModal('task'));
+    document.getElementById('addApptBtn').addEventListener('click',()=>openModal('appt'));
+    document.getElementById('fabTask').addEventListener('click',()=>{ openModal('task'); document.getElementById('fabWrap').classList.remove('open'); });
+    document.getElementById('fabAppt').addEventListener('click',()=>{ openModal('appt'); document.getElementById('fabWrap').classList.remove('open'); });
+    document.getElementById('mainFab').addEventListener('click',()=>document.getElementById('fabWrap').classList.toggle('open'));
+    document.getElementById('modalTaskType').addEventListener('click',()=>openModal('task'));
+    document.getElementById('modalApptType').addEventListener('click',()=>openModal('appt'));
+    document.getElementById('prevMonthBtn').addEventListener('click',()=>{ currentDate.setMonth(currentDate.getMonth()-1); renderCalendar(); });
+    document.getElementById('nextMonthBtn').addEventListener('click',()=>{ currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
+    document.getElementById('eventModal').addEventListener('click',e=>{ if(e.target===document.getElementById('eventModal')) document.getElementById('eventModal').classList.remove('open'); });
+
+    // ── Auth → bootstrap ──────────────────────────────────────────────────
+    onAuthStateChanged(auth, user=>{
+        if(user){
+            PID = user.uid;
+            // pull cloud over local
+            syncFromCloud();
+        } else {
+            // no auth → local-only mode (still works)
+            setSyncing(false,'محلي فقط');
+        }
+    });
+
+    // ── Initial render (from cache, before auth resolves) ────────────────
     initMoodSelector();
     renderCalendar();
-    showAgendaForDate(selectedDate);
-    if(cloudEnabled) syncFromCloud().catch(()=>{});
-    window.addEventListener('load', () => { if(cloudEnabled) syncFromCloud(); });
+    showAgenda(selectedDate);
+    setSyncing(false,'محلي');
 </script>
 </body>
-</html>
+    </html>
