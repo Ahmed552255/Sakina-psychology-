@@ -11,44 +11,86 @@
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
-        /* نفس أكواد CSS السابقة بدون تغيير */
+        /* --- متغيرات التصميم من تطبيق "سُكُون" --- */
         :root {
             --t50:  #f0fafa; --t100: #d0eded; --t200: #a8dede;
             --t300: #98D8D8; --t500: #5aabab; --t700: #3d8a8a; --t900: #1f4f4f;
             --ink:  #162828; --ink60: #4a6363; --ink30: #9ababa;
             --bg:   #e8f2f2; --white: #ffffff;
             --danger: #d94f4f; --success: #38c08a; --warn: #eda84a;
-            --sh-sm: 0 2px 8px rgba(20,70,70,.07 );
+            --sh-sm: 0 2px 8px rgba(20,70,70,.07);
             --sh-md: 0 6px 24px rgba(20,70,70,.11);
         }
+
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         html, body { height:100%; }
         body {
-            font-family:'Cairo',sans-serif; background:var(--bg); color:var(--ink);
-            display:flex; justify-content:center; align-items:center; padding:1rem;
+            font-family:'Cairo',sans-serif;
+            background:var(--bg);
+            color:var(--ink);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:1rem;
         }
+        
         .auth-container {
-            background:var(--white); padding: 2rem 2.5rem; border-radius: 16px;
-            box-shadow: var(--sh-md); width: 100%; max-width: 420px;
-            text-align: center; border: 1px solid var(--t100);
+            background:var(--white);
+            padding: 2rem 2.5rem;
+            border-radius: 16px;
+            box-shadow: var(--sh-md);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            border: 1px solid var(--t100);
         }
+
         .form-section { display: none; }
         .form-section.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .logo { font-size: 2.5rem; font-weight: 800; color: var(--t700); margin-bottom: 0.5rem; }
-        h2 { font-size: 1.5rem; font-weight: 700; color: var(--t900); margin-bottom: 0.5rem; }
-        p.subtitle { color: var(--ink60); margin-top: 0; margin-bottom: 2rem; font-size: .95rem; }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--t700);
+            margin-bottom: 0.5rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--t900);
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--ink60);
+            margin-top: 0;
+            margin-bottom: 2rem;
+            font-size: .95rem;
+        }
+
         .input-group { margin-bottom: 1.5rem; text-align: right; }
         .input-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--ink60); font-weight: 600; }
         .input-group input {
-            width: 100%; padding: 12px 15px; border: 1.5px solid var(--t100); border-radius: 10px;
-            background: var(--t50); color: var(--ink); font-family: 'Cairo', sans-serif;
-            font-size: 1rem; box-sizing: border-box; transition: border-color .2s, background .2s, box-shadow .2s;
+            width: 100%;
+            padding: 12px 15px;
+            border: 1.5px solid var(--t100);
+            border-radius: 10px;
+            background: var(--t50);
+            color: var(--ink);
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color .2s, background .2s, box-shadow .2s;
         }
         .input-group input:focus {
-            outline: none; border-color: var(--t500); background: var(--white);
+            outline: none;
+            border-color: var(--t500);
+            background: var(--white);
             box-shadow: 0 0 0 3px rgba(90,171,171,.15);
         }
+
         .btn {
             width: 100%; padding: 14px; border: none; border-radius: 10px; color: var(--white);
             font-family: 'Cairo', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer;
@@ -58,16 +100,19 @@
         }
         .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(61,138,138,.35); }
         .btn:disabled { background: var(--t200); box-shadow: none; cursor: not-allowed; }
+
         .toggle-link {
             color: var(--t500); cursor: pointer; text-decoration: none; font-size: 0.9rem;
             font-weight: 600; display: inline-block; margin-top: 1.5rem;
         }
         .toggle-link:hover { text-decoration: underline; }
+
         .error-message {
             color: var(--danger); background-color: rgba(217, 79, 79, 0.08);
             border: 1px solid var(--danger); border-radius: 8px;
             padding: 10px; margin-top: 1rem; font-size: 0.9rem; display: none;
         }
+
         .modal-overlay { position: fixed; inset: 0; background: rgba(22, 40, 40, 0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 1rem; }
         .modal-content { background: var(--white); padding: 2rem; border-radius: 16px; text-align: center; width: 100%; max-width: 480px; box-shadow: var(--sh-md); border: 1px solid var(--t100); }
         .modal-content h3 { color: var(--warn); margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: .5rem; }
@@ -90,7 +135,7 @@
             <form id="login-form" onsubmit="event.preventDefault(); handleLogin();">
                 <div class="input-group">
                     <label for="login-key">أدخل مفتاح الاسترداد الخاص بك</label>
-                    <input type="text" id="login-key" required autocomplete="off">
+                    <input type="text" id="login-key" required autocomplete="off" dir="ltr">
                 </div>
                 <button id="login-btn" type="submit" class="btn">دخول آمن</button>
                 <div id="login-error" class="error-message"></div>
@@ -98,12 +143,12 @@
             <a class="toggle-link" onclick="toggleAuthForms()">ليس لدي حساب، إنشاء حساب جديد</a>
         </div>
 
-        <!-- قسم إنشاء الحساب (تم تبسيطه) -->
+        <!-- قسم إنشاء الحساب -->
         <div id="signup-section" class="form-section">
             <h2>إنشاء حساب مجهول</h2>
-            <p class="subtitle">بضغطة زر واحدة، ستحصل على مفتاح سري وآمن للدخول إلى مساحتك الخاصة.</p>
-            <form onsubmit="event.preventDefault(); handleSignup();">
-                <button id="signup-btn" type="submit" class="btn">أنشئ حسابي الآن</button>
+            <p class="subtitle">سيتم إنشاء مفتاح استرداد سري خاص بك. احفظه جيداً.</p>
+            <form onsubmit="event.preventDefault(); createAnonymousAccount();">
+                <button type="submit" class="btn">إنشاء حسابي المجهول</button>
             </form>
             <a class="toggle-link" onclick="toggleAuthForms()">لدي حساب بالفعل، تسجيل الدخول</a>
         </div>
@@ -117,7 +162,7 @@
             <div id="recovery-key-display" class="recovery-key"></div>
             <button id="copy-download-btn" class="btn">نسخ المفتاح وتنزيله كملف</button>
             <p class="warning-text" style="margin-top: 1rem;">
-                **تحذير:** إذا فقدت هذا المفتاح، سيفقد حسابك إلى الأبد. لا نملك نسخة منه لحماية خصوصيتك.
+                **تحذير:** إذا فقدت هذا المفتاح، ستفقد حسابك إلى الأبد. لا نملك نسخة منه لحماية خصوصيتك.
             </p>
             <button id="modal-close-btn" class="btn" disabled>
                 أدرك المخاطر وقمت بحفظ المفتاح (<span id="countdown">30</span>)
@@ -125,26 +170,38 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
+    <!-- تضمين مكتبات Firebase -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        // استيراد الدوال المطلوبة من Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-analytics.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
+        // تكوين Firebase
         const firebaseConfig = {
-            apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
+            apiKey: "AIz*****kw",
             authDomain: "sakina-937c4.firebaseapp.com",
+            databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
             projectId: "sakina-937c4",
             storageBucket: "sakina-937c4.firebasestorage.app",
             messagingSenderId: "25215790734",
-            appId: "1:25215790734:web:46c5d893d5818530b3a3df"
+            appId: "1:25215790734:web:46c5d893d5818530b3a3df",
+            measurementId: "G-K40TE1DCVV"
         };
 
-        const app = initializeApp(firebaseConfig );
+        // تهيئة Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        const db = getDatabase(app);
 
-        // --- متغيرات النظام ---
+        // جعل الدوال متاحة عالميًا للاستدعاء من HTML
+        window.toggleAuthForms = toggleAuthForms;
+        window.handleLogin = handleLogin;
+        window.createAnonymousAccount = createAnonymousAccount;
+
+        // --- عناصر الواجهة ---
         const loginSection = document.getElementById('login-section');
         const signupSection = document.getElementById('signup-section');
         const modal = document.getElementById('recovery-modal');
@@ -153,166 +210,25 @@
         const keyDisplay = document.getElementById('recovery-key-display');
         const copyDownloadBtn = document.getElementById('copy-download-btn');
         const loginBtn = document.getElementById('login-btn');
-        const signupBtn = document.getElementById('signup-btn');
         const loginError = document.getElementById('login-error');
         
-        let recoveryKey = '';
+        let currentRecoveryKey = '';
         let hasCopiedAndDownloaded = false;
         let loginAttempts = 0;
         let isLoginLocked = false;
+        let countdownInterval = null;
 
-        // --- دالة إنشاء الحساب (المبسطة) ---
-        async function handleSignup() {
-            signupBtn.disabled = true;
-            signupBtn.textContent = 'جاري الإنشاء...';
+        // تهيئة الأيقونات
+        feather.replace();
 
-            try {
-                const userCredential = await signInAnonymously(auth);
-                const user = userCredential.user;
-                recoveryKey = generateRecoveryKey();
-
-                // نستخدم المفتاح كـ ID للمستند لسهولة البحث لاحقًا
-                const recoveryRef = doc(db, "recoveryKeys", recoveryKey);
-                await setDoc(recoveryRef, {
-                    uid: user.uid,
-                    createdAt: serverTimestamp()
-                });
-
-                showRecoveryModal();
-
-            } catch (error) {
-                console.error("Error creating anonymous account:", error);
-                alert("حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
-            } finally {
-                signupBtn.disabled = false;
-                signupBtn.textContent = 'أنشئ حسابي الآن';
-            }
-        }
-
-        // --- دالة تسجيل الدخول ---
-        async function handleLogin() {
-            if (isLoginLocked) return;
-            const key = document.getElementById('login-key').value.trim();
-            if (!key) return;
-
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'جاري التحقق...';
-
-            try {
-                const recoveryRef = doc(db, "recoveryKeys", key);
-                const docSnap = await getDoc(recoveryRef);
-
-                if (!docSnap.exists()) {
-                    loginFailure();
-                } else {
-                    // **ملاحظة هامة:** في تطبيق حقيقي، يجب استدعاء دالة سحابية (Cloud Function)
-                    // لإنشاء Custom Token للـ UID الموجود في `docSnap.data().uid`
-                    // ثم تسجيل الدخول به باستخدام `signInWithCustomToken`.
-                    // للتبسيط الآن، سنقوم بالترحيب والتوجيه مباشرة.
-                    loginSuccess();
-                }
-            } catch (error) {
-                console.error("Login error:", error);
-                loginError.style.display = 'block';
-                loginError.textContent = 'حدث خطأ في الشبكة. حاول مرة أخرى.';
-            } finally {
-                if (!isLoginLocked) {
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'دخول آمن';
-                }
-            }
-        }
-
-        // --- دوال مساعدة وتوجيه ---
-        function loginSuccess() {
-            loginAttempts = 0;
-            loginError.style.display = 'none';
-            // التوجيه إلى home.html
-            window.location.href = 'home.html';
-        }
-
-        closeBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-            // التوجيه إلى home.html بعد إنشاء الحساب
-            window.location.href = 'home.html';
-        });
-
-        // --- باقي الدوال المساعدة (بدون تغيير) ---
-        function showRecoveryModal() {
-            keyDisplay.textContent = recoveryKey;
-            modal.style.display = 'flex';
-            feather.replace();
-            hasCopiedAndDownloaded = false;
-            closeBtn.disabled = true;
-            let seconds = 30;
-            countdownSpan.textContent = seconds;
-            const timerInterval = setInterval(() => {
-                seconds--;
-                countdownSpan.textContent = seconds;
-                if (seconds <= 0) {
-                    clearInterval(timerInterval);
-                    countdownSpan.parentElement.innerHTML = 'أدرك المخاطر وقمت بحفظ المفتاح';
-                    if (hasCopiedAndDownloaded) { closeBtn.disabled = false; }
-                }
-            }, 1000);
-        }
-
-        copyDownloadBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(recoveryKey).then(() => {
-                alert('تم نسخ المفتاح إلى الحافظة بنجاح!');
-                hasCopiedAndDownloaded = true;
-                if (countdownSpan.textContent <= 0) { closeBtn.disabled = false; }
-            }).catch(err => alert('فشل النسخ.'));
-            const fileContent = `مفتاح استرداد حسابك في سُكُون:\n\n${recoveryKey}\n\nتحذير: احتفظ بهذا الملف في مكان آمن ولا تشاركه مع أي شخص.`;
-            const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `sokoon-recovery-key.txt`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-        });
-
-        function loginFailure() {
-            loginAttempts++;
-            loginError.style.display = 'block';
-            if (loginAttempts >= 8) {
-                lockLogin(600);
-                loginError.innerHTML = `تم تجاوز عدد المحاولات. يرجى المحاولة مرة أخرى بعد 10 دقائق.`;
-            } else if (loginAttempts >= 4) {
-                lockLogin(30);
-                loginError.innerHTML = `عدد محاولات كبير. يرجى المحاولة مرة أخرى بعد 30 ثانية.`;
-            } else if (loginAttempts >= 2) {
-                loginError.innerHTML = `المفتاح غير صحيح.   
- **تلميح:** هل تحققت من ملف المفتاح المحفوظ (sokoon-recovery-key.txt)؟`;
-            } else {
-                loginError.innerHTML = `مفتاح الاسترداد غير صحيح.`;
-            }
-        }
-
-        function lockLogin(seconds) {
-            isLoginLocked = true;
-            loginBtn.disabled = true;
-            let remaining = seconds;
-            const lockInterval = setInterval(() => {
-                loginBtn.innerHTML = `محظور (${remaining} ثانية)`;
-                remaining--;
-                if (remaining < 0) {
-                    clearInterval(lockInterval);
-                    isLoginLocked = false;
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = 'دخول آمن';
-                    loginError.style.display = 'none';
-                }
-            }, 1000);
-        }
-
+        // --- دوال مساعدة ---
         function toggleAuthForms() {
             loginSection.classList.toggle('active');
             signupSection.classList.toggle('active');
+            loginError.style.display = 'none';
         }
 
+        // توليد مفتاح استرداد عشوائي فريد
         function generateRecoveryKey() {
             const words = ['نور', 'أمل', 'حلم', 'سكون', 'صدى', 'همس', 'ظل', 'روح', 'فجر', 'درب', 'نغم', 'سراب'];
             let keyParts = [];
@@ -321,12 +237,230 @@
                 const randomNumber = Math.floor(100 + Math.random() * 900);
                 keyParts.push(randomWord, randomNumber);
             }
+            // خلط عشوائي
             return keyParts.sort(() => Math.random() - 0.5).join('-');
         }
 
-        // تهيئة الأيقونات
-        feather.replace();
-    </script>
+        // التحقق من وجود المفتاح مسبقًا في قاعدة البيانات
+        async function isRecoveryKeyExists(key) {
+            const keyRef = ref(db, `recoveryKeys/${key}`);
+            const snapshot = await get(keyRef);
+            return snapshot.exists();
+        }
 
+        // إنشاء مفتاح فريد غير موجود
+        async function generateUniqueRecoveryKey() {
+            let key;
+            let exists;
+            do {
+                key = generateRecoveryKey();
+                exists = await isRecoveryKeyExists(key);
+            } while (exists);
+            return key;
+        }
+
+        // عرض نافذة المفتاح مع مؤقت
+        function showRecoveryModal(key) {
+            currentRecoveryKey = key;
+            keyDisplay.textContent = key;
+            modal.style.display = 'flex';
+            feather.replace();
+            hasCopiedAndDownloaded = false;
+            closeBtn.disabled = true;
+
+            let seconds = 30;
+            countdownSpan.textContent = seconds;
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                seconds--;
+                countdownSpan.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownSpan.parentElement.innerHTML = 'أدرك المخاطر وقمت بحفظ المفتاح';
+                    if (hasCopiedAndDownloaded) {
+                        closeBtn.disabled = false;
+                    }
+                }
+            }, 1000);
+        }
+
+        // الانتقال إلى home.html مع تخزين بيانات الجلسة
+        function redirectToHome(uid, recoveryKey = null) {
+            // تخزين uid في sessionStorage (أو localStorage حسب الرغبة)
+            sessionStorage.setItem('sakina_uid', uid);
+            if (recoveryKey) {
+                sessionStorage.setItem('sakina_recovery_key', recoveryKey);
+            }
+            // الانتقال
+            window.location.href = 'home.html';
+        }
+
+        // --- إنشاء حساب جديد ---
+        async function createAnonymousAccount() {
+            try {
+                // تسجيل الدخول مجهولاً
+                const userCredential = await signInAnonymously(auth);
+                const user = userCredential.user;
+                
+                // إنشاء مفتاح استرداد فريد
+                const recoveryKey = await generateUniqueRecoveryKey();
+                
+                // حفظ العلاقة في قاعدة البيانات
+                await set(ref(db, `recoveryKeys/${recoveryKey}`), {
+                    uid: user.uid,
+                    createdAt: new Date().toISOString()
+                });
+                
+                // عرض المفتاح للمستخدم
+                showRecoveryModal(recoveryKey);
+                
+                // عند الضغط على زر الإغلاق بعد الموافقة
+                closeBtn.onclick = async () => {
+                    modal.style.display = 'none';
+                    // الانتقال إلى الصفحة الرئيسية
+                    redirectToHome(user.uid, recoveryKey);
+                };
+                
+            } catch (error) {
+                console.error('خطأ في إنشاء الحساب:', error);
+                alert('حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.');
+            }
+        }
+
+        // --- تسجيل الدخول بمفتاح الاسترداد ---
+        async function handleLogin() {
+            if (isLoginLocked) return;
+
+            const enteredKey = document.getElementById('login-key').value.trim();
+            if (!enteredKey) {
+                showLoginError('يرجى إدخال مفتاح الاسترداد.');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'جاري التحقق...';
+
+            try {
+                // البحث عن المفتاح في قاعدة البيانات
+                const keyRef = ref(db, `recoveryKeys/${enteredKey}`);
+                const snapshot = await get(keyRef);
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const storedUid = data.uid;
+                    
+                    // تسجيل الدخول مجهولاً للحصول على uid جديد
+                    const userCredential = await signInAnonymously(auth);
+                    const newUser = userCredential.user;
+                    
+                    // تحديث قاعدة البيانات لربط المفتاح بـ uid الجديد (للسماح بالوصول من أجهزة متعددة)
+                    await update(ref(db, `recoveryKeys/${enteredKey}`), {
+                        uid: newUser.uid,
+                        lastAccess: new Date().toISOString()
+                    });
+                    
+                    // نجاح تسجيل الدخول
+                    loginSuccess(newUser.uid, enteredKey);
+                    
+                } else {
+                    // المفتاح غير موجود
+                    loginFailure('مفتاح الاسترداد غير صحيح. تأكد من المفتاح وحاول مرة أخرى.');
+                }
+            } catch (error) {
+                console.error('خطأ في تسجيل الدخول:', error);
+                loginFailure('حدث خطأ في الاتصال. حاول مرة أخرى لاحقاً.');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'دخول آمن';
+            }
+        }
+
+        function loginSuccess(uid, recoveryKey) {
+            loginAttempts = 0;
+            loginError.style.display = 'none';
+            redirectToHome(uid, recoveryKey);
+        }
+
+        function loginFailure(message) {
+            loginAttempts++;
+            loginError.style.display = 'block';
+            
+            if (loginAttempts >= 8) {
+                lockLogin(600); // 10 دقائق
+                showLoginError('تم تجاوز عدد المحاولات. يرجى المحاولة مرة أخرى بعد 10 دقائق.');
+            } else if (loginAttempts >= 4) {
+                lockLogin(30); // 30 ثانية
+                showLoginError('عدد محاولات كبير. يرجى المحاولة مرة أخرى بعد 30 ثانية.');
+            } else {
+                showLoginError(message || 'مفتاح الاسترداد غير صحيح. تأكد من الملف المحفوظ لديك.');
+            }
+        }
+
+        function showLoginError(msg) {
+            loginError.textContent = msg;
+            loginError.style.display = 'block';
+        }
+
+        function lockLogin(seconds) {
+            isLoginLocked = true;
+            loginBtn.disabled = true;
+            let remaining = seconds;
+            
+            const lockInterval = setInterval(() => {
+                loginBtn.textContent = `محظور (${remaining} ثانية)`;
+                remaining--;
+                if (remaining < 0) {
+                    clearInterval(lockInterval);
+                    isLoginLocked = false;
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'دخول آمن';
+                    loginError.style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        // --- أزرار النسخ والتنزيل ---
+        copyDownloadBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(currentRecoveryKey);
+                hasCopiedAndDownloaded = true;
+                
+                // إنشاء ملف للتنزيل
+                const fileContent = `مفتاح استرداد حسابك في سُكُون:\n\n${currentRecoveryKey}\n\nتحذير: احتفظ بهذا الملف في مكان آمن ولا تشاركه مع أي شخص.`;
+                const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `sakina-recovery-key.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+                
+                // إذا انتهى المؤقت، فعل الزر
+                if (countdownSpan.textContent === '0' || countdownSpan.textContent === '') {
+                    closeBtn.disabled = false;
+                }
+                
+                alert('تم نسخ المفتاح وتنزيل الملف بنجاح.');
+            } catch (err) {
+                alert('فشل النسخ التلقائي. يرجى نسخ المفتاح يدوياً.');
+            }
+        });
+
+        // التحقق من حالة المصادقة عند التحميل (اختياري)
+        onAuthStateChanged(auth, (user) => {
+            if (user && window.location.pathname.includes('home.html') === false) {
+                // إذا كان المستخدم مسجلاً بالفعل وليس في home.html، يمكن توجيهه مباشرة
+                // لكننا لا نفعل ذلك تلقائياً للحفاظ على وضوح الواجهة
+            }
+        });
+
+        // تنظيف المؤقت عند إغلاق النافذة
+        window.addEventListener('beforeunload', () => {
+            if (countdownInterval) clearInterval(countdownInterval);
+        });
+
+        console.log('✅ تم تهيئة Firebase بنجاح. قاعدة البيانات جاهزة.');
+    </script>
 </body>
-</html>
+    </html>
