@@ -4,9 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>سُكُون — تسجيل الدخول</title>
-    <!-- ... (نفس الأنماط السابقة دون تغيير) ... -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+
     <style>
-        /* --- جميع الأنماط كما هي بدون تعديل --- */
+        /* --- نفس التصميم السابق بالكامل بدون تغيير --- */
         :root {
             --t50:  #f0fafa; --t100: #d0eded; --t200: #a8dede;
             --t300: #98D8D8; --t500: #5aabab; --t700: #3d8a8a; --t900: #1f4f4f;
@@ -16,6 +21,7 @@
             --sh-sm: 0 2px 8px rgba(20,70,70,.07);
             --sh-md: 0 6px 24px rgba(20,70,70,.11);
         }
+
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         html, body { height:100%; }
         body {
@@ -27,6 +33,7 @@
             align-items:center;
             padding:1rem;
         }
+        
         .auth-container {
             background:var(--white);
             padding: 2rem 2.5rem;
@@ -37,27 +44,32 @@
             text-align: center;
             border: 1px solid var(--t100);
         }
+
         .form-section { display: none; }
         .form-section.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         .logo {
             font-size: 2.5rem;
             font-weight: 800;
             color: var(--t700);
             margin-bottom: 0.5rem;
         }
+        
         h2 {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--t900);
             margin-bottom: 0.5rem;
         }
+
         p.subtitle {
             color: var(--ink60);
             margin-top: 0;
             margin-bottom: 2rem;
             font-size: .95rem;
         }
+
         .input-group { margin-bottom: 1.5rem; text-align: right; }
         .input-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--ink60); font-weight: 600; }
         .input-group input {
@@ -78,6 +90,7 @@
             background: var(--white);
             box-shadow: 0 0 0 3px rgba(90,171,171,.15);
         }
+
         .btn {
             width: 100%; padding: 14px; border: none; border-radius: 10px; color: var(--white);
             font-family: 'Cairo', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer;
@@ -87,16 +100,19 @@
         }
         .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(61,138,138,.35); }
         .btn:disabled { background: var(--t200); box-shadow: none; cursor: not-allowed; }
+
         .toggle-link {
             color: var(--t500); cursor: pointer; text-decoration: none; font-size: 0.9rem;
             font-weight: 600; display: inline-block; margin-top: 1.5rem;
         }
         .toggle-link:hover { text-decoration: underline; }
+
         .error-message {
             color: var(--danger); background-color: rgba(217, 79, 79, 0.08);
             border: 1px solid var(--danger); border-radius: 8px;
             padding: 10px; margin-top: 1rem; font-size: 0.9rem; display: none;
         }
+
         .modal-overlay { position: fixed; inset: 0; background: rgba(22, 40, 40, 0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 1rem; }
         .modal-content { background: var(--white); padding: 2rem; border-radius: 16px; text-align: center; width: 100%; max-width: 480px; box-shadow: var(--sh-md); border: 1px solid var(--t100); }
         .modal-content h3 { color: var(--warn); margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: .5rem; }
@@ -108,8 +124,6 @@
         .warning-text { color: var(--ink60); font-size: 0.95rem; line-height: 1.6; }
         #modal-close-btn { margin-top: 1.5rem; background: var(--success); }
     </style>
-    <!-- مكتبة Feather Icons -->
-    <script src="https://unpkg.com/feather-icons"></script>
 </head>
 <body>
 
@@ -158,15 +172,15 @@
 </div>
 
 <script type="module">
-    // استيراد Firebase
+    // استيراد Firebase مع المفتاح الصحيح
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-analytics.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
     import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
-    // تكوين Firebase
+    // تكوين Firebase - تم تحديث apiKey بالمفتاح الصحيح الذي أرسلته
     const firebaseConfig = {
-        apiKey: "AIz*****kw",
+        apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
         authDomain: "sakina-937c4.firebaseapp.com",
         databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
         projectId: "sakina-937c4",
@@ -206,10 +220,8 @@
     let isLoginLocked = false;
     let countdownInterval = null;
 
-    // تهيئة الأيقونات
     feather.replace();
 
-    // --- الدوال المساعدة ---
     function toggleAuthForms() {
         loginSection.classList.toggle('active');
         signupSection.classList.toggle('active');
@@ -242,9 +254,7 @@
             key = generateRecoveryKey();
             exists = await isRecoveryKeyExists(key);
             attempts++;
-            if (attempts > maxAttempts) {
-                throw new Error('تعذر إنشاء مفتاح فريد. حاول مرة أخرى.');
-            }
+            if (attempts > maxAttempts) throw new Error('تعذر إنشاء مفتاح فريد.');
         } while (exists);
         return key;
     }
@@ -284,7 +294,7 @@
         signupBtn.textContent = 'إنشاء حسابي المجهول';
     }
 
-    // --- إنشاء حساب جديد (مع معالجة أخطاء مفصلة) ---
+    // --- إنشاء حساب جديد ---
     async function createAnonymousAccount() {
         signupBtn.disabled = true;
         signupBtn.textContent = 'جارِ إنشاء الحساب...';
@@ -292,70 +302,51 @@
 
         try {
             // 1. تسجيل الدخول المجهول
-            console.log('بدء تسجيل الدخول المجهول...');
             const userCredential = await signInAnonymously(auth);
             const user = userCredential.user;
-            console.log('تم تسجيل الدخول المجهول بنجاح، uid:', user.uid);
 
             // 2. إنشاء مفتاح استرداد فريد
-            console.log('إنشاء مفتاح استرداد فريد...');
             const recoveryKey = await generateUniqueRecoveryKey();
-            console.log('تم إنشاء المفتاح:', recoveryKey);
 
             // 3. حفظ العلاقة في قاعدة البيانات
-            console.log('حفظ العلاقة في قاعدة البيانات...');
             await set(ref(db, `recoveryKeys/${recoveryKey}`), {
                 uid: user.uid,
                 createdAt: new Date().toISOString()
             });
-            console.log('تم الحفظ بنجاح.');
 
             // 4. عرض نافذة المفتاح
             showRecoveryModal(recoveryKey);
 
-            // عند الضغط على زر الإغلاق
             closeBtn.onclick = async () => {
                 modal.style.display = 'none';
                 redirectToHome(user.uid, recoveryKey);
             };
 
-            // إعادة تعيين زر الإنشاء (قد يبقى معطلاً لأن النافذة مفتوحة، لكن نعيده للحالة الطبيعية)
             signupBtn.disabled = false;
             signupBtn.textContent = 'إنشاء حسابي المجهول';
 
         } catch (error) {
             console.error('فشل إنشاء الحساب:', error);
-            
             let userMessage = 'حدث خطأ أثناء إنشاء الحساب. ';
-            
-            // تحليل أنواع الأخطاء الشائعة
             if (error.code === 'auth/operation-not-allowed') {
-                userMessage += 'المصادقة المجهولة غير مفعلة في مشروع Firebase. الرجاء تفعيلها من وحدة التحكم.';
+                userMessage += 'المصادقة المجهولة غير مفعلة. الرجاء تفعيلها من وحدة تحكم Firebase.';
             } else if (error.code === 'auth/network-request-failed') {
-                userMessage += 'مشكلة في الاتصال بالإنترنت. تحقق من الشبكة وحاول مرة أخرى.';
+                userMessage += 'مشكلة في الاتصال بالإنترنت.';
             } else if (error.message.includes('permission_denied')) {
-                userMessage += 'صلاحية الكتابة في قاعدة البيانات مرفوضة. تأكد من قواعد الأمان في Firebase.';
-            } else if (error.message.includes('database')) {
-                userMessage += 'خطأ في قاعدة البيانات. تأكد من صحة عنوان URL لقاعدة البيانات.';
+                userMessage += 'صلاحية الكتابة في قاعدة البيانات مرفوضة. تأكد من قواعد الأمان.';
             } else {
-                userMessage += `تفاصيل: ${error.message}`;
+                userMessage += error.message;
             }
-            
             showSignupError(userMessage);
             
-            // محاولة تنظيف: إذا تم إنشاء المستخدم المجهول ولكن فشل الحفظ، يمكننا حذف المستخدم (اختياري)
+            // تنظيف المستخدم المؤقت إذا فشل الحفظ
             if (auth.currentUser) {
-                try {
-                    await auth.currentUser.delete();
-                    console.log('تم حذف المستخدم المجهول المؤقت بعد الفشل.');
-                } catch (delErr) {
-                    console.warn('لم نتمكن من حذف المستخدم المجهول:', delErr);
-                }
+                try { await auth.currentUser.delete(); } catch (e) {}
             }
         }
     }
 
-    // --- تسجيل الدخول (مع تحسينات بسيطة) ---
+    // --- تسجيل الدخول ---
     async function handleLogin() {
         if (isLoginLocked) return;
 
@@ -375,8 +366,6 @@
             
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                const storedUid = data.uid;
-                
                 // تسجيل الدخول المجهول الجديد
                 const userCredential = await signInAnonymously(auth);
                 const newUser = userCredential.user;
@@ -411,7 +400,6 @@
     function loginFailure(message) {
         loginAttempts++;
         loginError.style.display = 'block';
-        
         if (loginAttempts >= 8) {
             lockLogin(600);
             loginError.textContent = 'تم تجاوز عدد المحاولات. يرجى المحاولة مرة أخرى بعد 10 دقائق.';
@@ -427,7 +415,6 @@
         isLoginLocked = true;
         loginBtn.disabled = true;
         let remaining = seconds;
-        
         const lockInterval = setInterval(() => {
             loginBtn.textContent = `محظور (${remaining} ثانية)`;
             remaining--;
@@ -460,7 +447,6 @@
             if (countdownSpan.textContent === '0' || countdownSpan.textContent === '') {
                 closeBtn.disabled = false;
             }
-            
             alert('تم نسخ المفتاح وتنزيل الملف بنجاح.');
         } catch (err) {
             alert('فشل النسخ التلقائي. يرجى نسخ المفتاح يدوياً.');
@@ -471,7 +457,7 @@
         if (countdownInterval) clearInterval(countdownInterval);
     });
 
-    console.log('✅ تم تهيئة Firebase. قاعدة البيانات جاهزة.');
+    console.log('✅ تم تهيئة Firebase بنجاح. قاعدة البيانات جاهزة.');
 </script>
 </body>
-    </html>
+</html>
