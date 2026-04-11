@@ -4,356 +4,691 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>سُكُون — محادثة</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
         :root {
-            --primary: #98D8D8; --accent: #5aabab; --accent-dark: #3d8a8a;
-            --bg: #eef6f6; --white: #fff; --ink: #2c3e50; --text-sec: #7f8c8d;
-            --bubble-sent-bg: var(--primary);
-            --bubble-sent-text: var(--ink);
-            --bubble-received-bg: var(--white);
-            --bubble-received-text: var(--ink);
-            --grad: linear-gradient(135deg, var(--primary), var(--accent));
-            --shadow: 0 4px 24px rgba(90, 171, 171, 0.1);
-            --radius: 22px;
+            --t50:#f0fafa; --t100:#d0eded; --t200:#a8dede;
+            --t300:#98D8D8; --t500:#5aabab; --t700:#3d8a8a; --t900:#1f4f4f;
+            --ink:#162828; --ink60:#4a6363; --ink30:#9ababa;
+            --bg:#e4f0f0; --white:#ffffff;
+            --danger:#d94f4f; --success:#38c08a; --warn:#eda84a;
+            --sh-sm:0 2px 8px rgba(20,70,70,.07);
+            --sh-md:0 6px 24px rgba(20,70,70,.11);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { font-size: 16px; }
-        body {
-            font-family: 'Cairo', sans-serif; color: var(--ink);
-            height: 100vh; width: 100vw;
-            overflow: hidden;
-            display: flex; flex-direction: column;
-            background-color: var(--bg);
-        }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-
-        /* ======================================== */
-        /* --- 1. رأس الصفحة (Chat Header) --- */
-        /* ======================================== */
-        .chat-header {
-            display: flex; align-items: center; gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            box-shadow: var(--shadow);
-            z-index: 10;
-            flex-shrink: 0;
-        }
-        .back-btn { background: none; border: none; cursor: pointer; color: var(--ink); padding: 0.5rem; display: flex; }
-        .avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
-        .header-info { flex-grow: 1; }
-        .header-info .name { font-size: 1.1rem; font-weight: 700; color: var(--accent-dark); }
-        .header-info .status { font-size: 0.8rem; color: var(--text-sec); }
-        
-        .call-actions { display: flex; gap: 0.5rem; }
-        .call-btn {
-            background: none; border: none; cursor: pointer;
-            padding: 0.6rem; color: var(--accent);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            transition: background-color 0.2s, color 0.2s, transform 0.2s;
-        }
-        .call-btn:hover { background-color: rgba(152, 216, 216, 0.2); color: var(--accent-dark); }
-        .call-btn:active { transform: scale(0.9); }
-
-        /* ======================================== */
-        /* --- 2. منطقة عرض الرسائل --- */
-        /* ======================================== */
-        .messages-area {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 1.5rem 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem; /* مسافة بسيطة بين الحاويات */
-        }
-        .message-container {
-            display: flex;
-            flex-direction: column;
-            max-width: 75%;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: popIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-        @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
-
-        .message-bubble {
-            padding: 0.75rem 1.1rem;
-            border-radius: var(--radius);
-            line-height: 1.7;
-            font-size: 0.95rem;
-            word-wrap: break-word;
-        }
-        .message-meta { font-size: 0.7rem; color: var(--text-sec); margin-top: 0.3rem; padding: 0 0.5rem; }
-        .message-meta .status-ticks { margin-right: 0.25rem; font-weight: 700; }
-        .status-ticks.read { color: #3498db; }
-
-        /* --- رسالة مستلمة (من الطبيب) --- */
-        .received-container { align-self: flex-start; align-items: flex-start; }
-        .received {
-            background: var(--bubble-received-bg);
-            color: var(--bubble-received-text);
-            border-top-right-radius: 6px;
-        }
-        
-        /* --- رسالة مرسلة (من المستخدم) --- */
-        .sent-container { align-self: flex-end; align-items: flex-end; }
-        .sent {
-            background: var(--bubble-sent-bg);
-            color: var(--bubble-sent-text);
-            border-top-left-radius: 6px;
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+        html,body{height:100%;overflow:hidden;}
+        body{
+            font-family:'Cairo',sans-serif;
+            background:var(--bg);color:var(--ink);
+            display:flex;flex-direction:column;
+            position:relative;
         }
 
-        /* --- فاصل التاريخ --- */
-        .date-divider {
-            align-self: center;
-            background: rgba(152, 216, 216, 0.2);
-            color: var(--accent-dark);
-            padding: 0.25rem 1rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin: 1rem 0;
+        /* subtle chat wallpaper */
+        body::before{
+            content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(152,216,216,.12) 0%,transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(61,138,138,.08) 0%,transparent 50%);
         }
 
-        /* ======================================== */
-        /* --- 3. منطقة إدخال النص --- */
-        /* ======================================== */
-        .input-area {
-            display: flex; align-items: flex-end; gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(0,0,0,0.05);
-            flex-shrink: 0;
+        /* ── Header ── */
+        .chat-header{
+            display:flex;align-items:center;gap:.7rem;
+            padding:.7rem 1rem;
+            background:rgba(255,255,255,.88);backdrop-filter:blur(16px);
+            border-bottom:1px solid var(--t100);
+            box-shadow:var(--sh-sm);z-index:10;flex-shrink:0;
+            position:relative;
         }
-        .message-input {
-            flex-grow: 1;
-            border: none;
-            background: rgba(238, 246, 246, 0.9);
-            border-radius: 20px;
-            padding: 0.8rem 1rem;
-            font-family: 'Cairo', sans-serif;
-            font-size: 1rem;
-            outline: none;
-            resize: none;
-            max-height: 100px; /* تحديد أقصى ارتفاع للحقل */
-            overflow-y: auto;
+
+        .back-btn{
+            width:36px;height:36px;border-radius:50%;border:none;
+            background:none;display:flex;align-items:center;justify-content:center;
+            cursor:pointer;color:var(--ink60);transition:background .2s;flex-shrink:0;
         }
-        .send-btn {
-            background: var(--grad);
-            border: none;
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            color: white;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(90, 171, 171, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
+        .back-btn:hover{background:var(--t50);}
+
+        .doc-avatar{
+            width:44px;height:44px;border-radius:50%;
+            border:2px solid var(--t200);box-shadow:var(--sh-sm);
+            background:linear-gradient(135deg,var(--t500),var(--t700));
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.1rem;font-weight:900;color:var(--white);
+            overflow:hidden;flex-shrink:0;
         }
-        .send-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(90, 171, 171, 0.4);
+        .doc-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+
+        .header-meta{flex:1;min-width:0;}
+        .header-name{
+            font-size:1rem;font-weight:800;color:var(--t900);
+            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
         }
-        .send-btn:active { transform: scale(1); box-shadow: 0 2px 8px rgba(90, 171, 171, 0.2); }
-        .send-btn .icon { transform: translateX(2px); }
+        .header-status{
+            display:flex;align-items:center;gap:.35rem;
+            font-size:.72rem;color:var(--ink30);
+        }
+        .status-dot{width:6px;height:6px;border-radius:50%;background:var(--success);}
+        .status-dot.offline{background:var(--ink30);}
+
+        .hdr-actions{display:flex;gap:.4rem;flex-shrink:0;}
+        .hdr-btn{
+            width:38px;height:38px;border-radius:50%;border:1.5px solid var(--t100);
+            background:var(--white);display:flex;align-items:center;justify-content:center;
+            cursor:pointer;color:var(--ink60);box-shadow:var(--sh-sm);
+            transition:all .2s;
+        }
+        .hdr-btn:hover{background:var(--t700);color:var(--white);border-color:var(--t700);transform:translateY(-1px);}
+
+        /* ── Messages area ── */
+        .msgs-area{
+            flex:1;overflow-y:auto;
+            padding:1.25rem 1rem 1rem;
+            display:flex;flex-direction:column;gap:.35rem;
+            position:relative;z-index:1;
+        }
+        ::-webkit-scrollbar{width:4px;}
+        ::-webkit-scrollbar-thumb{background:var(--t200);border-radius:99px;}
+
+        /* Date separator */
+        .date-sep{
+            align-self:center;
+            font-size:.72rem;font-weight:700;color:var(--ink30);
+            background:rgba(255,255,255,.7);border:1px solid var(--t100);
+            padding:.22rem .85rem;border-radius:99px;
+            margin:.75rem 0;
+        }
+
+        /* Unread divider */
+        .unread-sep{
+            display:flex;align-items:center;gap:.6rem;
+            margin:.5rem 0;align-self:stretch;
+        }
+        .unread-sep span{
+            font-size:.7rem;font-weight:800;color:var(--t500);
+            padding:.18rem .7rem;border-radius:99px;
+            background:rgba(90,171,171,.1);border:1px solid var(--t200);
+            white-space:nowrap;
+        }
+        .unread-sep::before,.unread-sep::after{content:'';flex:1;height:1px;background:var(--t200);}
+
+        /* Bubble wrap */
+        .bubble-wrap{
+            display:flex;flex-direction:column;
+            max-width:74%;
+            animation:bubIn .2s ease forwards;
+        }
+        @keyframes bubIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+        .bubble-wrap.out{align-self:flex-end;align-items:flex-end;}
+        .bubble-wrap.in {align-self:flex-start;align-items:flex-start;}
+
+        .bubble{
+            padding:.65rem 1rem;
+            border-radius:18px;
+            line-height:1.7;font-size:.92rem;
+            word-break:break-word;
+            position:relative;
+        }
+        .bubble-wrap.out .bubble{
+            background:linear-gradient(135deg,var(--t700),var(--t500));
+            color:var(--white);
+            border-bottom-right-radius:4px;
+            box-shadow:0 3px 10px rgba(61,138,138,.25);
+        }
+        .bubble-wrap.in .bubble{
+            background:var(--white);color:var(--ink);
+            border-bottom-left-radius:4px;
+            border:1px solid var(--t100);
+            box-shadow:var(--sh-sm);
+        }
+
+        .bubble-footer{
+            display:flex;align-items:center;gap:.35rem;
+            padding:0 .25rem;margin-top:.2rem;
+        }
+        .msg-time{font-size:.68rem;color:var(--ink30);}
+        .bubble-wrap.out .msg-time{color:rgba(255,255,255,.5);}
+
+        /* read receipt ticks */
+        .ticks{display:flex;color:var(--ink30);}
+        .ticks.sent{color:var(--ink30);}
+        .ticks.delivered{color:var(--ink30);}
+        .ticks.read{color:var(--success);}
+
+        /* Typing indicator */
+        .typing-wrap{
+            align-self:flex-start;
+            display:none;align-items:center;gap:.5rem;
+            padding:.4rem 0;
+        }
+        .typing-wrap.show{display:flex;}
+        .typing-bubble{
+            background:var(--white);border:1px solid var(--t100);
+            padding:.55rem .85rem;border-radius:18px;border-bottom-left-radius:4px;
+            box-shadow:var(--sh-sm);display:flex;gap:4px;
+        }
+        .typing-bubble span{
+            width:7px;height:7px;border-radius:50%;
+            background:var(--ink30);animation:dotPulse 1.2s infinite;
+        }
+        .typing-bubble span:nth-child(2){animation-delay:.2s;}
+        .typing-bubble span:nth-child(3){animation-delay:.4s;}
+        @keyframes dotPulse{0%,80%,100%{transform:scale(.8);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+        /* ── Input bar ── */
+        .input-bar{
+            display:flex;align-items:flex-end;gap:.6rem;
+            padding:.7rem 1rem;
+            background:rgba(255,255,255,.88);backdrop-filter:blur(16px);
+            border-top:1px solid var(--t100);
+            flex-shrink:0;z-index:10;
+        }
+
+        .msg-input{
+            flex:1;min-height:44px;max-height:120px;
+            padding:.6rem 1rem;
+            border:1.5px solid var(--t100);border-radius:22px;
+            background:var(--t50);
+            font-family:'Cairo',sans-serif;font-size:.93rem;color:var(--ink);
+            outline:none;resize:none;line-height:1.5;
+            transition:border-color .2s,background .2s,box-shadow .2s;
+            overflow-y:auto;
+        }
+        .msg-input:focus{
+            border-color:var(--t500);background:var(--white);
+            box-shadow:0 0 0 3px rgba(90,171,171,.15);
+        }
+        .msg-input::placeholder{color:var(--ink30);}
+
+        .send-btn{
+            width:44px;height:44px;border-radius:50%;
+            border:none;
+            background:linear-gradient(135deg,var(--t700),var(--t500));
+            color:var(--white);
+            display:flex;align-items:center;justify-content:center;
+            cursor:pointer;box-shadow:0 4px 12px rgba(61,138,138,.35);
+            transition:transform .2s,box-shadow .2s;flex-shrink:0;
+            align-self:flex-end;
+        }
+        .send-btn:hover{transform:scale(1.08);box-shadow:0 6px 18px rgba(61,138,138,.45);}
+        .send-btn:active{transform:scale(.95);}
+        .send-btn:disabled{background:var(--t200);box-shadow:none;cursor:not-allowed;}
+
+        /* ── Toast ── */
+        .toast{
+            position:fixed;bottom:4.5rem;left:50%;
+            transform:translateX(-50%) translateY(6px);
+            background:var(--t900);color:var(--white);
+            padding:.55rem 1.3rem;border-radius:99px;
+            font-size:.83rem;font-weight:600;
+            z-index:9999;opacity:0;pointer-events:none;
+            transition:opacity .25s,transform .25s;white-space:nowrap;
+        }
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+        .toast.err{background:var(--danger);}
     </style>
 </head>
 <body>
 
-    <header class="chat-header" id="chatHeader"></header>
-    <main class="messages-area" id="messagesArea"></main>
-    <footer class="input-area">
-        <textarea class="message-input" id="messageInput" placeholder="اكتب رسالتك هنا..." rows="1"></textarea>
-        <button class="send-btn" id="sendBtn" aria-label="إرسال">
-            <i class="icon" data-feather="send"></i>
+<!-- ── Header ── -->
+<header class="chat-header" id="chatHeader">
+    <button class="back-btn" id="backBtn">
+        <i data-feather="arrow-right" style="width:20px;height:20px"></i>
+    </button>
+    <div class="doc-avatar" id="docAvatarEl">
+        <i data-feather="user" style="width:18px;height:18px;opacity:.8"></i>
+    </div>
+    <div class="header-meta">
+        <div class="header-name" id="headerName">جاري التحميل...</div>
+        <div class="header-status">
+            <div class="status-dot offline" id="headerStatusDot"></div>
+            <span id="headerStatusText">غير متصل</span>
+        </div>
+    </div>
+    <div class="hdr-actions">
+        <button class="hdr-btn" id="videoCallBtn" title="مكالمة فيديو">
+            <i data-feather="video" style="width:16px;height:16px"></i>
         </button>
-    </footer>
+        <button class="hdr-btn" id="voiceCallBtn" title="مكالمة صوتية">
+            <i data-feather="phone" style="width:16px;height:16px"></i>
+        </button>
+    </div>
+</header>
 
-    <script>
-        const CHAT_APP = (() => {
-            'use strict';
+<!-- ── Messages ── -->
+<main class="msgs-area" id="msgsArea">
+    <!-- injected by JS -->
+    <div class="typing-wrap" id="typingWrap">
+        <div class="typing-bubble">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+</main>
 
-            // --- DATA (Mock Database) ---
-            const DB = {
-                doctors: {
-                    'doc_ahmed': { name: 'د. أحمد صالح', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' },
-                    'doc_fatima': { name: 'د. فاطمة علي', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
-                },
-                messages: {
-                    'doc_ahmed': [
-                        { from: 'doctor', text: 'أهلاً بك. كيف يمكنني مساعدتك اليوم؟', time: '10:40 ص', date: '2026-04-05' },
-                        { from: 'user', text: 'أهلاً دكتور، أشعر ببعض القلق مؤخراً.', time: '10:41 ص', status: 'read' },
-                        { from: 'doctor', text: 'أتفهم ذلك تماماً. هل يمكنك أن تصف لي طبيعة هذا القلق؟', time: '10:42 ص' },
-                        { from: 'user', text: 'هو شعور عام بعدم الارتياح، خاصة في المواقف الاجتماعية.', time: '10:44 ص', status: 'sent' },
-                    ],
-                    'doc_fatima': [
-                        { from: 'doctor', text: 'مرحباً، وصلني طلبك. كيف حالك اليوم؟', time: '09:15 ص', date: '2026-04-04' },
-                    ]
-                },
-                currentUser: { id: 'user_abc_123' }
-            };
+<!-- ── Input ── -->
+<footer class="input-bar">
+    <textarea class="msg-input" id="msgInput" placeholder="اكتب رسالتك..." rows="1"></textarea>
+    <button class="send-btn" id="sendBtn" disabled>
+        <i data-feather="send" style="width:17px;height:17px"></i>
+    </button>
+</footer>
 
-            // --- DOM Elements ---
-            const elements = {
-                header: document.getElementById('chatHeader'),
-                messagesArea: document.getElementById('messagesArea'),
-                input: document.getElementById('messageInput'),
-                sendBtn: document.getElementById('sendBtn'),
-            };
+<div class="toast" id="toast"></div>
 
-            // --- State ---
-            let currentDoctorId = null;
 
-            // --- TEMPLATES (Clean HTML generation) ---
-            const createHeaderHTML = (doctor) => `
-                <button class="back-btn" onclick="window.location.href='chats.html'">
-                    <i data-feather="arrow-right"></i>
-                </button>
-                <img src="${doctor.avatar}" alt="${doctor.name}" class="avatar">
-                <div class="header-info">
-                    <div class="name">${doctor.name}</div>
-                    <div class="status">متاح للمراسلة</div>
-                </div>
-                <div class="call-actions">
-                    <button class="call-btn" id="videoCallBtn" title="مكالمة فيديو"><i data-feather="video"></i></button>
-                    <button class="call-btn" id="audioCallBtn" title="مكالمة صوتية"><i data-feather="phone"></i></button>
-                </div>
-            `;
+<!-- ════════════ SCRIPT ════════════ -->
+<script type="module">
+    import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore,
+             collection, doc,
+             query, orderBy, limit,
+             onSnapshot, addDoc,
+             updateDoc, getDocs,
+             serverTimestamp,
+             getDoc }              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth,
+             onAuthStateChanged }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-            const createMessageHTML = (msg) => {
-                const isSent = msg.from === 'user';
-                const ticks = { sent: '✓', read: '✓✓' };
-                const statusTicks = isSent ? `<span class="status-ticks ${msg.status}">${ticks[msg.status] || ''}</span>` : '';
-                
-                return `
-                    <div class="message-container ${isSent ? 'sent-container' : 'received-container'}">
-                        <div class="message-bubble ${isSent ? 'sent' : 'received'}">${msg.text}</div>
-                        <div class="message-meta">${statusTicks}<span>${msg.time}</span></div>
-                    </div>
-                `;
-            };
+    feather.replace();
 
-            const createDateDividerHTML = (dateStr) => {
-                const date = new Date(dateStr).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
-                return `<div class="date-divider">${date}</div>`;
-            };
+    // ── Firebase ─────────────────────────────────────────────────────────
+    const app = initializeApp({
+        apiKey:            "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
+        authDomain:        "sakina-937c4.firebaseapp.com",
+        projectId:         "sakina-937c4",
+        storageBucket:     "sakina-937c4.firebasestorage.app",
+        messagingSenderId: "25215790734",
+        appId:             "1:25215790734:web:46c5d893d5818530b3a3df"
+    });
+    const db   = getFirestore(app);
+    const auth = getAuth(app);
 
-            // --- RENDER Functions ---
-            const render = () => {
-                const doctor = DB.doctors[currentDoctorId];
-                const messages = DB.messages[currentDoctorId] || [];
-                if (!doctor) {
-                    document.body.innerHTML = '<h1>لم يتم العثور على الطبيب</h1>';
-                    return;
-                }
-
-                // Render Header
-                elements.header.innerHTML = createHeaderHTML(doctor);
-                feather.replace();
-                
-                // Render Messages
-                elements.messagesArea.innerHTML = '';
-                let lastDate = null;
-                const fragment = document.createDocumentFragment();
-                messages.forEach((msg, index) => {
-                    if (msg.date && msg.date !== lastDate) {
-                        const divider = document.createElement('div');
-                        divider.innerHTML = createDateDividerHTML(msg.date);
-                        fragment.appendChild(divider.firstChild);
-                        lastDate = msg.date;
-                    }
-                    const msgEl = document.createElement('div');
-                    msgEl.innerHTML = createMessageHTML(msg);
-                    msgEl.firstChild.style.animationDelay = `${Math.min(index * 0.07, 0.5)}s`;
-                    fragment.appendChild(msgEl.firstChild);
-                });
-                elements.messagesArea.appendChild(fragment);
-
-                // Scroll to bottom
-                elements.messagesArea.scrollTop = elements.messagesArea.scrollHeight;
-            };
-
-            // --- ACTIONS ---
-            const sendMessage = () => {
-                const text = elements.input.value.trim();
-                if (!text) return;
-
-                const newMessage = {
-                    from: 'user',
-                    text: text,
-                    time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
-                    status: 'sent'
+    // ── IndexedDB for message cache ───────────────────────────────────────
+    class IDB {
+        constructor(){ this.db=null; }
+        async init(){
+            return new Promise((res,rej)=>{
+                const r = indexedDB.open('SakoonPatientConvDB',1);
+                r.onerror=()=>rej(r.error);
+                r.onsuccess=()=>{ this.db=r.result; res(); };
+                r.onupgradeneeded=({target})=>{
+                    const d=target.result;
+                    if(!d.objectStoreNames.contains('messages'))
+                        d.createObjectStore('messages',{keyPath:'id'});
+                    if(!d.objectStoreNames.contains('doc_info'))
+                        d.createObjectStore('doc_info',{keyPath:'id'});
                 };
-                
-                DB.messages[currentDoctorId].push(newMessage);
-                
-                // Optimistic UI update
-                const msgEl = document.createElement('div');
-                msgEl.innerHTML = createMessageHTML(newMessage);
-                msgEl.firstChild.style.animationDelay = `0s`;
-                elements.messagesArea.appendChild(msgEl.firstChild);
-                elements.messagesArea.scrollTop = elements.messagesArea.scrollHeight;
+            });
+        }
+        _tx(s,m='readonly'){ return this.db.transaction([s],m).objectStore(s); }
+        _p(r){ return new Promise((res,rej)=>{ r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+        getAll(s)    { return this._p(this._tx(s).getAll()).then(r=>r||[]); }
+        get(s,id)    { return this._p(this._tx(s).get(id)); }
+        put(s,obj)   { return this._p(this._tx(s,'readwrite').put(obj)); }
+        clear(s)     { return this._p(this._tx(s,'readwrite').clear()); }
+    }
+    const idb = new IDB();
 
-                elements.input.value = '';
-                elements.input.style.height = 'auto';
-                elements.input.focus();
-            };
+    // ── Toast ─────────────────────────────────────────────────────────────
+    let _tt;
+    const toast=(msg,type='')=>{
+        const el=document.getElementById('toast');
+        el.textContent=msg; el.className=`toast show ${type}`;
+        clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),3000);
+    };
 
-            const startCall = (type) => {
-                const url = `call.html?type=${type}&doctor_id=${currentDoctorId}&patient_id=${DB.currentUser.id}`;
-                alert(`جاري بدء مكالمة ${type === 'video' ? 'فيديو' : 'صوتية'}...\nسيتم توجيهك إلى: ${url}`);
-                // window.location.href = url; // Uncomment for actual redirection
-            };
+    // ── State ─────────────────────────────────────────────────────────────
+    let patientUid  = null;
+    let doctorId    = null;   // from URL param
+    let convId      = null;   // Firestore conversation doc ID
+    let unsubMsgs   = null;
+    let firstLoad   = true;
+    let unreadShown = false;
+    let lastDate    = '';
+    let isAtBottom  = true;
 
-            // --- EVENT BINDING ---
-            const bindEvents = () => {
-                elements.sendBtn.addEventListener('click', sendMessage);
-                elements.input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
+    const msgsArea   = document.getElementById('msgsArea');
+    const typingWrap = document.getElementById('typingWrap');
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    const fmtTime = ts=>{
+        if(!ts) return '';
+        const d = ts.toDate ? ts.toDate() : new Date(ts*1000||ts);
+        return d.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+    };
+    const fmtDate = ts=>{
+        if(!ts) return '';
+        const d = ts.toDate ? ts.toDate() : new Date(ts*1000||ts);
+        const now=new Date(); now.setHours(0,0,0,0);
+        const yesterday=new Date(now); yesterday.setDate(now.getDate()-1);
+        const dd=new Date(d); dd.setHours(0,0,0,0);
+        if(dd.getTime()===now.getTime()) return 'اليوم';
+        if(dd.getTime()===yesterday.getTime()) return 'أمس';
+        return d.toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'});
+    };
+    const dateKey = ts=>{
+        if(!ts) return '';
+        const d = ts.toDate ? ts.toDate() : new Date(ts*1000||ts);
+        return d.toISOString().split('T')[0];
+    };
+
+    // ── Scroll ────────────────────────────────────────────────────────────
+    msgsArea.addEventListener('scroll',()=>{
+        isAtBottom = msgsArea.scrollHeight - msgsArea.scrollTop - msgsArea.clientHeight < 80;
+    });
+    const scrollBot=(force=false)=>{
+        if(force||isAtBottom) msgsArea.scrollTop=msgsArea.scrollHeight;
+    };
+
+    // ── Render single bubble ──────────────────────────────────────────────
+    const appendBubble=(msg, isNew=false)=>{
+        const isOut = msg.senderId===patientUid;
+
+        // Date separator
+        const dk = dateKey(msg.createdAt);
+        if(dk && dk!==lastDate){
+            lastDate=dk;
+            const sep=document.createElement('div');
+            sep.className='date-sep';
+            sep.textContent=fmtDate(msg.createdAt);
+            msgsArea.insertBefore(sep, typingWrap);
+        }
+
+        // Unread divider (first unread from doctor on first load)
+        if(!isNew && firstLoad && !msg.read && msg.senderId!==patientUid && !unreadShown){
+            unreadShown=true;
+            const ud=document.createElement('div');
+            ud.className='unread-sep';
+            ud.innerHTML='<span>رسائل غير مقروءة</span>';
+            msgsArea.insertBefore(ud, typingWrap);
+        }
+
+        const wrap=document.createElement('div');
+        wrap.className=`bubble-wrap ${isOut?'out':'in'}`;
+        wrap.dataset.id=msg.id;
+
+        // ticks for outgoing
+        let ticksHTML='';
+        if(isOut){
+            const cls = msg.read?'read':'sent';
+            const icon = msg.read
+                ? '<i data-feather="check-circle" style="width:12px;height:12px"></i>'
+                : '<i data-feather="check" style="width:12px;height:12px"></i>';
+            ticksHTML=`<span class="ticks ${cls}">${icon}</span>`;
+        }
+
+        wrap.innerHTML=`
+            <div class="bubble">${escHtml(msg.text)}</div>
+            <div class="bubble-footer">
+                <span class="msg-time">${fmtTime(msg.createdAt)}</span>
+                ${ticksHTML}
+            </div>`;
+
+        msgsArea.insertBefore(wrap, typingWrap);
+        feather.replace();
+        if(isNew) scrollBot(true);
+    };
+
+    const escHtml=s=>s
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\n/g,'<br>');
+
+    // ── Update tick on existing bubble ───────────────────────────────────
+    const updateTick=(msgId)=>{
+        const wrap=msgsArea.querySelector(`[data-id="${msgId}"]`);
+        if(!wrap) return;
+        const ticks=wrap.querySelector('.ticks');
+        if(ticks){
+            ticks.className='ticks read';
+            ticks.innerHTML='<i data-feather="check-circle" style="width:12px;height:12px"></i>';
+            feather.replace();
+        }
+    };
+
+    // ── Load doctor info ──────────────────────────────────────────────────
+    const loadDoctorInfo=async()=>{
+        // try cache
+        const cached=await idb.get('doc_info',doctorId);
+        if(cached) applyDocUI(cached);
+
+        // fetch live
+        try {
+            const snap=await getDocs(
+                query(collection(db,'doctors'),
+                      ...[])
+            );
+            // doctors collection has uid field
+            const { query:q2, where } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+            const s2 = await getDocs(q2(collection(db,'doctors'), where('uid','==',doctorId)));
+            if(!s2.empty){
+                const data={id:doctorId,...s2.docs[0].data()};
+                await idb.put('doc_info',data);
+                applyDocUI(data);
+            }
+        } catch(e){ console.warn('Doctor info:',e); }
+    };
+
+    const applyDocUI=data=>{
+        const name=data.name||'أخصائي';
+        document.getElementById('headerName').textContent=name;
+        const av=document.getElementById('docAvatarEl');
+        if(data.avatarB64){
+            av.innerHTML=`<img src="${data.avatarB64}" alt="${name}">`;
+        } else {
+            av.textContent=name.trim().charAt(0);
+        }
+    };
+
+    // ── Resolve or create conversation ────────────────────────────────────
+    const resolveConv=async()=>{
+        const { query:q2, where, getDocs:gd } =
+            await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        try {
+            const snap=await gd(q2(
+                collection(db,'conversations'),
+                where('patientId','==',patientUid),
+                where('doctorId','==',doctorId)
+            ));
+            if(!snap.empty){
+                convId=snap.docs[0].id;
+            } else {
+                // create new conversation
+                const ref=await addDoc(collection(db,'conversations'),{
+                    patientId:      patientUid,
+                    doctorId:       doctorId,
+                    createdAt:      serverTimestamp(),
+                    lastMessage:    '',
+                    lastMessageTime:serverTimestamp(),
+                    unreadDoctor:   0,
+                    unreadPatient:  0
+                });
+                convId=ref.id;
+            }
+        } catch(e){
+            console.error('resolveConv:',e);
+            toast('⚠️ تعذّر تحميل المحادثة','err');
+        }
+    };
+
+    // ── Listen to messages ────────────────────────────────────────────────
+    const listenMessages=async()=>{
+        if(!convId) return;
+
+        // show cache first
+        const cached=(await idb.getAll('messages'))
+            .filter(m=>m.convId===convId)
+            .sort((a,b)=>a._ts-b._ts);
+        cached.forEach(m=>appendBubble(m));
+        scrollBot(true);
+
+        // live
+        const msgsRef=collection(db,'conversations',convId,'messages');
+        const q=query(msgsRef,orderBy('createdAt','asc'));
+
+        unsubMsgs=onSnapshot(q,async snap=>{
+            for(const change of snap.docChanges()){
+                if(change.type==='added'){
+                    const msg={
+                        id:change.doc.id,
+                        convId,
+                        _ts:change.doc.data().createdAt?.seconds||0,
+                        ...change.doc.data()
+                    };
+                    const exists=msgsArea.querySelector(`[data-id="${msg.id}"]`);
+                    if(!exists) appendBubble(msg,!firstLoad);
+                    await idb.put('messages',msg);
+
+                    // mark as read if doctor sent
+                    if(msg.senderId!==patientUid&&!msg.read){
+                        try{
+                            await updateDoc(
+                                doc(db,'conversations',convId,'messages',msg.id),
+                                {read:true}
+                            );
+                            // reset unread counter
+                            await updateDoc(doc(db,'conversations',convId),{unreadPatient:0});
+                        }catch(e){}
                     }
-                });
+                }
+                if(change.type==='modified'){
+                    updateTick(change.doc.id);
+                    await idb.put('messages',{
+                        id:change.doc.id,convId,
+                        _ts:change.doc.data().createdAt?.seconds||0,
+                        ...change.doc.data()
+                    });
+                }
+            }
+            firstLoad=false;
+            scrollBot();
+        },err=>{
+            console.error('msgs listener:',err);
+            toast('⚠️ خطأ في تحميل الرسائل','err');
+        });
+    };
 
-                elements.input.addEventListener('input', () => {
-                    elements.input.style.height = 'auto';
-                    elements.input.style.height = `${elements.input.scrollHeight}px`;
-                });
+    // ── Doctor online presence ────────────────────────────────────────────
+    const listenPresence=()=>{
+        try{
+            onSnapshot(doc(db,'users',doctorId),snap=>{
+                if(!snap.exists()) return;
+                const d=snap.data();
+                const online=d.online||false;
+                document.getElementById('headerStatusDot').className='status-dot'+(online?'':' offline');
+                document.getElementById('headerStatusText').textContent=online?'متصل الآن':'غير متصل';
+            });
+        }catch(e){}
+    };
 
-                // Use event delegation for call buttons
-                elements.header.addEventListener('click', (e) => {
-                    const videoBtn = e.target.closest('#videoCallBtn');
-                    const audioBtn = e.target.closest('#audioCallBtn');
-                    if (videoBtn) startCall('video');
-                    if (audioBtn) startCall('audio');
-                });
-            };
+    // ── Send message ──────────────────────────────────────────────────────
+    const sendMsg=async()=>{
+        const input=document.getElementById('msgInput');
+        const text=input.value.trim();
+        if(!text||!convId) return;
 
-            // --- INITIALIZATION ---
-            const init = () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                currentDoctorId = urlParams.get('id') || 'doc_ahmed'; // Default to a chat
-                
-                render();
-                bindEvents();
-            };
+        input.value=''; input.style.height='auto';
+        document.getElementById('sendBtn').disabled=true;
 
-            return { init };
-        })();
+        // optimistic bubble
+        const optId=`opt_${Date.now()}`;
+        const now=new Date();
+        appendBubble({
+            id:optId,senderId:patientUid,text,
+            createdAt:{toDate:()=>now},read:false,_optimistic:true
+        },true);
 
-        document.addEventListener('DOMContentLoaded', CHAT_APP.init);
-    </script>
+        try{
+            const ref=await addDoc(collection(db,'conversations',convId,'messages'),{
+                text,
+                senderId:     patientUid,
+                senderRole:   'patient',
+                createdAt:    serverTimestamp(),
+                read:         false
+            });
+
+            // remove optimistic bubble (real one arrives via listener)
+            const opt=msgsArea.querySelector(`[data-id="${optId}"]`);
+            if(opt) opt.remove();
+
+            // update conversation meta
+            await updateDoc(doc(db,'conversations',convId),{
+                lastMessage:     text,
+                lastMessageTime: serverTimestamp(),
+                unreadDoctor:    1   // doctor has unread
+            });
+        }catch(e){
+            console.error('send:',e);
+            toast('❌ فشل إرسال الرسالة','err');
+        }
+    };
+
+    // ── Input events ──────────────────────────────────────────────────────
+    const msgInput = document.getElementById('msgInput');
+    const sendBtn  = document.getElementById('sendBtn');
+
+    msgInput.addEventListener('input',()=>{
+        msgInput.style.height='auto';
+        msgInput.style.height=Math.min(msgInput.scrollHeight,120)+'px';
+        sendBtn.disabled=!msgInput.value.trim();
+    });
+    msgInput.addEventListener('keydown',e=>{
+        if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); }
+    });
+    sendBtn.addEventListener('click',sendMsg);
+
+    // ── Call buttons ──────────────────────────────────────────────────────
+    document.getElementById('videoCallBtn').addEventListener('click',()=>{
+        window.location.href=
+            `patient-call.html?type=video&doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(patientUid)}&role=caller`;
+    });
+    document.getElementById('voiceCallBtn').addEventListener('click',()=>{
+        window.location.href=
+            `patient-call.html?type=audio&doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(patientUid)}&role=caller`;
+    });
+
+    // ── Back ──────────────────────────────────────────────────────────────
+    document.getElementById('backBtn').addEventListener('click',()=>{
+        window.location.href='patient-chats.html';
+    });
+
+    // ── Bootstrap ─────────────────────────────────────────────────────────
+    const bootstrap=async user=>{
+        patientUid = user.uid;
+        doctorId   = new URLSearchParams(window.location.search).get('doctorId')||'';
+
+        if(!doctorId){
+            toast('معرّف الدكتور مفقود','err');
+            setTimeout(()=>window.location.href='patient-chats.html',2000);
+            return;
+        }
+
+        await idb.init();
+
+        // parallel: doctor info + resolve conv
+        await Promise.all([loadDoctorInfo(), resolveConv()]);
+
+        await listenMessages();
+        listenPresence();
+    };
+
+    // ── Auth gate ─────────────────────────────────────────────────────────
+    onAuthStateChanged(auth,user=>{
+        if(user) bootstrap(user);
+        else window.location.href='patient-login.html';
+    });
+
+    // fix: reimport where properly
+    (async()=>{
+        const { where, query:q2, getDocs:gd2 } =
+            await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        window._fbWhere=where; window._fbQ2=q2; window._fbGd2=gd2;
+    })();
+</script>
 </body>
-</html>
+    </html>
