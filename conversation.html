@@ -68,12 +68,6 @@
             font-size:1rem;font-weight:800;color:var(--t900);
             overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
         }
-        .header-status{
-            display:flex;align-items:center;gap:.35rem;
-            font-size:.72rem;color:var(--ink30);
-        }
-        .status-dot{width:6px;height:6px;border-radius:50%;background:var(--success);}
-        .status-dot.offline{background:var(--ink30);}
 
         .msgs-area{
             flex:1;overflow-y:auto;
@@ -127,9 +121,6 @@
         }
         .msg-time{font-size:.68rem;color:var(--ink30);}
         .bubble-wrap.out .msg-time{color:rgba(255,255,255,.5);}
-
-        .ticks{display:flex;color:var(--ink30);}
-        .ticks.read{color:var(--success);}
 
         .input-bar{
             display:flex;align-items:flex-end;gap:.6rem;
@@ -191,10 +182,6 @@
     <div class="doc-avatar" id="docAvatarEl">د</div>
     <div class="header-meta">
         <div class="header-name" id="headerName">جاري التحميل...</div>
-        <div class="header-status">
-            <div class="status-dot offline" id="headerStatusDot"></div>
-            <span id="headerStatusText">غير متصل</span>
-        </div>
     </div>
 </header>
 
@@ -212,52 +199,35 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-    // استيراد Firebase
+    // استخدام Realtime Database (نفس قاعدة بيانات الصفحة الرئيسية)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { 
-        getFirestore, 
-        collection, 
-        doc, 
-        query, 
-        orderBy, 
-        onSnapshot, 
-        addDoc, 
-        updateDoc, 
-        getDocs, 
-        serverTimestamp, 
-        getDoc,
-        where 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getDatabase, ref, onValue, push, set, update, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    // تهيئة الأيقونات
     feather.replace();
 
     // إعدادات Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
         authDomain: "sakina-937c4.firebaseapp.com",
+        databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
         projectId: "sakina-937c4",
         storageBucket: "sakina-937c4.firebasestorage.app",
         messagingSenderId: "25215790734",
         appId: "1:25215790734:web:46c5d893d5818530b3a3df"
     };
 
-    // تهيئة Firebase
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // المتغيرات العامة
+    // المتغيرات
     let patientUid = null;
     let doctorId = null;
     let convId = null;
-    let unsubMsgs = null;
     let isAtBottom = true;
     let lastDate = '';
-    let currentUserName = '';
 
-    // عناصر DOM
     const msgsArea = document.getElementById('msgsArea');
     const msgInput = document.getElementById('msgInput');
     const sendBtn = document.getElementById('sendBtn');
@@ -265,49 +235,27 @@
     const headerName = document.getElementById('headerName');
     const docAvatarEl = document.getElementById('docAvatarEl');
 
-    // دالة عرض الرسائل المنبثقة
+    // Toast
     const showToast = (msg, isError = false) => {
         toastEl.textContent = msg;
         toastEl.className = `toast show ${isError ? 'err' : ''}`;
         setTimeout(() => toastEl.classList.remove('show'), 3000);
     };
 
-    // دالة تهريب النص
-    const escapeHtml = (str) => {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m])
-                  .replace(/\n/g, '<br>');
-    };
-
     // تنسيق الوقت
     const formatTime = (ts) => {
         if (!ts) return '';
-        let date;
-        if (ts.toDate) {
-            date = ts.toDate();
-        } else if (ts.seconds) {
-            date = new Date(ts.seconds * 1000);
-        } else {
-            date = new Date(ts);
-        }
-        return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        const d = new Date(ts);
+        return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
     };
 
     // تنسيق التاريخ
     const formatDate = (ts) => {
         if (!ts) return '';
-        let date;
-        if (ts.toDate) {
-            date = ts.toDate();
-        } else if (ts.seconds) {
-            date = new Date(ts.seconds * 1000);
-        } else {
-            date = new Date(ts);
-        }
-        
+        const d = new Date(ts);
         const now = new Date();
         now.setHours(0, 0, 0, 0);
-        const msgDate = new Date(date);
+        const msgDate = new Date(d);
         msgDate.setHours(0, 0, 0, 0);
         
         if (msgDate.getTime() === now.getTime()) return 'اليوم';
@@ -316,29 +264,32 @@
         yesterday.setDate(now.getDate() - 1);
         if (msgDate.getTime() === yesterday.getTime()) return 'أمس';
         
-        return date.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' });
+        return d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' });
     };
 
-    // التمرير للأسفل
-    const scrollToBottom = (force = false) => {
-        if (force || isAtBottom) {
-            setTimeout(() => {
-                msgsArea.scrollTop = msgsArea.scrollHeight;
-            }, 50);
+    // تهريب النص
+    const escapeHtml = (str) => {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m])
+                  .replace(/\n/g, '<br>');
+    };
+
+    // التمرير
+    const scrollToBottom = () => {
+        if (isAtBottom) {
+            setTimeout(() => msgsArea.scrollTop = msgsArea.scrollHeight, 50);
         }
     };
 
-    // مراقبة التمرير
     msgsArea.addEventListener('scroll', () => {
         isAtBottom = msgsArea.scrollHeight - msgsArea.scrollTop - msgsArea.clientHeight < 80;
     });
 
-    // عرض رسالة واحدة
+    // عرض رسالة
     const renderMessage = (msg) => {
         const isOut = msg.senderId === patientUid;
-        const msgDate = formatDate(msg.createdAt);
+        const msgDate = formatDate(msg.timestamp);
         
-        // فاصل التاريخ
         if (msgDate !== lastDate) {
             lastDate = msgDate;
             const sep = document.createElement('div');
@@ -351,17 +302,11 @@
         wrap.className = `bubble-wrap ${isOut ? 'out' : 'in'}`;
         wrap.dataset.id = msg.id;
 
-        const ticksHtml = isOut ? `
-            <span class="ticks ${msg.read ? 'read' : ''}">
-                <i data-feather="${msg.read ? 'check-circle' : 'check'}" style="width:12px;height:12px"></i>
-            </span>
-        ` : '';
-
         wrap.innerHTML = `
             <div class="bubble">${escapeHtml(msg.text)}</div>
             <div class="bubble-footer">
-                <span class="msg-time">${formatTime(msg.createdAt)}</span>
-                ${ticksHtml}
+                <span class="msg-time">${formatTime(msg.timestamp)}</span>
+                ${isOut ? '<span class="ticks"><i data-feather="check" style="width:12px;height:12px"></i></span>' : ''}
             </div>
         `;
 
@@ -372,185 +317,154 @@
     // تحميل معلومات الدكتور
     const loadDoctorInfo = async () => {
         try {
-            console.log('جاري تحميل معلومات الدكتور:', doctorId);
+            console.log('جاري تحميل الدكتور:', doctorId);
             
-            // البحث عن الدكتور باستخدام authUid
-            const doctorsRef = collection(db, 'doctors');
-            const q = query(doctorsRef, where('authUid', '==', doctorId));
-            const snapshot = await getDocs(q);
+            const doctorRef = ref(database, `doctors/${doctorId}`);
+            const snapshot = await get(doctorRef);
             
-            if (!snapshot.empty) {
-                const docData = snapshot.docs[0].data();
-                console.log('تم العثور على الدكتور:', docData);
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                console.log('بيانات الدكتور:', data);
                 
-                // تحديث واجهة المستخدم
-                const name = docData.name || 'أخصائي نفسي';
-                headerName.textContent = name;
+                headerName.textContent = data.name || 'أخصائي نفسي';
                 
-                if (docData.photoURL) {
-                    docAvatarEl.innerHTML = `<img src="${docData.photoURL}" alt="${name}">`;
+                if (data.photoURL) {
+                    docAvatarEl.innerHTML = `<img src="${data.photoURL}" alt="${data.name}">`;
                 } else {
-                    docAvatarEl.textContent = name.charAt(0);
+                    docAvatarEl.textContent = (data.name || 'د').charAt(0);
                 }
             } else {
-                console.log('لم يتم العثور على الدكتور بالمعرف:', doctorId);
+                console.log('الدكتور غير موجود في Realtime Database');
                 headerName.textContent = 'أخصائي نفسي';
             }
         } catch (error) {
-            console.error('خطأ في تحميل معلومات الدكتور:', error);
-            showToast('خطأ في تحميل معلومات الدكتور', true);
+            console.error('خطأ في تحميل الدكتور:', error);
         }
     };
 
     // إنشاء أو استرجاع المحادثة
     const getOrCreateConversation = async () => {
         try {
-            console.log('جاري إنشاء/استرجاع المحادثة...');
+            // البحث عن محادثة موجودة
+            const convsRef = ref(database, 'conversations');
+            const snapshot = await get(convsRef);
             
-            const convRef = collection(db, 'conversations');
-            const q = query(
-                convRef,
-                where('patientId', '==', patientUid),
-                where('doctorId', '==', doctorId)
-            );
-            
-            const snapshot = await getDocs(q);
-            
-            if (!snapshot.empty) {
-                convId = snapshot.docs[0].id;
-                console.log('تم العثور على محادثة موجودة:', convId);
-            } else {
-                console.log('جاري إنشاء محادثة جديدة...');
-                const newConv = await addDoc(convRef, {
-                    patientId: patientUid,
-                    doctorId: doctorId,
-                    createdAt: serverTimestamp(),
-                    lastMessage: '',
-                    lastMessageTime: serverTimestamp(),
-                    unreadDoctor: 0,
-                    unreadPatient: 0
-                });
-                convId = newConv.id;
-                console.log('تم إنشاء محادثة جديدة:', convId);
+            if (snapshot.exists()) {
+                const conversations = snapshot.val();
+                // البحث عن محادثة بين المريض والدكتور
+                for (const id in conversations) {
+                    const conv = conversations[id];
+                    if (conv.patientId === patientUid && conv.doctorId === doctorId) {
+                        convId = id;
+                        console.log('تم العثور على محادثة:', convId);
+                        return convId;
+                    }
+                }
             }
             
+            // إنشاء محادثة جديدة
+            console.log('جاري إنشاء محادثة جديدة...');
+            const newConvRef = push(ref(database, 'conversations'));
+            convId = newConvRef.key;
+            
+            await set(newConvRef, {
+                patientId: patientUid,
+                doctorId: doctorId,
+                createdAt: Date.now(),
+                lastMessage: '',
+                lastMessageTime: Date.now()
+            });
+            
+            console.log('تم إنشاء محادثة جديدة:', convId);
             return convId;
+            
         } catch (error) {
-            console.error('خطأ في إنشاء/استرجاع المحادثة:', error);
-            showToast('تعذر تحميل المحادثة', true);
+            console.error('خطأ في المحادثة:', error);
             throw error;
         }
     };
 
     // الاستماع للرسائل
     const listenToMessages = () => {
-        if (!convId) {
-            console.error('معرف المحادثة غير موجود');
-            return;
-        }
-
-        console.log('جاري الاستماع للرسائل...');
+        if (!convId) return;
         
-        const msgsRef = collection(db, 'conversations', convId, 'messages');
-        const q = query(msgsRef, orderBy('createdAt', 'asc'));
-
-        unsubMsgs = onSnapshot(q, (snapshot) => {
-            console.log('تم استقبال تحديث للرسائل:', snapshot.docChanges().length);
-            
+        console.log('الاستماع للرسائل في المحادثة:', convId);
+        
+        const msgsRef = ref(database, `conversations/${convId}/messages`);
+        
+        onValue(msgsRef, (snapshot) => {
             // إزالة رسالة التحميل
             const loading = msgsArea.querySelector('.loading');
             if (loading) loading.remove();
-
-            snapshot.docChanges().forEach((change) => {
-                const msg = {
-                    id: change.doc.id,
-                    ...change.doc.data()
-                };
-
-                if (change.type === 'added') {
-                    console.log('رسالة جديدة:', msg);
-                    
-                    // التحقق من عدم وجود الرسالة مسبقاً
-                    const existing = msgsArea.querySelector(`[data-id="${msg.id}"]`);
-                    if (!existing) {
-                        renderMessage(msg);
-                        
-                        // تحديث حالة القراءة إذا كانت الرسالة من الدكتور
-                        if (msg.senderId !== patientUid && !msg.read) {
-                            updateDoc(doc(db, 'conversations', convId, 'messages', msg.id), {
-                                read: true
-                            }).catch(console.error);
-                        }
-                    }
-                } else if (change.type === 'modified') {
-                    console.log('تم تعديل رسالة:', msg.id);
-                    const bubble = msgsArea.querySelector(`[data-id="${msg.id}"]`);
-                    if (bubble) {
-                        const ticks = bubble.querySelector('.ticks');
-                        if (ticks && msg.read) {
-                            ticks.className = 'ticks read';
-                            ticks.innerHTML = '<i data-feather="check-circle" style="width:12px;height:12px"></i>';
-                            feather.replace();
-                        }
-                    }
-                }
-            });
-
+            
+            // مسح الرسائل الحالية
+            msgsArea.innerHTML = '';
+            lastDate = '';
+            
+            if (snapshot.exists()) {
+                const messages = [];
+                snapshot.forEach((child) => {
+                    messages.push({
+                        id: child.key,
+                        ...child.val()
+                    });
+                });
+                
+                // ترتيب حسب الوقت
+                messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                
+                // عرض الرسائل
+                messages.forEach(msg => renderMessage(msg));
+                
+                console.log('تم عرض', messages.length, 'رسالة');
+            } else {
+                console.log('لا توجد رسائل بعد');
+            }
+            
             scrollToBottom();
-        }, (error) => {
-            console.error('خطأ في الاستماع للرسائل:', error);
-            showToast('خطأ في تحميل الرسائل', true);
         });
     };
 
     // إرسال رسالة
     const sendMessage = async () => {
         const text = msgInput.value.trim();
-        if (!text || !convId || !patientUid) {
-            console.error('لا يمكن إرسال الرسالة:', { text, convId, patientUid });
-            return;
-        }
-
-        console.log('جاري إرسال الرسالة...');
+        if (!text || !convId || !patientUid) return;
         
-        // تعطيل زر الإرسال مؤقتاً
+        console.log('جاري إرسال:', text);
+        
         sendBtn.disabled = true;
         msgInput.value = '';
         msgInput.style.height = 'auto';
-
+        
         try {
-            // إرسال إلى Firestore
-            const msgRef = collection(db, 'conversations', convId, 'messages');
-            const newMsg = await addDoc(msgRef, {
+            const msgRef = push(ref(database, `conversations/${convId}/messages`));
+            
+            await set(msgRef, {
                 text: text,
                 senderId: patientUid,
                 senderRole: 'patient',
-                createdAt: serverTimestamp(),
+                timestamp: Date.now(),
                 read: false
             });
-
-            console.log('تم إرسال الرسالة بنجاح:', newMsg.id);
-
-            // تحديث معلومات المحادثة
-            await updateDoc(doc(db, 'conversations', convId), {
+            
+            // تحديث آخر رسالة في المحادثة
+            await update(ref(database, `conversations/${convId}`), {
                 lastMessage: text,
-                lastMessageTime: serverTimestamp(),
-                unreadDoctor: 1
+                lastMessageTime: Date.now()
             });
-
-            console.log('تم تحديث المحادثة');
-
+            
+            console.log('تم الإرسال بنجاح');
+            
         } catch (error) {
-            console.error('خطأ في إرسال الرسالة:', error);
+            console.error('خطأ في الإرسال:', error);
             showToast('فشل إرسال الرسالة', true);
         } finally {
-            // إعادة تفعيل زر الإرسال
             sendBtn.disabled = false;
             msgInput.focus();
         }
     };
 
-    // معالجة إدخال المستخدم
+    // الأحداث
     msgInput.addEventListener('input', () => {
         msgInput.style.height = 'auto';
         msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
@@ -560,66 +474,48 @@
     msgInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            if (!sendBtn.disabled) {
-                sendMessage();
-            }
+            if (!sendBtn.disabled) sendMessage();
         }
     });
 
     sendBtn.addEventListener('click', sendMessage);
 
-    // زر الرجوع
     document.getElementById('backBtn').addEventListener('click', () => {
-        if (unsubMsgs) {
-            unsubMsgs();
-        }
         window.location.href = 'patient-chats.html';
     });
 
-    // تهيئة الصفحة
+    // التهيئة
     const init = async (user) => {
-        console.log('جاري تهيئة صفحة المحادثة...');
+        console.log('بدء التهيئة...');
         
         patientUid = user.uid;
-        currentUserName = user.displayName || 'مستخدم';
-        
-        // استخراج معرف الدكتور من URL
         const params = new URLSearchParams(window.location.search);
         doctorId = params.get('doctorId');
-
+        
         console.log('المريض:', patientUid);
         console.log('الدكتور:', doctorId);
-
+        
         if (!doctorId) {
             showToast('معرف الدكتور مفقود', true);
-            setTimeout(() => window.location.href = 'patient-home.html', 2000);
             return;
         }
-
+        
         try {
-            // تحميل معلومات الدكتور
             await loadDoctorInfo();
-            
-            // إنشاء/استرجاع المحادثة
             await getOrCreateConversation();
-            
-            // بدء الاستماع للرسائل
             listenToMessages();
-            
-            console.log('تم تهيئة الصفحة بنجاح');
+            console.log('تم التهيئة بنجاح');
         } catch (error) {
-            console.error('خطأ في تهيئة الصفحة:', error);
-            showToast('حدث خطأ في تحميل الصفحة', true);
+            console.error('فشل التهيئة:', error);
+            showToast('حدث خطأ', true);
         }
     };
 
     // التحقق من تسجيل الدخول
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            console.log('تم تسجيل الدخول بنجاح:', user.uid);
             init(user);
         } else {
-            console.log('لم يتم تسجيل الدخول، جاري التوجيه...');
             window.location.href = 'patient-login.html';
         }
     });
