@@ -12,7 +12,7 @@
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
-        /* ========== نفس التصميم السابق (لم يتغير) ========== */
+        /* ========== التصميم (كما هو، لم يتغير) ========== */
         :root {
             --t50:#f0fafa; --t100:#d0eded; --t200:#a8dede;
             --t300:#98D8D8; --t500:#5aabab; --t700:#3d8a8a; --t900:#1f4f4f;
@@ -358,7 +358,7 @@
 <script type="module">
     // ==================== Firebase ====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -666,13 +666,13 @@
             // Close menus
             document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
 
-            // Navigate to conversation
+            // Navigate to conversation (تم تعديل الرابط ليكون conversation.html)
             const row = e.target.closest('.chat-row');
             if (row) {
                 const convId = row.dataset.convId;
                 const conv = allConvos.find(c => c.id === convId);
                 if (!conv) return;
-                window.location.href = `patient-conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
+                window.location.href = `conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
             }
         });
 
