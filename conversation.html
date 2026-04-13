@@ -39,10 +39,9 @@
         }
 
         html, body {
-            height: 100vh;
+            height: 100dvh;              /* استخدام dvh لضبط ديناميكي على الموبايل */
             overflow: hidden;
-            position: fixed;
-            width: 100%;
+            touch-action: pan-y;          /* تحسين اللمس */
         }
 
         body {
@@ -52,7 +51,6 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            height: 100vh;
         }
 
         /* خلفية ناعمة */
@@ -67,7 +65,7 @@
                 radial-gradient(circle at 100% 100%, rgba(61, 138, 138, 0.1) 0%, transparent 50%);
         }
 
-        /* ===== Header - ثابت ===== */
+        /* ===== Header (Sticky) ===== */
         .chat-header {
             display: flex;
             align-items: center;
@@ -79,7 +77,9 @@
             box-shadow: var(--sh-sm);
             z-index: 100;
             flex-shrink: 0;
-            position: relative;
+            position: sticky;            /* يظل ظاهرًا عند التمرير */
+            top: 0;
+            transition: box-shadow 0.2s;
         }
 
         .back-btn {
@@ -154,17 +154,17 @@
             gap: 4px;
         }
 
-        /* ===== Messages Area - قابل للتمرير ===== */
+        /* ===== Messages Area ===== */
         .msgs-area {
             flex: 1;
             overflow-y: auto;
             padding: 16px 12px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
             position: relative;
             z-index: 1;
-            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;   /* منع سلوك التمرير الزائد */
         }
 
         .msgs-area::-webkit-scrollbar {
@@ -200,7 +200,7 @@
             text-transform: capitalize;
         }
 
-        /* ===== Message Bubbles ===== */
+        /* ===== Message Bubbles (ذيل من الأعلى) ===== */
         .msg-wrapper {
             display: flex;
             margin-bottom: 2px;
@@ -231,23 +231,21 @@
             position: relative;
         }
 
-        /* رسائل المريض (الخارجة) - الذيل على اليمين من فوق */
+        /* صادرة (يمين) – ذيل أعلى اليمين */
         .msg-wrapper.out .msg-bubble {
             background: linear-gradient(135deg, var(--t700) 0%, var(--t500) 100%);
             color: white;
-            border-radius: 4px 20px 20px 20px;
+            border-radius: 20px 4px 20px 20px;   /* الزاوية اليمنى العليا صغيرة (ذيل) */
             box-shadow: 0 4px 12px rgba(61, 138, 138, 0.25);
-            margin-right: 0;
         }
 
-        /* رسائل الدكتور (الواردة) - الذيل على اليسار من فوق */
+        /* واردة (يسار) – ذيل أعلى اليسار */
         .msg-wrapper.in .msg-bubble {
             background: var(--white);
             color: var(--ink);
-            border-radius: 20px 4px 20px 20px;
+            border-radius: 4px 20px 20px 20px;   /* الزاوية اليسرى العليا صغيرة (ذيل) */
             box-shadow: var(--sh-sm);
             border: 1px solid rgba(152, 216, 216, 0.2);
-            margin-left: 0;
         }
 
         .msg-content {
@@ -298,7 +296,7 @@
             color: var(--t500);
         }
 
-        /* ===== Input Bar - ثابت في الأسفل ===== */
+        /* ===== Input Bar ===== */
         .input-bar {
             display: flex;
             align-items: flex-end;
@@ -309,7 +307,6 @@
             border-top: 1px solid rgba(152, 216, 216, 0.2);
             flex-shrink: 0;
             z-index: 100;
-            position: relative;
         }
 
         .msg-input-wrapper {
@@ -484,7 +481,7 @@
 </head>
 <body>
 
-<!-- Header - ثابت -->
+<!-- Header (sticky) -->
 <header class="chat-header">
     <button class="back-btn" id="backBtn">
         <i data-feather="arrow-right" style="width:20px;height:20px"></i>
@@ -499,7 +496,7 @@
     </div>
 </header>
 
-<!-- Messages Area - قابل للتمرير -->
+<!-- Messages Area -->
 <main class="msgs-area" id="msgsArea">
     <div class="loading-state">
         <div class="loading-spinner"></div>
@@ -507,12 +504,12 @@
     </div>
 </main>
 
-<!-- Input Bar - ثابت -->
+<!-- Input Bar -->
 <footer class="input-bar">
     <div class="msg-input-wrapper">
         <textarea class="msg-input" id="msgInput" placeholder="اكتب رسالتك هنا..." rows="1"></textarea>
     </div>
-    <button class="send-btn" id="sendBtn" disabled>
+    <button class="send-btn" id="sendBtn">
         <i data-feather="send" style="width:18px;height:18px"></i>
     </button>
 </footer>
@@ -549,6 +546,7 @@
     let convId = null;
     let isAtBottom = true;
     let lastDate = '';
+    let isSending = false;        // لمنع الإرسال المزدوج دون تعطيل الزر
 
     // DOM Elements
     const msgsArea = document.getElementById('msgsArea');
@@ -745,26 +743,27 @@
         });
     };
 
-    // Send Message - مع إبقاء التركيز
+    // Send Message (بدون تعطيل الزر للحفاظ على التركيز)
     const sendMessage = async () => {
         const text = msgInput.value.trim();
-        if (!text || !convId || !patientUid) return;
+        if (!text || !convId || !patientUid || isSending) return;
         
-        // تعطيل الزر فقط، مع إبقاء التركيز على حقل الإدخال
-        sendBtn.disabled = true;
+        isSending = true;
+        sendBtn.style.opacity = '0.7';   // إشارة بصرية فقط
         
-        // مسح النص لكن إبقاء التركيز
+        // حفظ القيمة ثم تفريغ الحقل فوراً
+        const messageText = text;
         msgInput.value = '';
         msgInput.style.height = 'auto';
         
-        // إبقاء التركيز على حقل الإدخال
-        msgInput.focus();
+        // إبقاء التركيز على حقل الإدخال (لا نفقده)
+        msgInput.focus({ preventScroll: true });
         
         try {
             const msgRef = push(ref(database, `conversations/${convId}/messages`));
             
             await set(msgRef, {
-                text: text,
+                text: messageText,
                 senderId: patientUid,
                 senderRole: 'patient',
                 timestamp: Date.now(),
@@ -772,18 +771,23 @@
             });
             
             await update(ref(database, `conversations/${convId}`), {
-                lastMessage: text,
+                lastMessage: messageText,
                 lastMessageTime: Date.now()
             });
             
         } catch (error) {
             console.error('خطأ في الإرسال:', error);
             showToast('فشل إرسال الرسالة', true);
+            // إعادة النص في حال فشل الإرسال
+            msgInput.value = messageText;
         } finally {
-            // إعادة تفعيل الزر
-            sendBtn.disabled = false;
-            // التأكد من بقاء التركيز
-            msgInput.focus();
+            isSending = false;
+            sendBtn.style.opacity = '1';
+            
+            // ضمان بقاء التركيز (مرة أخرى)
+            requestAnimationFrame(() => {
+                msgInput.focus({ preventScroll: true });
+            });
         }
     };
 
@@ -791,32 +795,30 @@
     msgInput.addEventListener('input', () => {
         msgInput.style.height = 'auto';
         msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
-        sendBtn.disabled = !msgInput.value.trim();
+        // لا حاجة لتعطيل الزر الآن
     });
 
     msgInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            if (!sendBtn.disabled) sendMessage();
+            if (msgInput.value.trim() && !isSending) {
+                sendMessage();
+            }
         }
     });
 
-    sendBtn.addEventListener('click', sendMessage);
-
-    // منع فقدان التركيز عند النقر خارج حقل الإدخال
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.input-bar') && !e.target.closest('.send-btn')) {
-            // لا تفقد التركيز إذا نقر المستخدم على منطقة الرسائل
-            if (!e.target.closest('.msgs-area')) {
-                // فقط إذا نقر خارج منطقة الدردشة بالكامل
-                return;
-            }
+    sendBtn.addEventListener('click', (e) => {
+        if (msgInput.value.trim() && !isSending) {
+            sendMessage();
         }
     });
 
     document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = 'patient-chats.html';
     });
+
+    // منع فقدان التركيز عند النقر على الزر (لمسة إضافية)
+    sendBtn.addEventListener('mousedown', (e) => e.preventDefault());
 
     // Initialize
     const init = async (user) => {
