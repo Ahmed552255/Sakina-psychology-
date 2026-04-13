@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>سُكُون — محادثاتي</title>
 
+    <!-- الخطوط والأيقونات -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
-        /* ---------- CSS (بدون تغيير) ---------- */
+        /* ========== نفس التصميم السابق (لم يتغير) ========== */
         :root {
             --t50:#f0fafa; --t100:#d0eded; --t200:#a8dede;
             --t300:#98D8D8; --t500:#5aabab; --t700:#3d8a8a; --t900:#1f4f4f;
@@ -265,6 +266,8 @@
 <body>
 
 <div class="shell">
+
+    <!-- Header -->
     <header class="page-head">
         <div class="head-left">
             <div class="brand">سُ<span>كُون</span></div>
@@ -276,6 +279,7 @@
         </div>
     </header>
 
+    <!-- Search -->
     <div class="search-wrap">
         <input type="text" id="searchInput" placeholder="ابحث باسم الأخصائي...">
         <span class="search-icon">
@@ -283,32 +287,51 @@
         </span>
     </div>
 
+    <!-- Skeletons -->
     <div id="skels">
-        <div class="skel-row"><div class="skel skel-av"></div><div class="skel-lines"><div class="skel skel-line" style="width:45%"></div><div class="skel skel-line" style="width:75%"></div></div></div>
-        <div class="skel-row"><div class="skel skel-av"></div><div class="skel-lines"><div class="skel skel-line" style="width:38%"></div><div class="skel skel-line" style="width:65%"></div></div></div>
+        <div class="skel-row">
+            <div class="skel skel-av"></div>
+            <div class="skel-lines">
+                <div class="skel skel-line" style="width:45%"></div>
+                <div class="skel skel-line" style="width:75%"></div>
+            </div>
+        </div>
+        <div class="skel-row">
+            <div class="skel skel-av"></div>
+            <div class="skel-lines">
+                <div class="skel skel-line" style="width:38%"></div>
+                <div class="skel skel-line" style="width:65%"></div>
+            </div>
+        </div>
     </div>
 
+    <!-- Chats list -->
     <div class="chats-list" id="chatsList"></div>
+
+    <!-- Empty state -->
     <div class="empty-state" id="emptyState">
         <span class="e-icon">🌙</span>
         <h3>مساحتك هادئة الآن</h3>
         <p>ابدأ محادثة مع أحد الأخصائيين عندما تشعر بالاستعداد.</p>
     </div>
+
+    <!-- Sync pill -->
     <div class="sync-pill">
         <div class="sync-dot" id="syncDot"></div>
         <span id="syncText">جاري التحميل...</span>
     </div>
-</div>
 
-<!-- Confirm Dialog -->
+</div><!-- /shell -->
+
+<!-- Confirm dialog -->
 <div class="confirm-backdrop" id="confirmBackdrop">
     <div class="confirm-box">
         <span class="confirm-icon" id="confirmIcon">⚠️</span>
         <div class="confirm-title" id="confirmTitle"></div>
-        <div class="confirm-msg" id="confirmMsg"></div>
+        <div class="confirm-msg"   id="confirmMsg"></div>
         <div class="confirm-actions">
             <button class="confirm-btn cancel" id="confirmCancel">إلغاء</button>
-            <button class="confirm-btn ok" id="confirmOk">تأكيد</button>
+            <button class="confirm-btn ok"     id="confirmOk">تأكيد</button>
         </div>
     </div>
 </div>
@@ -316,35 +339,44 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Bottom Navigation -->
+<!-- Bottom nav -->
 <nav class="bottom-nav">
-    <a href="patient-home.html" class="nav-item"><i data-feather="home" style="width:19px;height:19px"></i><span>الرئيسية</span></a>
-    <a href="patient-chats.html" class="nav-item active"><i data-feather="message-circle" style="width:19px;height:19px"></i><span>محادثاتي</span></a>
-    <a href="patient-agenda.html" class="nav-item"><i data-feather="calendar" style="width:19px;height:19px"></i><span>الأجندة</span></a>
-    <a href="patient-tools.html" class="nav-item"><i data-feather="wind" style="width:19px;height:19px"></i><span>الأدوات</span></a>
+    <a href="patient-home.html" class="nav-item">
+        <i data-feather="home" style="width:19px;height:19px"></i><span>الرئيسية</span>
+    </a>
+    <a href="patient-chats.html" class="nav-item active">
+        <i data-feather="message-circle" style="width:19px;height:19px"></i><span>محادثاتي</span>
+    </a>
+    <a href="patient-agenda.html" class="nav-item">
+        <i data-feather="calendar" style="width:19px;height:19px"></i><span>الأجندة</span>
+    </a>
+    <a href="patient-tools.html" class="nav-item">
+        <i data-feather="wind" style="width:19px;height:19px"></i><span>الأدوات</span>
+    </a>
 </nav>
 
 <script type="module">
+    // ==================== Firebase ====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { 
-        getFirestore, collection, query, where, onSnapshot, 
-        doc, getDoc, updateDoc, deleteDoc, writeBatch, getDocs 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getDatabase, ref, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    const app = initializeApp({
+    const firebaseConfig = {
         apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
         authDomain: "sakina-937c4.firebaseapp.com",
+        databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
         projectId: "sakina-937c4",
         storageBucket: "sakina-937c4.firebasestorage.app",
         messagingSenderId: "25215790734",
         appId: "1:25215790734:web:46c5d893d5818530b3a3df"
-    });
-    const db = getFirestore(app);
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
     const auth = getAuth(app);
     feather.replace();
 
-    // IndexedDB helper
+    // ==================== IndexedDB (للتخزين المحلي) ====================
     class IDB {
         constructor() { this.db = null; }
         async init() {
@@ -354,8 +386,10 @@
                 r.onsuccess = () => { this.db = r.result; res(); };
                 r.onupgradeneeded = ({ target }) => {
                     const d = target.result;
-                    if (!d.objectStoreNames.contains('convos')) d.createObjectStore('convos', { keyPath: 'id' });
-                    if (!d.objectStoreNames.contains('doc_profiles')) d.createObjectStore('doc_profiles', { keyPath: 'id' });
+                    if (!d.objectStoreNames.contains('convos'))
+                        d.createObjectStore('convos', { keyPath: 'id' });
+                    if (!d.objectStoreNames.contains('doc_profiles'))
+                        d.createObjectStore('doc_profiles', { keyPath: 'id' });
                 };
             });
         }
@@ -365,24 +399,27 @@
         get(s, id) { return this._p(this._tx(s).get(id)); }
         put(s, obj) { return this._p(this._tx(s, 'readwrite').put(obj)); }
         remove(s, id) { return this._p(this._tx(s, 'readwrite').delete(id)); }
+        clear(s) { return this._p(this._tx(s, 'readwrite').clear()); }
     }
     const idb = new IDB();
 
-    // Toast
-    let tt;
+    // ==================== Helpers ====================
+    let toastTimer;
     const toast = (msg, type = '') => {
         const el = document.getElementById('toast');
-        el.textContent = msg; el.className = `toast show ${type}`;
-        clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 3000);
+        el.textContent = msg;
+        el.className = `toast show ${type}`;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
     };
 
-    // Sync indicator
     const setSyncing = (busy, msg) => {
-        document.getElementById('syncDot').className = 'sync-dot' + (busy ? ' busy' : '');
-        document.getElementById('syncText').textContent = msg ?? (busy ? 'جاري المزامنة...' : 'محدَّث ✓');
+        const dot = document.getElementById('syncDot');
+        const text = document.getElementById('syncText');
+        if (dot) dot.className = 'sync-dot' + (busy ? ' busy' : '');
+        if (text) text.textContent = msg ?? (busy ? 'جاري المزامنة...' : 'محدَّث ✓');
     };
 
-    // Confirm dialog
     const showConfirm = ({ icon, title, msg, okClass, onOk }) => {
         document.getElementById('confirmIcon').textContent = icon || '⚠️';
         document.getElementById('confirmTitle').textContent = title || '';
@@ -397,10 +434,9 @@
         backdrop.onclick = e => { if (e.target === backdrop) close(); };
     };
 
-    // Format time
     const fmtTime = (ts) => {
         if (!ts) return '';
-        const d = ts?.toDate ? ts.toDate() : new Date(ts);
+        const d = new Date(ts);
         const now = new Date();
         const diff = (now - d) / 1000;
         if (diff < 60) return 'الآن';
@@ -410,49 +446,53 @@
         return d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
     };
 
-    // State
+    const escapeHtml = (str) => {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
+    };
+
+    // ==================== State ====================
     let patientUid = null;
     let allConvos = [];
     let searchTerm = '';
     const mutedSet = new Set();
 
-    const removeSkel = () => { const s = document.getElementById('skels'); if (s) s.remove(); };
-
-    // جلب بيانات الطبيب (أسرع: استخدام doc مباشرة)
-    const enrichWithDoctorData = async (convos) => {
-        for (const c of convos) {
-            if (c.doctorName && c.doctorAvatar) continue;
-
-            const cached = await idb.get('doc_profiles', c.doctorId);
-            if (cached) {
-                c.doctorName = cached.name || '';
-                c.doctorSpec = cached.specialty || '';
-                c.doctorAvatar = cached.avatarB64 || '';
-                continue;
-            }
-
-            try {
-                const docRef = doc(db, 'doctors', c.doctorId);
-                const snap = await getDoc(docRef);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    c.doctorName = data.name || '';
-                    c.doctorSpec = data.specialty || '';
-                    c.doctorAvatar = data.avatarB64 || '';
-                    await idb.put('doc_profiles', {
-                        id: c.doctorId,
-                        name: data.name || '',
-                        specialty: data.specialty || '',
-                        avatarB64: data.avatarB64 || ''
-                    });
-                }
-            } catch (err) {
-                console.warn('فشل جلب الطبيب:', err);
-            }
-        }
+    const removeSkel = () => {
+        const s = document.getElementById('skels');
+        if (s) s.remove();
     };
 
-    // Render
+    // ==================== جلب بيانات الطبيب ====================
+    const enrichDoctorData = async (conv) => {
+        // نحاول من الكاش أولاً
+        const cached = await idb.get('doc_profiles', conv.doctorId);
+        if (cached) {
+            conv.doctorName = cached.name || '';
+            conv.doctorSpec = cached.specialty || '';
+            conv.doctorAvatar = cached.avatarB64 || '';
+            return;
+        }
+
+        // نجيب من Realtime Database
+        try {
+            const snap = await get(ref(database, `doctors/${conv.doctorId}`));
+            if (snap.exists()) {
+                const data = snap.val();
+                conv.doctorName = data.name || '';
+                conv.doctorSpec = data.specialty || '';
+                conv.doctorAvatar = data.photoURL || '';
+                // نخزن في الكاش
+                await idb.put('doc_profiles', {
+                    id: conv.doctorId,
+                    name: data.name || '',
+                    specialty: data.specialty || '',
+                    avatarB64: data.photoURL || ''
+                });
+            }
+        } catch (e) { console.warn('فشل جلب الطبيب:', e); }
+    };
+
+    // ==================== Render ====================
     const render = () => {
         removeSkel();
         const list = document.getElementById('chatsList');
@@ -468,9 +508,10 @@
 
         filtered.forEach((c, i) => {
             const isUnread = c.unread && !c.muted;
+
             const avatarHTML = c.doctorAvatar
-                ? `<div class="chat-avatar"><img src="${c.doctorAvatar}" alt="${c.doctorName}"></div>`
-                : `<div class="chat-avatar">${(c.doctorName || 'د').trim().charAt(0)}</div>`;
+                ? `<div class="chat-avatar"><img src="${c.doctorAvatar}" alt="${escapeHtml(c.doctorName)}"></div>`
+                : `<div class="chat-avatar">${escapeHtml((c.doctorName || 'د').charAt(0))}</div>`;
 
             const wrap = document.createElement('div');
             wrap.className = 'chat-wrap';
@@ -484,11 +525,11 @@
                 ${avatarHTML}
                 <div class="chat-body">
                     <div class="chat-top">
-                        <span class="chat-name">${c.doctorName || 'أخصائي'}</span>
+                        <span class="chat-name">${escapeHtml(c.doctorName || 'أخصائي')}</span>
                         <span class="chat-time">${fmtTime(c.lastTs)}</span>
                     </div>
                     <div class="chat-preview-row">
-                        <span class="chat-preview">${c.muted ? '🔕 ' : ''} ${c.lastMessage || 'ابدأ المحادثة...'}</span>
+                        <span class="chat-preview">${c.muted ? '🔕 ' : ''} ${escapeHtml(c.lastMessage || 'ابدأ المحادثة...')}</span>
                         <span class="unread-dot"></span>
                     </div>
                 </div>
@@ -516,130 +557,155 @@
         feather.replace();
     };
 
-    // Event listeners
-    document.getElementById('chatsList').addEventListener('click', e => {
-        const optBtn = e.target.closest('.chat-options-btn');
-        if (optBtn) {
-            e.stopPropagation();
-            document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
-            const menu = optBtn.closest('.chat-wrap').querySelector('.options-menu');
-            if (menu) menu.classList.add('show');
-            return;
-        }
+    // ==================== Listen to conversations ====================
+    const startListening = () => {
+        const convsRef = ref(database, 'conversations');
+        
+        onValue(convsRef, async (snapshot) => {
+            setSyncing(true, 'تحديث...');
+            const fresh = [];
+            
+            if (snapshot.exists()) {
+                const convos = snapshot.val();
+                
+                for (const id in convos) {
+                    const c = convos[id];
+                    // فلترة حسب المريض الحالي
+                    if (c.patientId !== patientUid) continue;
+                    
+                    const muted = mutedSet.has(id);
+                    const conv = {
+                        id: id,
+                        doctorId: c.doctorId || '',
+                        patientId: c.patientId,
+                        lastMessage: c.lastMessage || '',
+                        lastTs: c.lastMessageTime || c.createdAt || null,
+                        unread: c.unreadPatient || false,
+                        muted
+                    };
+                    
+                    // جلب بيانات الطبيب
+                    await enrichDoctorData(conv);
+                    fresh.push(conv);
+                    
+                    // تحديث الكاش
+                    await idb.put('convos', conv);
+                }
+            }
+            
+            // حذف المحادثات المحذوفة من الكاش
+            const freshIds = new Set(fresh.map(c => c.id));
+            const cached = await idb.getAll('convos');
+            for (const old of cached) {
+                if (!freshIds.has(old.id)) await idb.remove('convos', old.id);
+            }
+            
+            allConvos = fresh;
+            render();
+            setSyncing(false);
+        }, (err) => {
+            console.error('خطأ في المستمع:', err);
+            setSyncing(false, '⚠️ غير متصل');
+        });
+    };
 
-        const optItem = e.target.closest('.opt-item');
-        if (optItem) {
-            e.stopPropagation();
-            const convId = optItem.dataset.convId;
-            const conv = allConvos.find(c => c.id === convId);
-            if (!conv) return;
-            optItem.closest('.options-menu').classList.remove('show');
-
-            if (optItem.dataset.action === 'mute') {
-                const nowMuted = !conv.muted;
-                conv.muted = nowMuted;
-                if (nowMuted) mutedSet.add(convId); else mutedSet.delete(convId);
-                idb.put('convos', { ...conv });
-                render();
-                toast(nowMuted ? '🔕 تم كتم الإشعارات' : '🔔 تم إلغاء الكتم', 'ok');
+    // ==================== Event Listeners ====================
+    const setupEvents = () => {
+        document.getElementById('chatsList').addEventListener('click', e => {
+            // Options button
+            const optBtn = e.target.closest('.chat-options-btn');
+            if (optBtn) {
+                e.stopPropagation();
+                document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
+                const menu = optBtn.closest('.chat-wrap').querySelector('.options-menu');
+                if (menu) menu.classList.add('show');
+                return;
             }
 
-            if (optItem.dataset.action === 'delete') {
-                showConfirm({
-                    icon: '🗑️',
-                    title: 'حذف المحادثة',
-                    msg: `سيتم حذف محادثتك مع ${conv.doctorName || 'الأخصائي'} نهائياً.`,
-                    onOk: async () => {
-                        try {
-                            const msgsSnap = await getDocs(collection(db, 'conversations', convId, 'messages'));
-                            const batch = writeBatch(db);
-                            msgsSnap.docs.forEach(d => batch.delete(d.ref));
-                            await batch.commit();
-                            await deleteDoc(doc(db, 'conversations', convId));
-                        } catch (err) {
-                            console.warn('خطأ في الحذف:', err);
+            // Option item
+            const optItem = e.target.closest('.opt-item');
+            if (optItem) {
+                e.stopPropagation();
+                const convId = optItem.dataset.convId;
+                const conv = allConvos.find(c => c.id === convId);
+                if (!conv) return;
+                optItem.closest('.options-menu').classList.remove('show');
+
+                if (optItem.dataset.action === 'mute') {
+                    const nowMuted = !conv.muted;
+                    conv.muted = nowMuted;
+                    if (nowMuted) mutedSet.add(convId); else mutedSet.delete(convId);
+                    idb.put('convos', { ...conv });
+                    render();
+                    toast(nowMuted ? '🔕 تم كتم الإشعارات' : '🔔 تم إلغاء الكتم', 'ok');
+                }
+
+                if (optItem.dataset.action === 'delete') {
+                    showConfirm({
+                        icon: '🗑️',
+                        title: 'حذف المحادثة',
+                        msg: `سيتم حذف محادثتك مع ${conv.doctorName || 'الأخصائي'} نهائياً.`,
+                        onOk: async () => {
+                            try {
+                                // حذف المحادثة والرسائل من Realtime Database
+                                await remove(ref(database, `conversations/${convId}`));
+                            } catch (err) {
+                                console.warn('فشل الحذف:', err);
+                            }
+                            // حذف من الكاش
+                            allConvos = allConvos.filter(c => c.id !== convId);
+                            await idb.remove('convos', convId);
+                            render();
+                            toast('تم حذف المحادثة');
                         }
-                        allConvos = allConvos.filter(c => c.id !== convId);
-                        await idb.remove('convos', convId);
-                        render();
-                        toast('تم حذف المحادثة');
-                    }
-                });
+                    });
+                }
+                return;
             }
-            return;
-        }
 
-        document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
+            // Close menus
+            document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
 
-        const row = e.target.closest('.chat-row');
-        if (row) {
-            const convId = row.dataset.convId;
-            const conv = allConvos.find(c => c.id === convId);
-            if (!conv) return;
-            window.location.href = `patient-conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
-        }
-    });
+            // Navigate to conversation
+            const row = e.target.closest('.chat-row');
+            if (row) {
+                const convId = row.dataset.convId;
+                const conv = allConvos.find(c => c.id === convId);
+                if (!conv) return;
+                window.location.href = `patient-conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
+            }
+        });
 
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
-    });
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
+        });
 
-    document.getElementById('searchInput').addEventListener('input', e => {
-        searchTerm = e.target.value.trim();
-        render();
-    });
+        document.getElementById('searchInput').addEventListener('input', e => {
+            searchTerm = e.target.value.trim();
+            render();
+        });
+    };
 
-    // Bootstrap
+    // ==================== Bootstrap ====================
     const bootstrap = async (user) => {
         patientUid = user.uid;
         await idb.init();
 
+        // تحميل الكاش فوراً
         const cached = await idb.getAll('convos');
         if (cached.length) {
             allConvos = cached;
             cached.forEach(c => { if (c.muted) mutedSet.add(c.id); });
             render();
-            setSyncing(false, 'من الكاش');
+            setSyncing(false, 'من الكاش ✓');
         }
 
-        setSyncing(true, 'جاري المزامنة...');
-        const q = query(collection(db, 'conversations'), where('patientId', '==', patientUid));
-
-        onSnapshot(q, async (snap) => {
-            setSyncing(true, 'تحديث...');
-            const fresh = [];
-            for (const d of snap.docs) {
-                const data = d.data();
-                const muted = mutedSet.has(d.id);
-                const entry = {
-                    id: d.id,
-                    doctorId: data.doctorId || '',
-                    doctorName: data.doctorName || '',
-                    doctorSpec: data.doctorSpec || '',
-                    doctorAvatar: data.doctorAvatar || '',
-                    lastMessage: data.lastMessage || '',
-                    lastTs: data.lastMessageTime || null,
-                    unread: data.unreadPatient || false,
-                    muted
-                };
-                fresh.push(entry);
-                await idb.put('convos', entry);
-            }
-
-            const freshIds = new Set(fresh.map(c => c.id));
-            const old = await idb.getAll('convos');
-            for (const o of old) if (!freshIds.has(o.id)) await idb.remove('convos', o.id);
-
-            allConvos = fresh;
-            await enrichWithDoctorData(allConvos);
-            render();
-            setSyncing(false);
-        }, err => {
-            console.error('خطأ في المستمع:', err);
-            setSyncing(false, '⚠️ لا يوجد اتصال');
-        });
+        // بدء الاستماع الحي
+        startListening();
+        setupEvents();
     };
 
+    // ==================== Auth ====================
     onAuthStateChanged(auth, user => {
         if (user) bootstrap(user);
         else window.location.href = 'patient-login.html';
