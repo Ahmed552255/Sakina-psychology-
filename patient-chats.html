@@ -2,15 +2,16 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>سُكُون — محادثاتي</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
+        /* نفس التصميم السابق (لم يتغير) */
         :root {
             --t50:#f0fafa; --t100:#d0eded; --t200:#a8dede;
             --t300:#98D8D8; --t500:#5aabab; --t700:#3d8a8a; --t900:#1f4f4f;
@@ -32,7 +33,6 @@
             padding-bottom:90px; position:relative;
         }
 
-        /* ambient orbs */
         body::before{
             content:'';position:fixed;top:-100px;right:-100px;
             width:380px;height:380px;border-radius:50%;
@@ -48,7 +48,6 @@
 
         .shell{max-width:820px;margin:0 auto;padding:1.5rem 1.25rem;position:relative;z-index:1;}
 
-        /* ── Header ── */
         .page-head{
             display:flex;align-items:center;justify-content:space-between;
             margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap;
@@ -64,7 +63,6 @@
             box-shadow:var(--sh-sm);
         }
 
-        /* ── Search ── */
         .search-wrap{
             position:relative;margin-bottom:1.5rem;
         }
@@ -87,10 +85,8 @@
             color:var(--ink30);pointer-events:none;
         }
 
-        /* ── Chat list ── */
         .chats-list{display:flex;flex-direction:column;gap:.85rem;}
 
-        /* wrapper needed for options menu positioning */
         .chat-wrap{position:relative;}
 
         .chat-row{
@@ -107,7 +103,6 @@
         @keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
         .chat-row:hover{transform:translateY(-4px);box-shadow:var(--sh-lg);}
 
-        /* doctor avatar: base64 image or initials circle */
         .chat-avatar{
             width:54px;height:54px;border-radius:50%;
             border:2.5px solid var(--white);box-shadow:0 3px 10px rgba(20,70,70,.13);
@@ -141,7 +136,6 @@
         }
         .chat-row.unread .unread-dot{visibility:visible;}
 
-        /* options button */
         .chat-options-btn{
             width:34px;height:34px;border-radius:50%;
             border:none;background:none;
@@ -151,7 +145,6 @@
         }
         .chat-options-btn:hover{background:var(--t100);color:var(--t700);}
 
-        /* options dropdown */
         .options-menu{
             position:absolute;top:calc(100% - 8px);left:12px;
             background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
@@ -174,7 +167,6 @@
         .opt-item.danger{color:var(--danger);}
         .opt-item.danger:hover{background:rgba(217,79,79,.08);}
 
-        /* ── Confirm dialog (custom, no alert) ── */
         .confirm-backdrop{
             position:fixed;inset:0;background:rgba(16,40,40,.5);
             backdrop-filter:blur(6px);z-index:500;
@@ -203,7 +195,6 @@
         .confirm-btn.ok{background:var(--danger);color:var(--white);}
         .confirm-btn.ok.mute{background:var(--t700);}
 
-        /* ── Empty state ── */
         .empty-state{
             text-align:center;padding:3.5rem 1rem;
             color:var(--ink30);display:none;
@@ -212,7 +203,6 @@
         .empty-state h3{font-size:1.05rem;font-weight:800;color:var(--ink60);margin-bottom:.4rem;}
         .empty-state p{font-size:.85rem;line-height:1.7;}
 
-        /* ── Skeleton ── */
         .skel-row{
             display:flex;align-items:center;gap:.9rem;
             padding:1rem 1.1rem;background:var(--white);
@@ -225,7 +215,6 @@
         .skel-lines{flex:1;display:flex;flex-direction:column;gap:.5rem;}
         .skel-line{height:13px;border-radius:99px;}
 
-        /* ── Sync pill ── */
         .sync-pill{
             display:inline-flex;align-items:center;gap:.4rem;
             font-size:.72rem;color:var(--ink60);padding:.3rem .8rem;
@@ -236,7 +225,6 @@
         .sync-dot.busy{background:var(--warn);animation:blink 1s infinite;}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 
-        /* ── Toast ── */
         .toast{
             position:fixed;bottom:5.5rem;left:50%;
             transform:translateX(-50%) translateY(6px);
@@ -250,7 +238,6 @@
         .toast.ok{background:var(--success);}
         .toast.err{background:var(--danger);}
 
-        /* ── Bottom nav ── */
         .bottom-nav{
             position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
             width:calc(100% - 28px);max-width:460px;
@@ -279,7 +266,7 @@
 
 <div class="shell">
 
-    <!-- ── Header ── -->
+    <!-- Header -->
     <header class="page-head">
         <div class="head-left">
             <div class="brand">سُ<span>كُون</span></div>
@@ -291,7 +278,7 @@
         </div>
     </header>
 
-    <!-- ── Search ── -->
+    <!-- Search -->
     <div class="search-wrap">
         <input type="text" id="searchInput" placeholder="ابحث باسم الأخصائي...">
         <span class="search-icon">
@@ -299,7 +286,7 @@
         </span>
     </div>
 
-    <!-- ── Skeletons (removed once data loads) ── -->
+    <!-- Skeletons (سيتم إزالتها عند تحميل البيانات) -->
     <div id="skels">
         <div class="skel-row">
             <div class="skel skel-av"></div>
@@ -317,15 +304,17 @@
         </div>
     </div>
 
-    <!-- ── Chats list ── -->
+    <!-- قائمة المحادثات -->
     <div class="chats-list" id="chatsList"></div>
 
+    <!-- حالة فارغة -->
     <div class="empty-state" id="emptyState">
         <span class="e-icon">🌙</span>
         <h3>مساحتك هادئة الآن</h3>
         <p>ابدأ محادثة مع أحد الأخصائيين عندما تشعر بالاستعداد.</p>
     </div>
 
+    <!-- مؤشر المزامنة -->
     <div class="sync-pill">
         <div class="sync-dot" id="syncDot"></div>
         <span id="syncText">جاري التحميل...</span>
@@ -333,7 +322,7 @@
 
 </div><!-- /shell -->
 
-<!-- ── Confirm dialog ── -->
+<!-- حوار التأكيد -->
 <div class="confirm-backdrop" id="confirmBackdrop">
     <div class="confirm-box">
         <span class="confirm-icon" id="confirmIcon">⚠️</span>
@@ -349,7 +338,7 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- ── Bottom nav ── -->
+<!-- القائمة السفلية -->
 <nav class="bottom-nav">
     <a href="patient-home.html" class="nav-item">
         <i data-feather="home" style="width:19px;height:19px"></i><span>الرئيسية</span>
@@ -365,150 +354,187 @@
     </a>
 </nav>
 
-
-<!-- ══════════════════════════════ SCRIPT ══════════════════════════════ -->
 <script type="module">
-    import { initializeApp }         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore,
-             collection, query, where,
-             onSnapshot, doc,
-             updateDoc, deleteDoc,
-             getDocs, writeBatch }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth,
-             onAuthStateChanged }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    // ==================== Firebase ====================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+        getFirestore, collection, query, where, onSnapshot, 
+        doc, updateDoc, deleteDoc, writeBatch, getDocs 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+    const firebaseConfig = {
+        apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
+        authDomain: "sakina-937c4.firebaseapp.com",
+        projectId: "sakina-937c4",
+        storageBucket: "sakina-937c4.firebasestorage.app",
+        messagingSenderId: "25215790734",
+        appId: "1:25215790734:web:46c5d893d5818530b3a3df"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
     feather.replace();
 
-    // ── Firebase ──────────────────────────────────────────────────────────
-    const app = initializeApp({
-        apiKey:            "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
-        authDomain:        "sakina-937c4.firebaseapp.com",
-        projectId:         "sakina-937c4",
-        storageBucket:     "sakina-937c4.firebasestorage.app",
-        messagingSenderId: "25215790734",
-        appId:             "1:25215790734:web:46c5d893d5818530b3a3df"
-    });
-    const db   = getFirestore(app);
-    const auth = getAuth(app);
-
-    // ── IndexedDB ─────────────────────────────────────────────────────────
+    // ==================== IndexedDB ====================
     class IDB {
-        constructor(){ this.db=null; }
-        async init(){
-            return new Promise((res,rej)=>{
-                const r = indexedDB.open('SakoonPatientChatsDB',1);
-                r.onerror=()=>rej(r.error);
-                r.onsuccess=()=>{ this.db=r.result; res(); };
-                r.onupgradeneeded=({target})=>{
+        constructor() { this.db = null; }
+        async init() {
+            return new Promise((res, rej) => {
+                const r = indexedDB.open('SakoonPatientChatsDB', 1);
+                r.onerror = () => rej(r.error);
+                r.onsuccess = () => { this.db = r.result; res(); };
+                r.onupgradeneeded = ({ target }) => {
                     const d = target.result;
-                    // conversations: {id, doctorId, doctorName, doctorSpec, doctorAvatar, lastMessage, lastTs, unread, muted}
-                    if(!d.objectStoreNames.contains('convos'))
-                        d.createObjectStore('convos',{keyPath:'id'});
-                    // doctor profiles cache (for name/avatar display)
-                    if(!d.objectStoreNames.contains('doc_profiles'))
-                        d.createObjectStore('doc_profiles',{keyPath:'id'});
+                    if (!d.objectStoreNames.contains('convos'))
+                        d.createObjectStore('convos', { keyPath: 'id' });
+                    if (!d.objectStoreNames.contains('doc_profiles'))
+                        d.createObjectStore('doc_profiles', { keyPath: 'id' });
                 };
             });
         }
-        _tx(s,m='readonly'){ return this.db.transaction([s],m).objectStore(s); }
-        _p(r){ return new Promise((res,rej)=>{ r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-        getAll(s)     { return this._p(this._tx(s).getAll()).then(r=>r||[]); }
-        get(s,id)     { return this._p(this._tx(s).get(id)); }
-        put(s,obj)    { return this._p(this._tx(s,'readwrite').put(obj)); }
-        remove(s,id)  { return this._p(this._tx(s,'readwrite').delete(id)); }
-        clear(s)      { return this._p(this._tx(s,'readwrite').clear()); }
+        _tx(s, m = 'readonly') { return this.db.transaction([s], m).objectStore(s); }
+        _p(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+        getAll(s) { return this._p(this._tx(s).getAll()).then(r => r || []); }
+        get(s, id) { return this._p(this._tx(s).get(id)); }
+        put(s, obj) { return this._p(this._tx(s, 'readwrite').put(obj)); }
+        remove(s, id) { return this._p(this._tx(s, 'readwrite').delete(id)); }
+        clear(s) { return this._p(this._tx(s, 'readwrite').clear()); }
     }
     const idb = new IDB();
 
-    // ── Toast ─────────────────────────────────────────────────────────────
-    let _tt;
-    const toast=(msg,type='')=>{
-        const el=document.getElementById('toast');
-        el.textContent=msg; el.className=`toast show ${type}`;
-        clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),3000);
+    // ==================== UI Helpers ====================
+    let toastTimer;
+    const toast = (msg, type = '') => {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = `toast show ${type}`;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
     };
 
-    // ── Sync indicator ────────────────────────────────────────────────────
-    const setSyncing=(busy,msg)=>{
-        document.getElementById('syncDot').className='sync-dot'+(busy?' busy':'');
-        document.getElementById('syncText').textContent=msg??(busy?'جاري المزامنة...':'محدَّث ✓');
+    const setSyncing = (busy, msg) => {
+        document.getElementById('syncDot').className = 'sync-dot' + (busy ? ' busy' : '');
+        document.getElementById('syncText').textContent = msg ?? (busy ? 'جاري المزامنة...' : 'محدَّث ✓');
     };
 
-    // ── Confirm dialog ────────────────────────────────────────────────────
-    const showConfirm=({icon,title,msg,okClass,onOk})=>{
-        document.getElementById('confirmIcon').textContent  = icon||'⚠️';
-        document.getElementById('confirmTitle').textContent = title||'';
-        document.getElementById('confirmMsg').textContent   = msg||'';
+    const showConfirm = ({ icon, title, msg, okClass, onOk }) => {
+        document.getElementById('confirmIcon').textContent = icon || '⚠️';
+        document.getElementById('confirmTitle').textContent = title || '';
+        document.getElementById('confirmMsg').textContent = msg || '';
         const okBtn = document.getElementById('confirmOk');
-        okBtn.className = `confirm-btn ok ${okClass||''}`;
-        const backdrop  = document.getElementById('confirmBackdrop');
+        okBtn.className = `confirm-btn ok ${okClass || ''}`;
+        const backdrop = document.getElementById('confirmBackdrop');
         backdrop.classList.add('show');
-        const close=()=>backdrop.classList.remove('show');
-        document.getElementById('confirmCancel').onclick=close;
-        okBtn.onclick=()=>{ close(); onOk&&onOk(); };
-        backdrop.onclick=e=>{ if(e.target===backdrop) close(); };
+        const close = () => backdrop.classList.remove('show');
+        document.getElementById('confirmCancel').onclick = close;
+        okBtn.onclick = () => { close(); onOk && onOk(); };
+        backdrop.onclick = e => { if (e.target === backdrop) close(); };
     };
 
-    // ── State ─────────────────────────────────────────────────────────────
-    let patientUid  = null;
-    let allConvos   = [];     // [{id, doctorId, doctorName, doctorSpec, doctorAvatar, lastMessage, lastTs, unread, muted}]
-    let searchTerm  = '';
-    let mutedSet    = new Set();   // locally muted conv IDs
-
-    const fmtTime = ts=>{
-        if(!ts) return '';
-        const d = ts.toDate ? ts.toDate() : new Date(ts*1000||ts);
+    // ==================== التنسيق ====================
+    const fmtTime = (ts) => {
+        if (!ts) return '';
+        const d = ts?.toDate ? ts.toDate() : new Date(ts);
         const now = new Date();
-        const diff = (now-d)/1000;
-        if(diff < 60)     return 'الآن';
-        if(diff < 3600)   return `${Math.floor(diff/60)} د`;
-        if(diff < 86400)  return d.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
-        if(diff < 172800) return 'أمس';
-        return d.toLocaleDateString('ar-EG',{day:'numeric',month:'short'});
+        const diff = (now - d) / 1000;
+        if (diff < 60) return 'الآن';
+        if (diff < 3600) return `${Math.floor(diff / 60)} د`;
+        if (diff < 86400) return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        if (diff < 172800) return 'أمس';
+        return d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
     };
 
-    // ── Remove skeletons ──────────────────────────────────────────────────
-    const removeSkel=()=>{ const s=document.getElementById('skels'); if(s) s.remove(); };
+    // ==================== الحالة العامة ====================
+    let patientUid = null;
+    let allConvos = [];
+    let searchTerm = '';
+    const mutedSet = new Set(); // تخزين محلي لحالة الكتم
 
-    // ── Render ────────────────────────────────────────────────────────────
-    const render=()=>{
+    // إزالة الهياكل العظمية
+    const removeSkel = () => {
+        const s = document.getElementById('skels');
+        if (s) s.remove();
+    };
+
+    // ==================== تحميل بيانات الطبيب من الكاش أو Firestore ====================
+    const enrichWithDoctorData = async (convos) => {
+        for (const c of convos) {
+            if (c.doctorName && c.doctorAvatar) continue;
+
+            // جلب من الكاش
+            const cached = await idb.get('doc_profiles', c.doctorId);
+            if (cached) {
+                c.doctorName = cached.name || '';
+                c.doctorSpec = cached.specialty || '';
+                c.doctorAvatar = cached.avatarB64 || '';
+                continue;
+            }
+
+            // جلب من Firestore مباشرة باستخدام doc
+            try {
+                const docRef = doc(db, 'doctors', c.doctorId);
+                const snap = await getDocs(query(collection(db, 'doctors'), where('uid', '==', c.doctorId)));
+                // ملاحظة: لو doctorId هو نفسه uid، نستخدم doc مباشرة:
+                // const snap = await getDoc(doc(db, 'doctors', c.doctorId));
+                // لكن بما أن الهيكل قد يكون مختلفًا، نستخدم where للتوافق.
+                if (!snap.empty) {
+                    const data = snap.docs[0].data();
+                    c.doctorName = data.name || '';
+                    c.doctorSpec = data.specialty || '';
+                    c.doctorAvatar = data.avatarB64 || '';
+                    await idb.put('doc_profiles', {
+                        id: c.doctorId,
+                        name: data.name || '',
+                        specialty: data.specialty || '',
+                        avatarB64: data.avatarB64 || ''
+                    });
+                }
+            } catch (err) {
+                console.warn('تعذر جلب بيانات الطبيب:', err);
+            }
+        }
+    };
+
+    // ==================== عرض القائمة ====================
+    const render = () => {
         removeSkel();
-        const list   = document.getElementById('chatsList');
-        const empty  = document.getElementById('emptyState');
-        const q      = searchTerm.toLowerCase();
+        const list = document.getElementById('chatsList');
+        const empty = document.getElementById('emptyState');
+        const q = searchTerm.toLowerCase();
 
-        const filtered = allConvos.filter(c=>
-            !q || (c.doctorName||'').includes(q) || (c.doctorSpec||'').includes(q)
+        const filtered = allConvos.filter(c =>
+            !q || (c.doctorName || '').includes(q) || (c.doctorSpec || '').includes(q)
         );
 
-        list.innerHTML='';
-        empty.style.display = filtered.length===0 ? 'block' : 'none';
+        list.innerHTML = '';
+        empty.style.display = filtered.length === 0 ? 'block' : 'none';
 
-        filtered.forEach((c,i)=>{
+        filtered.forEach((c, i) => {
             const isUnread = c.unread && !c.muted;
 
-            // Avatar
             const avatarHTML = c.doctorAvatar
                 ? `<div class="chat-avatar"><img src="${c.doctorAvatar}" alt="${c.doctorName}"></div>`
-                : `<div class="chat-avatar">${(c.doctorName||'د').trim().charAt(0)}</div>`;
+                : `<div class="chat-avatar">${(c.doctorName || 'د').trim().charAt(0)}</div>`;
 
             const wrap = document.createElement('div');
-            wrap.className='chat-wrap';
+            wrap.className = 'chat-wrap';
 
             const row = document.createElement('div');
-            row.className='chat-row'+(isUnread?' unread':'');
-            row.style.animationDelay=`${i*.07}s`;
-            row.dataset.convId=c.id;
+            row.className = 'chat-row' + (isUnread ? ' unread' : '');
+            row.style.animationDelay = `${i * 0.07}s`;
+            row.dataset.convId = c.id;
 
-            row.innerHTML=`
+            row.innerHTML = `
                 ${avatarHTML}
                 <div class="chat-body">
                     <div class="chat-top">
-                        <span class="chat-name">${c.doctorName||'أخصائي'}</span>
+                        <span class="chat-name">${c.doctorName || 'أخصائي'}</span>
                         <span class="chat-time">${fmtTime(c.lastTs)}</span>
                     </div>
                     <div class="chat-preview-row">
-                        <span class="chat-preview">${c.muted?'🔕 ':''} ${c.lastMessage||'ابدأ المحادثة...'}</span>
+                        <span class="chat-preview">${c.muted ? '🔕 ' : ''} ${c.lastMessage || 'ابدأ المحادثة...'}</span>
                         <span class="unread-dot"></span>
                     </div>
                 </div>
@@ -516,13 +542,12 @@
                     <i data-feather="more-vertical" style="width:17px;height:17px"></i>
                 </button>`;
 
-            // options menu
             const menu = document.createElement('ul');
-            menu.className='options-menu';
-            menu.innerHTML=`
+            menu.className = 'options-menu';
+            menu.innerHTML = `
                 <li class="opt-item" data-action="mute" data-conv-id="${c.id}">
-                    <i data-feather="${c.muted?'bell':'bell-off'}" style="width:15px;height:15px"></i>
-                    <span>${c.muted?'إلغاء الكتم':'كتم الإشعارات'}</span>
+                    <i data-feather="${c.muted ? 'bell' : 'bell-off'}" style="width:15px;height:15px"></i>
+                    <span>${c.muted ? 'إلغاء الكتم' : 'كتم الإشعارات'}</span>
                 </li>
                 <li class="opt-item danger" data-action="delete" data-conv-id="${c.id}">
                     <i data-feather="trash-2" style="width:15px;height:15px"></i>
@@ -537,57 +562,57 @@
         feather.replace();
     };
 
-    // ── Click on chat row → open conversation ─────────────────────────────
-    document.getElementById('chatsList').addEventListener('click', e=>{
-        // options button
+    // ==================== معالجة الأحداث ====================
+    document.getElementById('chatsList').addEventListener('click', e => {
+        // زر الخيارات
         const optBtn = e.target.closest('.chat-options-btn');
-        if(optBtn){
+        if (optBtn) {
             e.stopPropagation();
             const allMenus = document.querySelectorAll('.options-menu.show');
-            allMenus.forEach(m=>m.classList.remove('show'));
+            allMenus.forEach(m => m.classList.remove('show'));
             const menu = optBtn.closest('.chat-wrap').querySelector('.options-menu');
-            if(menu) menu.classList.add('show');
+            if (menu) menu.classList.add('show');
             return;
         }
 
-        // option menu item
+        // عنصر قائمة الخيارات
         const optItem = e.target.closest('.opt-item');
-        if(optItem){
+        if (optItem) {
             e.stopPropagation();
             const convId = optItem.dataset.convId;
-            const conv   = allConvos.find(c=>c.id===convId);
-            if(!conv) return;
+            const conv = allConvos.find(c => c.id === convId);
+            if (!conv) return;
             optItem.closest('.options-menu').classList.remove('show');
 
-            if(optItem.dataset.action==='mute'){
+            if (optItem.dataset.action === 'mute') {
                 const nowMuted = !conv.muted;
                 conv.muted = nowMuted;
-                if(nowMuted) mutedSet.add(convId); else mutedSet.delete(convId);
-                idb.put('convos',{...conv});
+                if (nowMuted) mutedSet.add(convId); else mutedSet.delete(convId);
+                idb.put('convos', { ...conv });
                 render();
-                toast(nowMuted?'🔕 تم كتم الإشعارات':'🔔 تم إلغاء الكتم','ok');
+                toast(nowMuted ? '🔕 تم كتم الإشعارات' : '🔔 تم إلغاء الكتم', 'ok');
             }
 
-            if(optItem.dataset.action==='delete'){
+            if (optItem.dataset.action === 'delete') {
                 showConfirm({
-                    icon:'🗑️',
-                    title:'حذف المحادثة',
-                    msg:`سيتم حذف محادثتك مع ${conv.doctorName||'الأخصائي'} نهائياً.`,
-                    onOk: async()=>{
-                        // delete from Firestore (messages sub-collection + conversation doc)
+                    icon: '🗑️',
+                    title: 'حذف المحادثة',
+                    msg: `سيتم حذف محادثتك مع ${conv.doctorName || 'الأخصائي'} نهائياً.`,
+                    onOk: async () => {
                         try {
-                            // delete messages
-                            const msgsSnap = await getDocs(collection(db,'conversations',convId,'messages'));
-                            const batch    = writeBatch(db);
-                            msgsSnap.docs.forEach(d=>batch.delete(d.ref));
+                            // حذف الرسائل الفرعية
+                            const msgsSnap = await getDocs(collection(db, 'conversations', convId, 'messages'));
+                            const batch = writeBatch(db);
+                            msgsSnap.docs.forEach(d => batch.delete(d.ref));
                             await batch.commit();
-                            // delete conversation doc
-                            await deleteDoc(doc(db,'conversations',convId));
-                        } catch(err){ console.warn('Firestore delete:',err); }
-
-                        // remove from cache
-                        allConvos = allConvos.filter(c=>c.id!==convId);
-                        await idb.remove('convos',convId);
+                            // حذف وثيقة المحادثة
+                            await deleteDoc(doc(db, 'conversations', convId));
+                        } catch (err) {
+                            console.warn('فشل الحذف من Firestore:', err);
+                        }
+                        // حذف من الكاش والواجهة
+                        allConvos = allConvos.filter(c => c.id !== convId);
+                        await idb.remove('convos', convId);
                         render();
                         toast('تم حذف المحادثة');
                     }
@@ -596,128 +621,91 @@
             return;
         }
 
-        // close any open menus on general click
-        document.querySelectorAll('.options-menu.show').forEach(m=>m.classList.remove('show'));
+        // إغلاق القوائم المفتوحة
+        document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
 
-        // nav to conversation
+        // الانتقال إلى صفحة المحادثة
         const row = e.target.closest('.chat-row');
-        if(row){
+        if (row) {
             const convId = row.dataset.convId;
-            const conv   = allConvos.find(c=>c.id===convId);
-            if(!conv) return;
-            window.location.href=`patient-conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
+            const conv = allConvos.find(c => c.id === convId);
+            if (!conv) return;
+            window.location.href = `patient-conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
         }
     });
 
-    // close menus on outside click
-    document.addEventListener('click',()=>{
-        document.querySelectorAll('.options-menu.show').forEach(m=>m.classList.remove('show'));
+    // إغلاق القوائم عند النقر خارجها
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
     });
 
-    // ── Search ────────────────────────────────────────────────────────────
-    document.getElementById('searchInput').addEventListener('input',e=>{
-        searchTerm=e.target.value.trim(); render();
+    // البحث
+    document.getElementById('searchInput').addEventListener('input', e => {
+        searchTerm = e.target.value.trim();
+        render();
     });
 
-    // ── Load doctor profile (name/avatar) from cache or Firestore ─────────
-    const enrichWithDoctorData = async(convos)=>{
-        for(const c of convos){
-            if(c.doctorName && c.doctorAvatar) continue; // already enriched
-
-            // try local cache first
-            const cached = await idb.get('doc_profiles', c.doctorId);
-            if(cached){
-                c.doctorName   = cached.name   || c.doctorName;
-                c.doctorSpec   = cached.specialty || '';
-                c.doctorAvatar = cached.avatarB64 || '';
-                continue;
-            }
-
-            // fetch from Firestore doctors collection
-            try {
-                const snap = await getDocs(
-                    query(collection(db,'doctors'), where('uid','==',c.doctorId))
-                );
-                if(!snap.empty){
-                    const data = snap.docs[0].data();
-                    c.doctorName   = data.name||'';
-                    c.doctorSpec   = data.specialty||'';
-                    c.doctorAvatar = data.avatarB64||'';
-                    await idb.put('doc_profiles',{
-                        id: c.doctorId,
-                        name:      data.name||'',
-                        specialty: data.specialty||'',
-                        avatarB64: data.avatarB64||''
-                    });
-                }
-            } catch(err){ console.warn('Doctor fetch:',err); }
-        }
-    };
-
-    // ── Bootstrap ─────────────────────────────────────────────────────────
-    const bootstrap = async user=>{
+    // ==================== التهيئة والاستماع الحي ====================
+    const bootstrap = async (user) => {
         patientUid = user.uid;
         await idb.init();
 
-        // ① show cached convos immediately
+        // 1. عرض المحادثات المخزنة محلياً فوراً
         const cached = await idb.getAll('convos');
-        if(cached.length){
+        if (cached.length) {
             allConvos = cached;
-            cached.forEach(c=>{ if(c.muted) mutedSet.add(c.id); });
+            cached.forEach(c => { if (c.muted) mutedSet.add(c.id); });
             render();
-            setSyncing(false,'من الكاش');
+            setSyncing(false, 'من الكاش');
         }
 
-        // ② live listener — conversations where patientId === current user
-        setSyncing(true,'جاري المزامنة...');
-        const q = query(collection(db,'conversations'), where('patientId','==',patientUid));
+        // 2. الاستماع الحي لمحادثات المريض
+        setSyncing(true, 'جاري المزامنة...');
+        const q = query(collection(db, 'conversations'), where('patientId', '==', patientUid));
 
-        onSnapshot(q, async snap=>{
-            setSyncing(true,'تحديث...');
+        onSnapshot(q, async (snap) => {
+            setSyncing(true, 'تحديث...');
 
-            const fresh=[];
-            for(const d of snap.docs){
+            const fresh = [];
+            for (const d of snap.docs) {
                 const data = d.data();
-                // preserve local mute state
                 const muted = mutedSet.has(d.id);
-                const entry={
-                    id:           d.id,
-                    doctorId:     data.doctorId   || '',
-                    doctorName:   data.doctorName || '',
-                    doctorSpec:   data.doctorSpec  || '',
-                    doctorAvatar: data.doctorAvatar||'',
-                    lastMessage:  data.lastMessage ||'',
-                    lastTs:       data.lastMessageTime || null,
-                    unread:       data.unreadPatient   || false,
+                const entry = {
+                    id: d.id,
+                    doctorId: data.doctorId || '',
+                    doctorName: data.doctorName || '',
+                    doctorSpec: data.doctorSpec || '',
+                    doctorAvatar: data.doctorAvatar || '',
+                    lastMessage: data.lastMessage || '',
+                    lastTs: data.lastMessageTime || null,
+                    unread: data.unreadPatient || false,
                     muted
                 };
                 fresh.push(entry);
-                await idb.put('convos',entry);
+                await idb.put('convos', entry);
             }
 
-            // remove deleted conversations from cache
-            const freshIds = new Set(fresh.map(c=>c.id));
+            // حذف المحادثات القديمة من الكاش
+            const freshIds = new Set(fresh.map(c => c.id));
             const old = await idb.getAll('convos');
-            for(const o of old){
-                if(!freshIds.has(o.id)) await idb.remove('convos',o.id);
+            for (const o of old) {
+                if (!freshIds.has(o.id)) await idb.remove('convos', o.id);
             }
 
             allConvos = fresh;
-
-            // enrich with doctor name/avatar if missing
             await enrichWithDoctorData(allConvos);
             render();
             setSyncing(false);
-        }, err=>{
-            console.error('Convos listener:',err);
-            setSyncing(false,'⚠️ لا يوجد اتصال');
+        }, err => {
+            console.error('خطأ في المستمع:', err);
+            setSyncing(false, '⚠️ لا يوجد اتصال');
         });
     };
 
-    // ── Auth gate ─────────────────────────────────────────────────────────
-    onAuthStateChanged(auth, user=>{
-        if(user) bootstrap(user);
-        else window.location.href='patient-login.html';
+    // مراقبة حالة المصادقة
+    onAuthStateChanged(auth, user => {
+        if (user) bootstrap(user);
+        else window.location.href = 'patient-login.html';
     });
 </script>
 </body>
