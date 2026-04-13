@@ -122,11 +122,10 @@
             box-shadow:var(--sh-md);
             padding:1.4rem;
             display:flex;flex-direction:column;gap:1rem;
-            transition:transform .25s,box-shadow .25s;
-            animation:cardIn .35s ease forwards;opacity:0;
+            transition:transform .2s,box-shadow .2s;
+            will-change:transform;
         }
-        @keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-        .doc-card:hover{transform:translateY(-5px);box-shadow:var(--sh-lg);}
+        .doc-card:active{transform:scale(0.98);}
 
         .doc-top{display:flex;gap:1.1rem;align-items:flex-start;}
 
@@ -150,7 +149,14 @@
             background:var(--t50);border:1px solid var(--t100);
             padding:.2rem .65rem;border-radius:99px;margin-bottom:.55rem;
         }
-        .doc-bio{font-size:.87rem;color:var(--ink60);line-height:1.75;}
+        .doc-bio{
+            font-size:.87rem;color:var(--ink60);
+            line-height:1.5;
+            display:-webkit-box;
+            -webkit-line-clamp:2;
+            -webkit-box-orient:vertical;
+            overflow:hidden;
+        }
 
         .btn-msg{
             display:flex;align-items:center;justify-content:center;gap:.5rem;
@@ -159,10 +165,9 @@
             color:var(--white);border:none;border-radius:var(--r-md);
             font-family:'Cairo',sans-serif;font-size:.95rem;font-weight:800;
             cursor:pointer;box-shadow:0 4px 14px rgba(61,138,138,.3);
-            transition:transform .2s,box-shadow .2s;
+            transition:transform .15s,box-shadow .15s;
         }
-        .btn-msg:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(61,138,138,.4);}
-        .btn-msg:active{transform:translateY(0);}
+        .btn-msg:active{transform:scale(0.96);}
 
         .empty-state{
             text-align:center;padding:3rem 1rem;
@@ -176,8 +181,8 @@
             border:1.5px solid var(--t100);padding:1.4rem;
             display:flex;gap:1.1rem;align-items:flex-start;
         }
-        .skel{background:var(--t100);border-radius:var(--r-sm);animation:shimmer 1.4s infinite;}
-        @keyframes shimmer{0%,100%{opacity:.5}50%{opacity:1}}
+        .skel{background:var(--t100);border-radius:var(--r-sm);animation:shimmer 1s infinite;}
+        @keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.8}}
         .skel-av{width:88px;height:88px;flex-shrink:0;border-radius:20px;}
         .skel-lines{flex:1;display:flex;flex-direction:column;gap:.6rem;padding-top:.4rem;}
         .skel-line{height:14px;border-radius:99px;}
@@ -190,7 +195,7 @@
         }
         .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--success);}
         .sync-dot.busy{background:var(--warn);animation:blink 1s infinite;}
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
         .bottom-nav{
             position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
@@ -216,6 +221,12 @@
             .doc-info{text-align:center;}
             .doc-spec{justify-content:center;}
         }
+
+        /* تحسين للأجهزة الضعيفة */
+        @media (prefers-reduced-motion: reduce) {
+            .skel{animation:none;opacity:0.6;}
+            .doc-card{transition:none;}
+        }
     </style>
 </head>
 <body>
@@ -228,7 +239,7 @@
 
     <div class="toolbar">
         <div class="search-wrap">
-            <input type="text" id="searchInput" placeholder="ابحث باسم الأخصائي أو التخصص...">
+            <input type="text" id="searchInput" placeholder="ابحث باسم الأخصائي أو التخصص..." autocomplete="off">
             <span class="search-icon">
                 <i data-feather="search" style="width:17px;height:17px"></i>
             </span>
@@ -245,7 +256,7 @@
     </div>
 
     <div class="cards-grid" id="cardsGrid">
-        <div class="skel-card" id="skel1">
+        <div class="skel-card">
             <div class="skel skel-av"></div>
             <div class="skel-lines">
                 <div class="skel skel-line" style="width:55%"></div>
@@ -254,7 +265,7 @@
                 <div class="skel skel-line" style="width:75%"></div>
             </div>
         </div>
-        <div class="skel-card" id="skel2">
+        <div class="skel-card">
             <div class="skel skel-av"></div>
             <div class="skel-lines">
                 <div class="skel skel-line" style="width:50%"></div>
@@ -317,30 +328,84 @@
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // تخزين محلي بسيط (IndexedDB)
-    class IDB {
-        constructor(){ this.db = null; }
-        async init(){
-            return new Promise((res,rej)=>{
-                const r = indexedDB.open('SakoonPatientHomeDB',2);
-                r.onerror = ()=>rej(r.error);
-                r.onsuccess = ()=>{ this.db=r.result; res(); };
-                r.onupgradeneeded = ({target})=>{
-                    const d = target.result;
-                    if(!d.objectStoreNames.contains('doctors'))
-                        d.createObjectStore('doctors',{keyPath:'id'});
+    // ========== إدارة التخزين المحلي (IndexedDB) محسنة وسريعة ==========
+    class LocalDB {
+        constructor() {
+            this.db = null;
+            this.ready = false;
+        }
+        
+        async init() {
+            if(this.ready) return;
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('SakoonDoctorsCache', 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    this.db = request.result;
+                    this.ready = true;
+                    resolve();
+                };
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if(!db.objectStoreNames.contains('doctors')) {
+                        db.createObjectStore('doctors', { keyPath: 'id' });
+                    }
+                    if(!db.objectStoreNames.contains('metadata')) {
+                        db.createObjectStore('metadata', { keyPath: 'key' });
+                    }
                 };
             });
         }
-        _tx(m='readonly'){ return this.db.transaction(['doctors'],m).objectStore('doctors'); }
-        _p(r){ return new Promise((res,rej)=>{ r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-        getAll()  { return this._p(this._tx().getAll()).then(r=>r||[]); }
-        put(d)    { return this._p(this._tx('readwrite').put(d)); }
-        clear()   { return this._p(this._tx('readwrite').clear()); }
+        
+        async getAllDoctors() {
+            await this.init();
+            return new Promise((resolve) => {
+                const tx = this.db.transaction('doctors', 'readonly');
+                const store = tx.objectStore('doctors');
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => resolve([]);
+            });
+        }
+        
+        async saveDoctors(doctors) {
+            await this.init();
+            return new Promise((resolve) => {
+                const tx = this.db.transaction('doctors', 'readwrite');
+                const store = tx.objectStore('doctors');
+                store.clear();
+                doctors.forEach(doc => store.put(doc));
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            });
+        }
+        
+        async getLastSync() {
+            await this.init();
+            return new Promise((resolve) => {
+                const tx = this.db.transaction('metadata', 'readonly');
+                const store = tx.objectStore('metadata');
+                const request = store.get('lastSync');
+                request.onsuccess = () => resolve(request.result?.value || 0);
+                request.onerror = () => resolve(0);
+            });
+        }
+        
+        async setLastSync(time) {
+            await this.init();
+            return new Promise((resolve) => {
+                const tx = this.db.transaction('metadata', 'readwrite');
+                const store = tx.objectStore('metadata');
+                store.put({ key: 'lastSync', value: time });
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            });
+        }
     }
-    const idb = new IDB();
-
-    // قائمة التخصصات للترجمة
+    
+    const localDB = new LocalDB();
+    
+    // قائمة التخصصات
     const getSpecialtyLabel = (specialty) => {
         const labels = {
             'psychiatrist': 'طبيب نفسي',
@@ -353,200 +418,266 @@
         };
         return labels[specialty] || specialty || 'معالج نفسي';
     };
-
-    const setSyncing = (busy, msg) => {
-        const dot = document.getElementById('syncDot');
-        const text = document.getElementById('syncText');
-        if(dot) dot.className = 'sync-dot' + (busy ? ' busy' : '');
-        if(text) text.textContent = msg || (busy ? 'جاري المزامنة...' : 'محدَّث ✓');
-    };
-
+    
+    // عناصر DOM
+    const grid = document.getElementById('cardsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const searchInput = document.getElementById('searchInput');
+    const filterBtn = document.getElementById('filterBtn');
+    const filterDropdown = document.getElementById('filterDropdown');
+    const filterLabel = document.getElementById('filterLabel');
+    const syncDot = document.getElementById('syncDot');
+    const syncText = document.getElementById('syncText');
+    
     let allDoctors = [];
     let filterSpec = 'all';
     let searchTerm = '';
-    let patientUid = null;
-
-    const buildDropdown = () => {
-        const dd = document.getElementById('filterDropdown');
-        if(!dd) return;
-        dd.innerHTML = '';
-        const presentSpecs = new Set(allDoctors.map(d => d.specialty || '').filter(Boolean));
-        const allSpecs = ['all', ...Array.from(presentSpecs)];
-        allSpecs.forEach(spec => {
-            const item = document.createElement('div');
-            item.className = 'filter-item' + (filterSpec === spec ? ' active' : '');
-            item.dataset.spec = spec;
-            const label = spec === 'all' ? 'كل التخصصات' : getSpecialtyLabel(spec);
-            item.innerHTML = `<i data-feather="check-circle" class="fi" style="width:13px;height:13px"></i>${label}`;
-            dd.appendChild(item);
-        });
-        feather.replace();
+    let currentUser = null;
+    let syncTimeout = null;
+    
+    const setSyncing = (busy, msg) => {
+        if(syncTimeout) clearTimeout(syncTimeout);
+        if(syncDot) syncDot.className = 'sync-dot' + (busy ? ' busy' : '');
+        if(syncText) syncText.textContent = msg || (busy ? 'جاري المزامنة...' : 'محدَّث ✓');
+        if(!busy) {
+            syncTimeout = setTimeout(() => {
+                if(syncText && syncText.textContent === 'محدَّث ✓') {
+                    syncText.textContent = 'جاهز';
+                }
+            }, 2000);
+        }
     };
-
+    
+    // عرض البطاقات مع تحسين الأداء
     const renderCards = () => {
-        // إزالة عناصر التحميل الوهمية
-        document.getElementById('skel1')?.remove();
-        document.getElementById('skel2')?.remove();
-        
-        const filtered = allDoctors.filter(d => {
-            const matchSpec = filterSpec === 'all' || d.specialty === filterSpec;
-            const q = searchTerm.toLowerCase();
-            const matchSearch = !q ||
-                (d.name || '').toLowerCase().includes(q) ||
-                (d.specialty || '').toLowerCase().includes(q) ||
-                (getSpecialtyLabel(d.specialty) || '').includes(q) ||
-                (d.quickBlurb || '').toLowerCase().includes(q);
-            return matchSpec && matchSearch;
+        // فلترة سريعة
+        const searchLower = searchTerm.toLowerCase();
+        const filtered = allDoctors.filter(doc => {
+            if(filterSpec !== 'all' && doc.specialty !== filterSpec) return false;
+            if(!searchTerm) return true;
+            return (doc.name && doc.name.toLowerCase().includes(searchLower)) ||
+                   (doc.specialty && doc.specialty.toLowerCase().includes(searchLower)) ||
+                   (getSpecialtyLabel(doc.specialty).includes(searchLower));
         });
-        
-        const grid = document.getElementById('cardsGrid');
-        const empty = document.getElementById('emptyState');
-        
-        if(!grid) return;
-        grid.innerHTML = '';
         
         if(filtered.length === 0) {
-            empty.style.display = 'block';
+            if(grid) grid.innerHTML = '';
+            if(emptyState) emptyState.style.display = 'block';
             return;
         }
         
-        empty.style.display = 'none';
+        if(emptyState) emptyState.style.display = 'none';
         
-        filtered.forEach((doc, i) => {
+        // استخدام DocumentFragment لتحسين الأداء
+        const fragment = document.createDocumentFragment();
+        
+        filtered.forEach(doc => {
             const card = document.createElement('div');
             card.className = 'doc-card';
-            card.style.animationDelay = `${i * 0.07}s`;
             
-            const hasPhoto = doc.photoURL && doc.photoURL.length > 50;
+            const hasPhoto = doc.photoURL && doc.photoURL.length > 100;
             const avatarHTML = hasPhoto
-                ? `<div class="doc-avatar"><img src="${doc.photoURL}" alt="${doc.name}"></div>`
-                : `<div class="doc-avatar">${(doc.name || 'د').trim().charAt(0)}</div>`;
+                ? `<div class="doc-avatar"><img src="${doc.photoURL}" alt="${doc.name}" loading="lazy"></div>`
+                : `<div class="doc-avatar">${(doc.name || 'د').charAt(0)}</div>`;
             
             const specLabel = getSpecialtyLabel(doc.specialty);
-            const bio = doc.quickBlurb || doc.bio || '';
+            const bio = doc.quickBlurb || '';
+            const doctorId = doc.authUid || doc.id;
+            const patientId = currentUser?.uid || '';
             
             card.innerHTML = `
                 <div class="doc-top">
                     ${avatarHTML}
                     <div class="doc-info">
-                        <div class="doc-name">${doc.name || '—'}</div>
+                        <div class="doc-name">${escapeHtml(doc.name || '—')}</div>
                         <div class="doc-spec">
                             <i data-feather="award" style="width:12px;height:12px"></i>
-                            ${specLabel}
+                            ${escapeHtml(specLabel)}
                         </div>
-                        <div class="doc-bio">${bio.substring(0, 100)}${bio.length > 100 ? '...' : ''}</div>
+                        <div class="doc-bio">${escapeHtml(bio.substring(0, 100))}${bio.length > 100 ? '...' : ''}</div>
                     </div>
                 </div>
-                <button class="btn-msg" data-uid="${doc.authUid || doc.id}">
+                <button class="btn-msg" data-doctor-id="${escapeHtml(doctorId)}" data-patient-id="${escapeHtml(patientId)}">
                     <i data-feather="message-circle" style="width:17px;height:17px"></i>
                     راسل الآن
                 </button>
             `;
-            grid.appendChild(card);
+            fragment.appendChild(card);
         });
         
-        feather.replace();
-    };
-
-    // أحداث المستخدم
-    document.getElementById('cardsGrid')?.addEventListener('click', (e) => {
-        const btn = e.target.closest('.btn-msg');
-        if(!btn) return;
-        const doctorId = btn.dataset.uid;
-        if(doctorId) {
-            window.location.href = `patient-conversation.html?doctorId=${encodeURIComponent(doctorId)}`;
+        if(grid) {
+            grid.innerHTML = '';
+            grid.appendChild(fragment);
         }
-    });
-
-    document.getElementById('searchInput')?.addEventListener('input', (e) => {
-        searchTerm = e.target.value.trim();
-        renderCards();
-    });
-
-    const filterBtn = document.getElementById('filterBtn');
-    const filterDropdown = document.getElementById('filterDropdown');
-    
-    filterBtn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const open = filterDropdown.classList.toggle('show');
-        filterBtn.classList.toggle('open', open);
-    });
-    
-    document.addEventListener('click', () => {
-        filterDropdown?.classList.remove('show');
-        filterBtn?.classList.remove('open');
-    });
-    
-    filterDropdown?.addEventListener('click', (e) => {
-        const item = e.target.closest('.filter-item');
-        if(!item) return;
-        filterSpec = item.dataset.spec;
-        const label = filterSpec === 'all' ? 'كل التخصصات' : getSpecialtyLabel(filterSpec);
-        document.getElementById('filterLabel').textContent = label;
-        buildDropdown();
-        renderCards();
-        filterDropdown.classList.remove('show');
-        filterBtn?.classList.remove('open');
-    });
-
-    // الاستماع المباشر لـ Realtime Database
-    const startDoctorsListener = async () => {
-        await idb.init();
         
-        // تحميل من الكاش أولاً
-        const cached = await idb.getAll();
-        if(cached.length) {
+        // تحديث الأيقونات
+        if(typeof feather !== 'undefined') feather.replace();
+    };
+    
+    const escapeHtml = (str) => {
+        if(!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if(m === '&') return '&amp;';
+            if(m === '<') return '&lt;';
+            if(m === '>') return '&gt;';
+            return m;
+        });
+    };
+    
+    // بناء قائمة التصفية
+    const buildDropdown = () => {
+        if(!filterDropdown) return;
+        const presentSpecs = new Set(allDoctors.map(d => d.specialty).filter(Boolean));
+        const specs = ['all', ...Array.from(presentSpecs)];
+        
+        filterDropdown.innerHTML = '';
+        specs.forEach(spec => {
+            const item = document.createElement('div');
+            item.className = 'filter-item' + (filterSpec === spec ? ' active' : '');
+            item.dataset.spec = spec;
+            const label = spec === 'all' ? 'كل التخصصات' : getSpecialtyLabel(spec);
+            item.innerHTML = `<i data-feather="check-circle" class="fi" style="width:13px;height:13px"></i>${label}`;
+            filterDropdown.appendChild(item);
+        });
+        if(typeof feather !== 'undefined') feather.replace();
+    };
+    
+    // تحديث البيانات من التخزين المحلي ثم من السحابة
+    const updateFromLocal = async () => {
+        const cached = await localDB.getAllDoctors();
+        if(cached && cached.length > 0) {
             allDoctors = cached;
             buildDropdown();
             renderCards();
-            setSyncing(false, 'من الكاش');
+            setSyncing(false, 'من الكاش ✓');
+            return true;
         }
-        
-        setSyncing(true, 'جاري المزامنة...');
-        
-        // الاستماع الحي من Realtime Database
+        return false;
+    };
+    
+    // الاستماع للتغييرات من Realtime Database
+    const startFirebaseSync = () => {
         const doctorsRef = ref(database, 'doctors');
+        
         onValue(doctorsRef, async (snapshot) => {
-            setSyncing(true, 'تحديث فوري...');
+            setSyncing(true, 'تحديث...');
             
-            await idb.clear();
             const freshList = [];
-            
-            snapshot.forEach((childSnapshot) => {
-                const data = childSnapshot.val();
-                const doctorEntry = {
-                    id: childSnapshot.key,
-                    authUid: data.authUid || childSnapshot.key,
-                    name: data.name || '',
-                    specialty: data.specialty || '',
-                    quickBlurb: data.quickBlurb || data.bio || '',
-                    photoURL: data.photoURL || '',
-                    email: data.email || '',
-                    phone: data.phone || '',
-                    status: data.status || 'active',
-                    lastModified: data.lastModified || '',
-                    createdAt: data.createdAt || ''
-                };
-                freshList.push(doctorEntry);
-                idb.put(doctorEntry);
+            snapshot.forEach((child) => {
+                const data = child.val();
+                // فقط الأطباء النشطين
+                if(data.status !== 'blocked') {
+                    freshList.push({
+                        id: child.key,
+                        authUid: data.authUid || child.key,
+                        name: data.name || '',
+                        specialty: data.specialty || '',
+                        quickBlurb: data.quickBlurb || '',
+                        photoURL: data.photoURL || '',
+                        email: data.email || '',
+                        phone: data.phone || '',
+                        status: data.status || 'active'
+                    });
+                }
             });
             
+            // حفظ في التخزين المحلي
+            await localDB.saveDoctors(freshList);
+            await localDB.setLastSync(Date.now());
+            
+            // تحديث المتغيرات وإعادة العرض
             allDoctors = freshList;
             buildDropdown();
             renderCards();
             setSyncing(false, 'مزامنة فورية ✓');
             
         }, (error) => {
-            console.error('خطأ في الاستماع للأطباء:', error);
-            setSyncing(false, '⚠️ مشكلة في الاتصال');
+            console.error('خطأ في المزامنة:', error);
+            setSyncing(false, '⚠️ غير متصل');
         });
     };
-
-    // التحقق من المصادقة
+    
+    // إعداد مستمعي الأحداث
+    const setupEventListeners = () => {
+        // بحث
+        if(searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                searchTerm = e.target.value.trim();
+                renderCards();
+            });
+        }
+        
+        // زر التصفية
+        if(filterBtn) {
+            filterBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(filterDropdown) {
+                    filterDropdown.classList.toggle('show');
+                    filterBtn.classList.toggle('open');
+                }
+            });
+        }
+        
+        // إغلاق القائمة عند النقر خارجها
+        document.addEventListener('click', () => {
+            if(filterDropdown) filterDropdown.classList.remove('show');
+            if(filterBtn) filterBtn.classList.remove('open');
+        });
+        
+        // اختيار عنصر من القائمة
+        if(filterDropdown) {
+            filterDropdown.addEventListener('click', (e) => {
+                const item = e.target.closest('.filter-item');
+                if(!item) return;
+                filterSpec = item.dataset.spec;
+                if(filterLabel) {
+                    filterLabel.textContent = filterSpec === 'all' ? 'كل التخصصات' : getSpecialtyLabel(filterSpec);
+                }
+                buildDropdown();
+                renderCards();
+                if(filterDropdown) filterDropdown.classList.remove('show');
+                if(filterBtn) filterBtn.classList.remove('open');
+            });
+        }
+        
+        // زر المراسلة (delegation)
+        if(grid) {
+            grid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.btn-msg');
+                if(!btn) return;
+                e.preventDefault();
+                
+                const doctorId = btn.dataset.doctorId;
+                const patientId = btn.dataset.patientId;
+                
+                if(doctorId && patientId) {
+                    window.location.href = `conversation.html?doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(patientId)}`;
+                } else if(doctorId) {
+                    window.location.href = `conversation.html?doctorId=${encodeURIComponent(doctorId)}`;
+                }
+            });
+        }
+    };
+    
+    // تهيئة التطبيق
+    const init = async () => {
+        setupEventListeners();
+        
+        // تحميل من الكاش أولاً (عرض فوري)
+        const hasCache = await updateFromLocal();
+        if(!hasCache) {
+            setSyncing(true, 'جاري التحميل...');
+        }
+        
+        // بدء المزامنة مع Firebase
+        startFirebaseSync();
+    };
+    
+    // التحقق من حالة المصادقة
     onAuthStateChanged(auth, (user) => {
         if(user) {
-            patientUid = user.uid;
-            startDoctorsListener();
+            currentUser = user;
+            init();
         } else {
             window.location.href = 'patient-login.html';
         }
