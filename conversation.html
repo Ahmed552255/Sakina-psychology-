@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>سُكُون — محادثة</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,8 +39,10 @@
         }
 
         html, body {
-            height: 100%;
+            height: 100vh;
             overflow: hidden;
+            position: fixed;
+            width: 100%;
         }
 
         body {
@@ -50,6 +52,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            height: 100vh;
         }
 
         /* خلفية ناعمة */
@@ -64,7 +67,7 @@
                 radial-gradient(circle at 100% 100%, rgba(61, 138, 138, 0.1) 0%, transparent 50%);
         }
 
-        /* ===== Header ===== */
+        /* ===== Header - ثابت ===== */
         .chat-header {
             display: flex;
             align-items: center;
@@ -151,16 +154,17 @@
             gap: 4px;
         }
 
-        /* ===== Messages Area ===== */
+        /* ===== Messages Area - قابل للتمرير ===== */
         .msgs-area {
             flex: 1;
             overflow-y: auto;
             padding: 16px 12px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             position: relative;
             z-index: 1;
+            -webkit-overflow-scrolling: touch;
         }
 
         .msgs-area::-webkit-scrollbar {
@@ -227,19 +231,23 @@
             position: relative;
         }
 
+        /* رسائل المريض (الخارجة) - الذيل على اليمين من فوق */
         .msg-wrapper.out .msg-bubble {
             background: linear-gradient(135deg, var(--t700) 0%, var(--t500) 100%);
             color: white;
-            border-radius: 20px 20px 4px 20px;
+            border-radius: 4px 20px 20px 20px;
             box-shadow: 0 4px 12px rgba(61, 138, 138, 0.25);
+            margin-right: 0;
         }
 
+        /* رسائل الدكتور (الواردة) - الذيل على اليسار من فوق */
         .msg-wrapper.in .msg-bubble {
             background: var(--white);
             color: var(--ink);
-            border-radius: 20px 20px 20px 4px;
+            border-radius: 20px 4px 20px 20px;
             box-shadow: var(--sh-sm);
             border: 1px solid rgba(152, 216, 216, 0.2);
+            margin-left: 0;
         }
 
         .msg-content {
@@ -290,7 +298,7 @@
             color: var(--t500);
         }
 
-        /* ===== Input Bar ===== */
+        /* ===== Input Bar - ثابت في الأسفل ===== */
         .input-bar {
             display: flex;
             align-items: flex-end;
@@ -301,6 +309,7 @@
             border-top: 1px solid rgba(152, 216, 216, 0.2);
             flex-shrink: 0;
             z-index: 100;
+            position: relative;
         }
 
         .msg-input-wrapper {
@@ -475,7 +484,7 @@
 </head>
 <body>
 
-<!-- Header -->
+<!-- Header - ثابت -->
 <header class="chat-header">
     <button class="back-btn" id="backBtn">
         <i data-feather="arrow-right" style="width:20px;height:20px"></i>
@@ -490,7 +499,7 @@
     </div>
 </header>
 
-<!-- Messages Area -->
+<!-- Messages Area - قابل للتمرير -->
 <main class="msgs-area" id="msgsArea">
     <div class="loading-state">
         <div class="loading-spinner"></div>
@@ -498,7 +507,7 @@
     </div>
 </main>
 
-<!-- Input Bar -->
+<!-- Input Bar - ثابت -->
 <footer class="input-bar">
     <div class="msg-input-wrapper">
         <textarea class="msg-input" id="msgInput" placeholder="اكتب رسالتك هنا..." rows="1"></textarea>
@@ -736,14 +745,20 @@
         });
     };
 
-    // Send Message
+    // Send Message - مع إبقاء التركيز
     const sendMessage = async () => {
         const text = msgInput.value.trim();
         if (!text || !convId || !patientUid) return;
         
+        // تعطيل الزر فقط، مع إبقاء التركيز على حقل الإدخال
         sendBtn.disabled = true;
+        
+        // مسح النص لكن إبقاء التركيز
         msgInput.value = '';
         msgInput.style.height = 'auto';
+        
+        // إبقاء التركيز على حقل الإدخال
+        msgInput.focus();
         
         try {
             const msgRef = push(ref(database, `conversations/${convId}/messages`));
@@ -765,7 +780,9 @@
             console.error('خطأ في الإرسال:', error);
             showToast('فشل إرسال الرسالة', true);
         } finally {
+            // إعادة تفعيل الزر
             sendBtn.disabled = false;
+            // التأكد من بقاء التركيز
             msgInput.focus();
         }
     };
@@ -785,6 +802,17 @@
     });
 
     sendBtn.addEventListener('click', sendMessage);
+
+    // منع فقدان التركيز عند النقر خارج حقل الإدخال
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.input-bar') && !e.target.closest('.send-btn')) {
+            // لا تفقد التركيز إذا نقر المستخدم على منطقة الرسائل
+            if (!e.target.closest('.msgs-area')) {
+                // فقط إذا نقر خارج منطقة الدردشة بالكامل
+                return;
+            }
+        }
+    });
 
     document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = 'patient-chats.html';
