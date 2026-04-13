@@ -297,28 +297,27 @@
 </nav>
 
 <script type="module">
-    import { initializeApp }      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore,
-             collection,
-             onSnapshot,
-             doc,
-             getDoc }            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth,
-             onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
     feather.replace();
 
-    const app = initializeApp({
-        apiKey:            "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
-        authDomain:        "sakina-937c4.firebaseapp.com",
-        projectId:         "sakina-937c4",
-        storageBucket:     "sakina-937c4.firebasestorage.app",
+    const firebaseConfig = {
+        apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
+        authDomain: "sakina-937c4.firebaseapp.com",
+        databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
+        projectId: "sakina-937c4",
+        storageBucket: "sakina-937c4.firebasestorage.app",
         messagingSenderId: "25215790734",
-        appId:             "1:25215790734:web:46c5d893d5818530b3a3df"
-    });
-    const db   = getFirestore(app);
+        appId: "1:25215790734:web:46c5d893d5818530b3a3df"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
     const auth = getAuth(app);
 
+    // تخزين محلي بسيط (IndexedDB)
     class IDB {
         constructor(){ this.db = null; }
         async init(){
@@ -341,175 +340,211 @@
     }
     const idb = new IDB();
 
-    const SPEC = {
-        all:               'كل التخصصات',
-        psychiatrist:      'طبيب نفسي',
-        psychologist:      'أخصائي نفسي',
-        family_counselor:  'استشاري أسري وزواجي',
-        child_psychology:  'علم نفس الأطفال والمراهقين',
-        addiction_counselor:'استشاري إدمان',
-        cbt:               'معالج سلوكي معرفي',
-        trauma_therapist:  'معالج صدمات نفسية',
+    // قائمة التخصصات للترجمة
+    const getSpecialtyLabel = (specialty) => {
+        const labels = {
+            'psychiatrist': 'طبيب نفسي',
+            'psychologist': 'أخصائي نفسي',
+            'family_counselor': 'استشاري أسري وزواجي',
+            'child_psychology': 'علم نفس الأطفال والمراهقين',
+            'addiction_counselor': 'استشاري إدمان',
+            'cbt': 'معالج سلوكي معرفي',
+            'trauma_therapist': 'معالج صدمات نفسية'
+        };
+        return labels[specialty] || specialty || 'معالج نفسي';
     };
 
-    const setSyncing = (busy,msg)=>{
-        document.getElementById('syncDot').className = 'sync-dot'+(busy?' busy':'');
-        document.getElementById('syncText').textContent = msg??(busy?'جاري المزامنة...':'محدَّث ✓');
+    const setSyncing = (busy, msg) => {
+        const dot = document.getElementById('syncDot');
+        const text = document.getElementById('syncText');
+        if(dot) dot.className = 'sync-dot' + (busy ? ' busy' : '');
+        if(text) text.textContent = msg || (busy ? 'جاري المزامنة...' : 'محدَّث ✓');
     };
 
-    let allDoctors   = [];
-    let filterSpec   = 'all';
-    let searchTerm   = '';
-    let patientUid   = null;
+    let allDoctors = [];
+    let filterSpec = 'all';
+    let searchTerm = '';
+    let patientUid = null;
 
     const buildDropdown = () => {
         const dd = document.getElementById('filterDropdown');
+        if(!dd) return;
         dd.innerHTML = '';
-        const presentSpecs = new Set(allDoctors.map(d=>d.specialty||'').filter(Boolean));
-        const keys = ['all', ...Object.keys(SPEC).filter(k=>k!=='all' && presentSpecs.has(k))];
-        keys.forEach(key=>{
+        const presentSpecs = new Set(allDoctors.map(d => d.specialty || '').filter(Boolean));
+        const allSpecs = ['all', ...Array.from(presentSpecs)];
+        allSpecs.forEach(spec => {
             const item = document.createElement('div');
-            item.className = 'filter-item'+(filterSpec===key?' active':'');
-            item.dataset.spec = key;
-            item.innerHTML = `<i data-feather="check-circle" class="fi" style="width:13px;height:13px"></i>${SPEC[key]||key}`;
+            item.className = 'filter-item' + (filterSpec === spec ? ' active' : '');
+            item.dataset.spec = spec;
+            const label = spec === 'all' ? 'كل التخصصات' : getSpecialtyLabel(spec);
+            item.innerHTML = `<i data-feather="check-circle" class="fi" style="width:13px;height:13px"></i>${label}`;
             dd.appendChild(item);
         });
         feather.replace();
     };
 
     const renderCards = () => {
-        ['skel1','skel2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.remove(); });
-        const filtered = allDoctors.filter(d=>{
-            const matchSpec = filterSpec==='all' || d.specialty===filterSpec;
+        // إزالة عناصر التحميل الوهمية
+        document.getElementById('skel1')?.remove();
+        document.getElementById('skel2')?.remove();
+        
+        const filtered = allDoctors.filter(d => {
+            const matchSpec = filterSpec === 'all' || d.specialty === filterSpec;
             const q = searchTerm.toLowerCase();
-            const matchSearch = !q
-                || (d.name||'').includes(q)
-                || (d.specialty||'').includes(q)
-                || (SPEC[d.specialty]||'').includes(q)
-                || (d.bio||'').includes(q);
+            const matchSearch = !q ||
+                (d.name || '').toLowerCase().includes(q) ||
+                (d.specialty || '').toLowerCase().includes(q) ||
+                (getSpecialtyLabel(d.specialty) || '').includes(q) ||
+                (d.quickBlurb || '').toLowerCase().includes(q);
             return matchSpec && matchSearch;
         });
-        const grid   = document.getElementById('cardsGrid');
-        const empty  = document.getElementById('emptyState');
+        
+        const grid = document.getElementById('cardsGrid');
+        const empty = document.getElementById('emptyState');
+        
+        if(!grid) return;
         grid.innerHTML = '';
-        empty.style.display = filtered.length===0 ? 'block' : 'none';
-        filtered.forEach((doc,i)=>{
+        
+        if(filtered.length === 0) {
+            empty.style.display = 'block';
+            return;
+        }
+        
+        empty.style.display = 'none';
+        
+        filtered.forEach((doc, i) => {
             const card = document.createElement('div');
             card.className = 'doc-card';
-            card.style.animationDelay = `${i*0.07}s`;
-            const avatarHTML = doc.avatarB64
-                ? `<div class="doc-avatar"><img src="${doc.avatarB64}" alt="${doc.name}"></div>`
-                : `<div class="doc-avatar">${(doc.name||'د').trim().charAt(0)}</div>`;
-            const specLabel = SPEC[doc.specialty] || doc.specialty || '';
-            const bio       = doc.bio || '';
+            card.style.animationDelay = `${i * 0.07}s`;
+            
+            const hasPhoto = doc.photoURL && doc.photoURL.length > 50;
+            const avatarHTML = hasPhoto
+                ? `<div class="doc-avatar"><img src="${doc.photoURL}" alt="${doc.name}"></div>`
+                : `<div class="doc-avatar">${(doc.name || 'د').trim().charAt(0)}</div>`;
+            
+            const specLabel = getSpecialtyLabel(doc.specialty);
+            const bio = doc.quickBlurb || doc.bio || '';
+            
             card.innerHTML = `
                 <div class="doc-top">
                     ${avatarHTML}
                     <div class="doc-info">
-                        <div class="doc-name">${doc.name||'—'}</div>
+                        <div class="doc-name">${doc.name || '—'}</div>
                         <div class="doc-spec">
                             <i data-feather="award" style="width:12px;height:12px"></i>
                             ${specLabel}
                         </div>
-                        <div class="doc-bio">${bio}</div>
+                        <div class="doc-bio">${bio.substring(0, 100)}${bio.length > 100 ? '...' : ''}</div>
                     </div>
                 </div>
-                <button class="btn-msg" data-uid="${doc.uid||doc.id}">
+                <button class="btn-msg" data-uid="${doc.authUid || doc.id}">
                     <i data-feather="message-circle" style="width:17px;height:17px"></i>
                     راسل الآن
-                </button>`;
+                </button>
+            `;
             grid.appendChild(card);
         });
+        
         feather.replace();
     };
 
-    document.getElementById('cardsGrid').addEventListener('click', e=>{
+    // أحداث المستخدم
+    document.getElementById('cardsGrid')?.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn-msg');
         if(!btn) return;
         const doctorId = btn.dataset.uid;
-        if(!doctorId) return;
-        window.location.href = `patient-conversation.html?doctorId=${encodeURIComponent(doctorId)}`;
+        if(doctorId) {
+            window.location.href = `patient-conversation.html?doctorId=${encodeURIComponent(doctorId)}`;
+        }
     });
 
-    document.getElementById('searchInput').addEventListener('input', e=>{
+    document.getElementById('searchInput')?.addEventListener('input', (e) => {
         searchTerm = e.target.value.trim();
         renderCards();
     });
 
-    const filterBtn      = document.getElementById('filterBtn');
+    const filterBtn = document.getElementById('filterBtn');
     const filterDropdown = document.getElementById('filterDropdown');
-    filterBtn.addEventListener('click', e=>{
+    
+    filterBtn?.addEventListener('click', (e) => {
         e.stopPropagation();
         const open = filterDropdown.classList.toggle('show');
         filterBtn.classList.toggle('open', open);
     });
-    document.addEventListener('click',()=>{
-        filterDropdown.classList.remove('show');
-        filterBtn.classList.remove('open');
+    
+    document.addEventListener('click', () => {
+        filterDropdown?.classList.remove('show');
+        filterBtn?.classList.remove('open');
     });
-    filterDropdown.addEventListener('click', e=>{
+    
+    filterDropdown?.addEventListener('click', (e) => {
         const item = e.target.closest('.filter-item');
         if(!item) return;
         filterSpec = item.dataset.spec;
-        document.getElementById('filterLabel').textContent = SPEC[filterSpec]||filterSpec;
+        const label = filterSpec === 'all' ? 'كل التخصصات' : getSpecialtyLabel(filterSpec);
+        document.getElementById('filterLabel').textContent = label;
         buildDropdown();
         renderCards();
         filterDropdown.classList.remove('show');
-        filterBtn.classList.remove('open');
+        filterBtn?.classList.remove('open');
     });
 
-    // 🔥 هنا الجزء المطلوب: الاستماع للتغييرات في جدول الأطباء وتحديث البطاقات فوراً
+    // الاستماع المباشر لـ Realtime Database
     const startDoctorsListener = async () => {
         await idb.init();
-
-        // تحميل الكاش أولاً
+        
+        // تحميل من الكاش أولاً
         const cached = await idb.getAll();
-        if(cached.length){
+        if(cached.length) {
             allDoctors = cached;
             buildDropdown();
             renderCards();
-            setSyncing(false,'من الكاش');
+            setSyncing(false, 'من الكاش');
         }
-
-        setSyncing(true,'جاري المزامنة...');
-
-        // الاستماع الحي لمجموعة "doctors" في Firestore
-        onSnapshot(collection(db,'doctors'), async (snap) => {
-            setSyncing(true,'تحديث فوري...');
+        
+        setSyncing(true, 'جاري المزامنة...');
+        
+        // الاستماع الحي من Realtime Database
+        const doctorsRef = ref(database, 'doctors');
+        onValue(doctorsRef, async (snapshot) => {
+            setSyncing(true, 'تحديث فوري...');
             
-            // تفريغ IndexedDB وإعادة بنائه من المصدر الحي (Firestore)
             await idb.clear();
             const freshList = [];
             
-            for(const docSnap of snap.docs){
-                const data = docSnap.data();
+            snapshot.forEach((childSnapshot) => {
+                const data = childSnapshot.val();
                 const doctorEntry = {
-                    id:          docSnap.id,
-                    uid:         data.uid || docSnap.id,
-                    name:        data.name        || '',
-                    specialty:   data.specialty   || '',
-                    bio:         data.bio         || data.description || '',
-                    avatarB64:   data.avatarB64   || '',
-                    updatedAt:   data.updatedAt?.seconds || 0
+                    id: childSnapshot.key,
+                    authUid: data.authUid || childSnapshot.key,
+                    name: data.name || '',
+                    specialty: data.specialty || '',
+                    quickBlurb: data.quickBlurb || data.bio || '',
+                    photoURL: data.photoURL || '',
+                    email: data.email || '',
+                    phone: data.phone || '',
+                    status: data.status || 'active',
+                    lastModified: data.lastModified || '',
+                    createdAt: data.createdAt || ''
                 };
                 freshList.push(doctorEntry);
-                await idb.put(doctorEntry);
-            }
+                idb.put(doctorEntry);
+            });
             
-            // تحديث المصفوفة الرئيسية وإعادة بناء القوائم والبطاقات
             allDoctors = freshList;
             buildDropdown();
             renderCards();
-            setSyncing(false,'مزامنة فورية ✓');
+            setSyncing(false, 'مزامنة فورية ✓');
             
-        }, (err) => {
-            console.error("خطأ في الاستماع للأطباء:", err);
-            setSyncing(false,'⚠️ مشكلة في الاتصال');
+        }, (error) => {
+            console.error('خطأ في الاستماع للأطباء:', error);
+            setSyncing(false, '⚠️ مشكلة في الاتصال');
         });
     };
 
-    onAuthStateChanged(auth, user=>{
-        if(user){
+    // التحقق من المصادقة
+    onAuthStateChanged(auth, (user) => {
+        if(user) {
             patientUid = user.uid;
             startDoctorsListener();
         } else {
