@@ -1,12 +1,8 @@
 // patient-call-listener.js
-// ضع هذا الملف في مجلد المشروع وأدرجه في صفحات المريض كالتالي:
-// <script type="module" src="patient-call-listener.js"></script>
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// تكوين Firebase (نفس الإعدادات المستخدمة في باقي المشروع)
 const firebaseConfig = {
     apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
     authDomain: "sakina-937c4.firebaseapp.com",
@@ -17,27 +13,23 @@ const firebaseConfig = {
     appId: "1:25215790734:web:46c5d893d5818530b3a3df"
 };
 
-// تهيئة Firebase (إذا لم تكن مهيأة مسبقًا في الصفحة)
 let app;
 try {
     app = initializeApp(firebaseConfig);
 } catch (e) {
-    // قد تكون Firebase مهيأة بالفعل، نستخدم الموجود
     console.log("Firebase already initialized, reusing existing app.");
 }
 
 const db = getDatabase(app);
 const auth = getAuth();
 
-// متغيرات داخلية
 let currentPatientId = null;
 let incomingCallDialog = null;
 let currentCallId = null;
-let currentCallData = null; // تخزين بيانات المكالمة الحالية
+let currentCallData = null;
 let ringtoneAudio = null;
 let isListenerActive = false;
 
-// إنشاء نافذة الإشعار (تُنشأ مرة واحدة فقط)
 function createCallDialog() {
     if (incomingCallDialog) return;
 
@@ -78,14 +70,12 @@ function createCallDialog() {
     `;
     document.body.appendChild(dialog);
     
-    // تعطيل الإغلاق بالنقر خارج الصندوق (يجب استخدام الأزرار فقط)
     dialog.addEventListener('click', (e) => {
         if (e.target === dialog) {
-            // لا تفعل شيئًا – منع الإغلاق
+            // منع الإغلاق
         }
     });
 
-    // ربط الأحداث
     document.getElementById('sakoonDeclineCallBtn').addEventListener('click', declineCall);
     document.getElementById('sakoonAcceptCallBtn').addEventListener('click', acceptCall);
 
@@ -93,7 +83,6 @@ function createCallDialog() {
     dialog.style.display = 'none';
 }
 
-// دالة رفض المكالمة
 async function declineCall() {
     if (currentCallId) {
         try {
@@ -105,21 +94,33 @@ async function declineCall() {
     hideCallDialog();
 }
 
-// دالة قبول المكالمة
-function acceptCall() {
-    if (!currentCallId || !currentPatientId || !currentCallData) return;
+async function acceptCall() {
+    console.log('[acceptCall] currentCallId:', currentCallId);
+    console.log('[acceptCall] currentPatientId:', currentPatientId);
+    console.log('[acceptCall] currentCallData:', currentCallData);
+    
+    if (!currentCallId || !currentPatientId || !currentCallData) {
+        console.error('بيانات المكالمة غير مكتملة');
+        return;
+    }
     
     // تحديث الحالة إلى answered
-    update(ref(db, `calls/${currentCallId}`), { status: 'answered' });
+    try {
+        await update(ref(db, `calls/${currentCallId}`), { status: 'answered' });
+    } catch (e) {
+        console.warn('فشل تحديث الحالة:', e);
+    }
     
     const doctorId = currentCallData.caller;
     const callType = currentCallData.type || 'audio';
     
-    // الانتقال إلى صفحة المكالمة مع النوع الصحيح
-    window.location.href = `call.html?type=${callType}&doctorId=${doctorId}&patientId=${currentPatientId}&role=callee`;
+    const url = `call.html?type=${callType}&doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(currentPatientId)}&role=callee`;
+    console.log('[acceptCall] الانتقال إلى:', url);
+    
+    // الانتقال الفوري
+    window.location.href = url;
 }
 
-// إخفاء نافذة الإشعار وإيقاف الرنين
 function hideCallDialog() {
     if (incomingCallDialog) {
         incomingCallDialog.style.display = 'none';
@@ -132,16 +133,14 @@ function hideCallDialog() {
     currentCallData = null;
 }
 
-// عرض نافذة الإشعار مع بيانات المتصل
 async function showCallDialog(callData, callId) {
     createCallDialog();
     currentCallId = callId;
-    currentCallData = callData; // تخزين البيانات لاستخدامها في الرد
+    currentCallData = callData;
     
     const doctorId = callData.caller;
-    let callerName = doctorId; // افتراضيًا المعرف
+    let callerName = doctorId;
     
-    // محاولة جلب اسم الطبيب من قاعدة البيانات
     try {
         const { get } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
         const snap = await get(ref(db, `doctors/${doctorId}`));
@@ -158,18 +157,15 @@ async function showCallDialog(callData, callId) {
     
     incomingCallDialog.style.display = 'flex';
     
-    // تشغيل صوت الرنين
     if (!ringtoneAudio) {
         ringtoneAudio = new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_6e1f3e0e2c.mp3');
         ringtoneAudio.loop = true;
     }
     ringtoneAudio.play().catch(e => console.warn('تعذر تشغيل الرنين:', e));
     
-    // تحديث أيقونات Feather إذا كانت موجودة
     if (typeof feather !== 'undefined') feather.replace();
 }
 
-// بدء الاستماع للمكالمات الواردة
 function startListening(patientId) {
     if (isListenerActive) return;
     currentPatientId = patientId;
@@ -178,12 +174,10 @@ function startListening(patientId) {
     onValue(callsRef, (snapshot) => {
         const calls = snapshot.val();
         if (!calls) {
-            // لا توجد مكالمات
             if (currentCallId) hideCallDialog();
             return;
         }
         
-        // البحث عن مكالمة واردة حالية (status = ringing) والمستقبل هو المريض الحالي
         let foundCallId = null;
         let foundCallData = null;
         
@@ -192,17 +186,15 @@ function startListening(patientId) {
             if (call.callee === patientId && call.status === 'ringing') {
                 foundCallId = id;
                 foundCallData = call;
-                break; // نأخذ أول مكالمة
+                break;
             }
         }
         
         if (foundCallId) {
-            // إذا وجدنا مكالمة نشطة ولم نعرضها بعد
             if (!currentCallId || currentCallId !== foundCallId) {
                 showCallDialog(foundCallData, foundCallId);
             }
         } else {
-            // إذا اختفت المكالمة (تم الرد أو الرفض) نغلق الإشعار
             if (currentCallId) {
                 hideCallDialog();
             }
@@ -212,20 +204,16 @@ function startListening(patientId) {
     isListenerActive = true;
 }
 
-// الانتظار حتى تسجيل الدخول
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // المريض مسجل الدخول
         startListening(user.uid);
     } else {
-        // إذا خرج المستخدم، نوقف أي إشعار ظاهر
         if (currentCallId) hideCallDialog();
         isListenerActive = false;
         currentPatientId = null;
     }
 });
 
-// تصدير دوال للاستخدام الخارجي (اختياري)
 export const CallListener = {
     hide: hideCallDialog
 };
