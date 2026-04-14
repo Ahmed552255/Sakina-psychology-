@@ -1,4 +1,4 @@
-// patient-call-listener.js
+// patient-call-listener.js - نسخة محسّنة ومتوافقة مع call.html الجديد
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -29,6 +29,7 @@ let ringtoneAudio = null;
 let isListenerActive = false;
 let manualLink = null;
 let currentCallId = null;
+let dialogVisible = false;
 
 function createCallDialog() {
     if (incomingCallDialog) return;
@@ -91,7 +92,9 @@ async function declineCall() {
     if (callId) {
         try {
             await update(ref(db, `calls/${callId}`), { status: 'rejected' });
-        } catch (e) {}
+        } catch (e) {
+            console.error('فشل تحديث حالة المكالمة إلى مرفوضة:', e);
+        }
     }
     hideCallDialog();
 }
@@ -102,7 +105,6 @@ async function acceptCall() {
     const callDataStr = acceptBtn.dataset.callData;
     
     console.log('[acceptCall] callId:', callId);
-    console.log('[acceptCall] callDataStr:', callDataStr);
     
     if (!callId || !callDataStr) {
         alert('بيانات المكالمة غير مكتملة.');
@@ -141,8 +143,6 @@ async function acceptCall() {
     
     console.log('[acceptCall] الانتقال إلى:', url);
     
-    // لا نقوم بتحديث الحالة هنا! نترك call.html يقوم بذلك.
-    
     // إظهار الرابط الاحتياطي
     const container = document.getElementById('sakoonManualLinkContainer');
     if (container) container.style.display = 'block';
@@ -158,15 +158,34 @@ async function acceptCall() {
         console.warn('فشل window.location.assign:', e);
     }
     
-    // إخفاء النافذة بعد قليل
+    // إخفاء النافذة بعد قليل مع إبقاء الرابط الاحتياطي ظاهراً
     setTimeout(() => {
-        hideCallDialog();
+        // لا نستخدم hideCallDialog بالكامل حتى لا نخفي الرابط الاحتياطي
+        if (incomingCallDialog) {
+            // نخفي فقط خلفية الحوار ونترك المحتوى مع الرابط
+            const innerDiv = incomingCallDialog.querySelector('div');
+            if (innerDiv) {
+                // يمكننا تقليص الحوار إلى حجم أصغر يظهر فيه الرابط فقط
+                innerDiv.style.padding = '1rem';
+                // إخفاء عناصر الرد والرفض
+                document.querySelector('[style*="display: flex; gap: 1rem; justify-content: center;"]').style.display = 'none';
+                document.querySelector('p').style.display = 'none';
+                // تغيير العنوان
+                document.getElementById('sakoonCallerNameDisplay').textContent = 'جاري الاتصال...';
+            }
+            // لا نغير display: flex حتى يبقى الرابط ظاهرًا
+        }
+        if (ringtoneAudio) {
+            ringtoneAudio.pause();
+            ringtoneAudio.currentTime = 0;
+        }
     }, 1000);
 }
 
 function hideCallDialog() {
     if (incomingCallDialog) {
         incomingCallDialog.style.display = 'none';
+        dialogVisible = false;
     }
     if (ringtoneAudio) {
         ringtoneAudio.pause();
@@ -174,11 +193,23 @@ function hideCallDialog() {
     }
     const container = document.getElementById('sakoonManualLinkContainer');
     if (container) container.style.display = 'none';
+    // إعادة تعيين حالة الأزرار
+    const innerDiv = incomingCallDialog?.querySelector('div');
+    if (innerDiv) {
+        innerDiv.style.padding = '2rem 2rem 1.8rem';
+        const btnContainer = document.querySelector('[style*="display: flex; gap: 1rem; justify-content: center;"]');
+        if (btnContainer) btnContainer.style.display = 'flex';
+        const statusP = incomingCallDialog.querySelector('p');
+        if (statusP) statusP.style.display = 'block';
+    }
     currentCallId = null;
 }
 
 async function showCallDialog(callData, callId) {
     createCallDialog();
+    
+    // إذا كان مربع الحوار معروضاً بالفعل لنفس المكالمة، لا نفعل شيئاً
+    if (dialogVisible && currentCallId === callId) return;
     
     const doctorId = callData.caller;
     let callerName = doctorId;
@@ -201,6 +232,7 @@ async function showCallDialog(callData, callId) {
     declineBtn.dataset.callId = callId;
     
     incomingCallDialog.style.display = 'flex';
+    dialogVisible = true;
     currentCallId = callId;
     
     // تشغيل نغمة الرنين مع التعامل مع سياسة التشغيل التلقائي
@@ -210,9 +242,8 @@ async function showCallDialog(callData, callId) {
     }
     ringtoneAudio.play().catch(e => {
         console.warn('تعذر تشغيل نغمة الرنين تلقائياً. انتظار تفاعل المستخدم.');
-        // يمكن إضافة مستمع لتشغيل الصوت عند أول لمسة
         const playOnInteraction = () => {
-            if (ringtoneAudio && incomingCallDialog.style.display === 'flex') {
+            if (ringtoneAudio && incomingCallDialog && incomingCallDialog.style.display === 'flex') {
                 ringtoneAudio.play().catch(() => {});
             }
             document.removeEventListener('click', playOnInteraction);
@@ -250,8 +281,8 @@ function startListening(patientId) {
         }
         
         if (foundCallId) {
-            // إذا كان هناك مربع حوار معروض لنفس المكالمة، لا نعيد إنشائه
-            if (currentCallId === foundCallId && incomingCallDialog.style.display === 'flex') {
+            // إذا كان مربع الحوار معروضاً لنفس المكالمة، لا نعيد إنشائه
+            if (currentCallId === foundCallId && dialogVisible) {
                 return;
             }
             showCallDialog(foundCallData, foundCallId);
