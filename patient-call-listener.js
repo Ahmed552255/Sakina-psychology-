@@ -118,13 +118,11 @@ async function acceptCall() {
     
     const doctorId = callData.caller;
     const callType = callData.type || 'audio';
-    // تضمين callId في الرابط
     const url = `call.html?type=${callType}&doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(currentPatientId)}&role=callee&callId=${encodeURIComponent(callId)}`;
     
     console.log('[acceptCall] الانتقال إلى:', url);
     
-    // تحديث الحالة (غير مانع)
-    update(ref(db, `calls/${callId}`), { status: 'answered' }).catch(e => {});
+    // لا نقوم بتحديث الحالة هنا! نترك call.html يقوم بذلك.
     
     // إظهار الرابط الاحتياطي
     const container = document.getElementById('sakoonManualLinkContainer');
