@@ -28,6 +28,7 @@ let incomingCallDialog = null;
 let ringtoneAudio = null;
 let isListenerActive = false;
 let manualLink = null;
+let currentCallId = null;
 
 function createCallDialog() {
     if (incomingCallDialog) return;
@@ -115,6 +116,24 @@ async function acceptCall() {
         console.error('فشل تحليل بيانات المكالمة:', e);
         return;
     }
+
+    // التحقق من أن المكالمة لا تزال قيد الرنين
+    try {
+        const snap = await get(ref(db, `calls/${callId}`));
+        if (!snap.exists()) {
+            alert('المكالمة لم تعد موجودة.');
+            hideCallDialog();
+            return;
+        }
+        const currentStatus = snap.val().status;
+        if (currentStatus !== 'ringing') {
+            alert('تم الرد على المكالمة بالفعل أو تم إلغاؤها.');
+            hideCallDialog();
+            return;
+        }
+    } catch (e) {
+        console.error('فشل التحقق من حالة المكالمة:', e);
+    }
     
     const doctorId = callData.caller;
     const callType = callData.type || 'audio';
@@ -155,6 +174,7 @@ function hideCallDialog() {
     }
     const container = document.getElementById('sakoonManualLinkContainer');
     if (container) container.style.display = 'none';
+    currentCallId = null;
 }
 
 async function showCallDialog(callData, callId) {
@@ -181,12 +201,26 @@ async function showCallDialog(callData, callId) {
     declineBtn.dataset.callId = callId;
     
     incomingCallDialog.style.display = 'flex';
+    currentCallId = callId;
     
+    // تشغيل نغمة الرنين مع التعامل مع سياسة التشغيل التلقائي
     if (!ringtoneAudio) {
         ringtoneAudio = new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_6e1f3e0e2c.mp3');
         ringtoneAudio.loop = true;
     }
-    ringtoneAudio.play().catch(e => {});
+    ringtoneAudio.play().catch(e => {
+        console.warn('تعذر تشغيل نغمة الرنين تلقائياً. انتظار تفاعل المستخدم.');
+        // يمكن إضافة مستمع لتشغيل الصوت عند أول لمسة
+        const playOnInteraction = () => {
+            if (ringtoneAudio && incomingCallDialog.style.display === 'flex') {
+                ringtoneAudio.play().catch(() => {});
+            }
+            document.removeEventListener('click', playOnInteraction);
+            document.removeEventListener('touchstart', playOnInteraction);
+        };
+        document.addEventListener('click', playOnInteraction);
+        document.addEventListener('touchstart', playOnInteraction);
+    });
     
     if (typeof feather !== 'undefined') feather.replace();
 }
@@ -216,10 +250,11 @@ function startListening(patientId) {
         }
         
         if (foundCallId) {
-            const acceptBtn = document.getElementById('sakoonAcceptCallBtn');
-            if (!acceptBtn || acceptBtn.dataset.callId !== foundCallId) {
-                showCallDialog(foundCallData, foundCallId);
+            // إذا كان هناك مربع حوار معروض لنفس المكالمة، لا نعيد إنشائه
+            if (currentCallId === foundCallId && incomingCallDialog.style.display === 'flex') {
+                return;
             }
+            showCallDialog(foundCallData, foundCallId);
         } else {
             hideCallDialog();
         }
