@@ -118,7 +118,8 @@ async function acceptCall() {
     
     const doctorId = callData.caller;
     const callType = callData.type || 'audio';
-    const url = `call.html?type=${callType}&doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(currentPatientId)}&role=callee`;
+    // تضمين callId في الرابط
+    const url = `call.html?type=${callType}&doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(currentPatientId)}&role=callee&callId=${encodeURIComponent(callId)}`;
     
     console.log('[acceptCall] الانتقال إلى:', url);
     
@@ -140,7 +141,7 @@ async function acceptCall() {
         console.warn('فشل window.location.assign:', e);
     }
     
-    // إخفاء النافذة بعد قليل (حتى لا تختفي فجأة إذا لم ينتقل)
+    // إخفاء النافذة بعد قليل
     setTimeout(() => {
         hideCallDialog();
     }, 1000);
