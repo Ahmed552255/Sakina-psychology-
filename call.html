@@ -11,6 +11,7 @@
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
+        /* ... نفس التنسيقات السابقة ... */
         :root {
             --teal-500: #5aabab; --teal-700: #3d8a8a; --teal-900: #1f4f4f;
             --white: #ffffff; --danger: #e05252; --success: #34c48a;
@@ -181,7 +182,8 @@
     const callType = urlParams.get('type') || 'audio';
     const doctorId = urlParams.get('doctorId');
     const patientId = urlParams.get('patientId');
-    const role = urlParams.get('role') || 'callee'; // افتراضي callee للمريض
+    const role = urlParams.get('role') || 'callee';
+    const callIdFromUrl = urlParams.get('callId'); // جديد
 
     let localUid = null;
     let remoteUid = null;
@@ -193,7 +195,6 @@
     let isCallActive = false;
     let hasRemoteVideo = false;
 
-    // Web Audio للرنين (432Hz مريح)
     let audioContext = null;
     let ringtoneGain = null;
     let ringtoneTimeout = null;
@@ -230,18 +231,10 @@
         if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     }
 
-    // --- رنين مريح 432Hz ---
     function playTone() {
-        if (!audioContext) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-        if (currentOscillator) {
-            try { currentOscillator.stop(); } catch(e) {}
-            currentOscillator = null;
-        }
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === 'suspended') audioContext.resume();
+        if (currentOscillator) { try { currentOscillator.stop(); } catch(e) {} currentOscillator = null; }
         const now = audioContext.currentTime;
         const osc = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
@@ -266,18 +259,12 @@
                 displayError('لم يتم الرد على المكالمة');
                 endCall();
             }
-        }, 45000); // 45 ثانية
+        }, 45000);
     }
 
     function stopRingtone() {
-        if (ringtoneTimeout) {
-            clearTimeout(ringtoneTimeout);
-            ringtoneTimeout = null;
-        }
-        if (currentOscillator) {
-            try { currentOscillator.stop(); } catch(e) {}
-            currentOscillator = null;
-        }
+        if (ringtoneTimeout) { clearTimeout(ringtoneTimeout); ringtoneTimeout = null; }
+        if (currentOscillator) { try { currentOscillator.stop(); } catch(e) {} currentOscillator = null; }
     }
 
     function updateUIForVideo(hasRemoteVideoTrack) {
@@ -376,7 +363,6 @@
         window.location.href = returnUrl;
     }
 
-    // أحداث الأزرار
     retryButton.addEventListener('click', () => window.location.reload());
     toggleMicBtn.addEventListener('click', () => {
         if (localStream) {
@@ -416,16 +402,28 @@
             });
             startCallProcess();
         } else {
-            const snap = await get(ref(db, 'calls'));
-            if (snap.exists()) {
-                for (const id in snap.val()) {
-                    if (snap.val()[id].callee === patientId && snap.val()[id].status === 'ringing') {
-                        callId = id; break;
+            if (callIdFromUrl) {
+                callId = callIdFromUrl;
+                // تحقق من وجود المكالمة
+                const snap = await get(callRef());
+                if (!snap.exists() || snap.val().status !== 'ringing') {
+                    displayError('انتهت المكالمة أو لم تعد متاحة');
+                    setTimeout(() => window.history.back(), 2000);
+                    return;
+                }
+                await update(callRef(), { status: 'answered' });
+            } else {
+                const snap = await get(ref(db, 'calls'));
+                if (snap.exists()) {
+                    for (const id in snap.val()) {
+                        if (snap.val()[id].callee === patientId && snap.val()[id].status === 'ringing') {
+                            callId = id; break;
+                        }
                     }
                 }
+                if (!callId) { displayError('لا توجد مكالمة واردة'); return; }
+                await update(callRef(), { status: 'answered' });
             }
-            if (!callId) { displayError('لا توجد مكالمة واردة'); return; }
-            await update(callRef(), { status: 'answered' });
             startCallProcess();
         }
     }
