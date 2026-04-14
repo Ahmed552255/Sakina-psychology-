@@ -33,6 +33,7 @@ const auth = getAuth();
 let currentPatientId = null;
 let incomingCallDialog = null;
 let currentCallId = null;
+let currentCallData = null; // تخزين بيانات المكالمة الحالية
 let ringtoneAudio = null;
 let isListenerActive = false;
 
@@ -106,17 +107,16 @@ async function declineCall() {
 
 // دالة قبول المكالمة
 function acceptCall() {
-    if (!currentCallId || !currentPatientId) return;
+    if (!currentCallId || !currentPatientId || !currentCallData) return;
     
     // تحديث الحالة إلى answered
     update(ref(db, `calls/${currentCallId}`), { status: 'answered' });
     
-    // استخراج doctorId من معرف المكالمة (الصيغة: doctorId_patientId_timestamp)
-    const parts = currentCallId.split('_');
-    const doctorId = parts[0];
+    const doctorId = currentCallData.caller;
+    const callType = currentCallData.type || 'audio';
     
-    // الانتقال إلى صفحة المكالمة
-    window.location.href = `call.html?type=audio&doctorId=${doctorId}&patientId=${currentPatientId}&role=callee`;
+    // الانتقال إلى صفحة المكالمة مع النوع الصحيح
+    window.location.href = `call.html?type=${callType}&doctorId=${doctorId}&patientId=${currentPatientId}&role=callee`;
 }
 
 // إخفاء نافذة الإشعار وإيقاف الرنين
@@ -129,12 +129,14 @@ function hideCallDialog() {
         ringtoneAudio.currentTime = 0;
     }
     currentCallId = null;
+    currentCallData = null;
 }
 
 // عرض نافذة الإشعار مع بيانات المتصل
 async function showCallDialog(callData, callId) {
     createCallDialog();
     currentCallId = callId;
+    currentCallData = callData; // تخزين البيانات لاستخدامها في الرد
     
     const doctorId = callData.caller;
     let callerName = doctorId; // افتراضيًا المعرف
