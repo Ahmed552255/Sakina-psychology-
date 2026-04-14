@@ -17,7 +17,7 @@ let app;
 try {
     app = initializeApp(firebaseConfig);
 } catch (e) {
-    console.log("Firebase already initialized, reusing existing app.");
+    console.log("Firebase already initialized.");
 }
 
 const db = getDatabase(app);
@@ -25,8 +25,6 @@ const auth = getAuth();
 
 let currentPatientId = null;
 let incomingCallDialog = null;
-let currentCallId = null;
-let currentCallData = null;
 let ringtoneAudio = null;
 let isListenerActive = false;
 
@@ -71,53 +69,60 @@ function createCallDialog() {
     document.body.appendChild(dialog);
     
     dialog.addEventListener('click', (e) => {
-        if (e.target === dialog) {
-            // منع الإغلاق
-        }
+        if (e.target === dialog) { /* منع الإغلاق */ }
     });
-
-    document.getElementById('sakoonDeclineCallBtn').addEventListener('click', declineCall);
-    document.getElementById('sakoonAcceptCallBtn').addEventListener('click', acceptCall);
 
     incomingCallDialog = dialog;
     dialog.style.display = 'none';
 }
 
+// رفض المكالمة
 async function declineCall() {
-    if (currentCallId) {
+    const declineBtn = document.getElementById('sakoonDeclineCallBtn');
+    const callId = declineBtn.dataset.callId;
+    if (callId) {
         try {
-            await update(ref(db, `calls/${currentCallId}`), { status: 'rejected' });
-        } catch (e) {
-            console.warn("فشل تحديث حالة الرفض:", e);
-        }
+            await update(ref(db, `calls/${callId}`), { status: 'rejected' });
+        } catch (e) {}
     }
     hideCallDialog();
 }
 
+// قبول المكالمة
 async function acceptCall() {
-    console.log('[acceptCall] currentCallId:', currentCallId);
-    console.log('[acceptCall] currentPatientId:', currentPatientId);
-    console.log('[acceptCall] currentCallData:', currentCallData);
+    const acceptBtn = document.getElementById('sakoonAcceptCallBtn');
+    const callId = acceptBtn.dataset.callId;
+    const callDataStr = acceptBtn.dataset.callData;
     
-    if (!currentCallId || !currentPatientId || !currentCallData) {
-        console.error('بيانات المكالمة غير مكتملة');
+    console.log('[acceptCall] callId:', callId);
+    console.log('[acceptCall] callDataStr:', callDataStr);
+    
+    if (!callId || !callDataStr) {
+        alert('بيانات المكالمة غير مكتملة.');
         return;
     }
     
-    // تحديث الحالة إلى answered
+    let callData;
     try {
-        await update(ref(db, `calls/${currentCallId}`), { status: 'answered' });
+        callData = JSON.parse(callDataStr);
     } catch (e) {
-        console.warn('فشل تحديث الحالة:', e);
+        console.error('فشل تحليل بيانات المكالمة:', e);
+        return;
     }
     
-    const doctorId = currentCallData.caller;
-    const callType = currentCallData.type || 'audio';
+    const doctorId = callData.caller;
+    const callType = callData.type || 'audio';
+    
+    // تحديث الحالة (غير مانع)
+    update(ref(db, `calls/${callId}`), { status: 'answered' }).catch(e => {});
     
     const url = `call.html?type=${callType}&doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(currentPatientId)}&role=callee`;
     console.log('[acceptCall] الانتقال إلى:', url);
     
-    // الانتقال الفوري
+    // إخفاء النافذة فوراً
+    hideCallDialog();
+    
+    // الانتقال
     window.location.href = url;
 }
 
@@ -129,31 +134,32 @@ function hideCallDialog() {
         ringtoneAudio.pause();
         ringtoneAudio.currentTime = 0;
     }
-    currentCallId = null;
-    currentCallData = null;
+    // لا نمسح dataset هنا لأنه قد يكون مطلوبًا للرفض
 }
 
 async function showCallDialog(callData, callId) {
     createCallDialog();
-    currentCallId = callId;
-    currentCallData = callData;
     
     const doctorId = callData.caller;
     let callerName = doctorId;
     
     try {
-        const { get } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
         const snap = await get(ref(db, `doctors/${doctorId}`));
         if (snap.exists()) {
             const data = snap.val();
             callerName = data.name || doctorId;
         }
-    } catch (e) {
-        console.warn("تعذر جلب اسم الطبيب:", e);
-    }
+    } catch (e) {}
     
     document.getElementById('sakoonCallerNameDisplay').textContent = callerName;
     document.getElementById('sakoonCallerInitial').textContent = callerName.charAt(0);
+    
+    // تخزين البيانات في الأزرار
+    const acceptBtn = document.getElementById('sakoonAcceptCallBtn');
+    const declineBtn = document.getElementById('sakoonDeclineCallBtn');
+    acceptBtn.dataset.callId = callId;
+    acceptBtn.dataset.callData = JSON.stringify(callData);
+    declineBtn.dataset.callId = callId;
     
     incomingCallDialog.style.display = 'flex';
     
@@ -161,7 +167,7 @@ async function showCallDialog(callData, callId) {
         ringtoneAudio = new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_6e1f3e0e2c.mp3');
         ringtoneAudio.loop = true;
     }
-    ringtoneAudio.play().catch(e => console.warn('تعذر تشغيل الرنين:', e));
+    ringtoneAudio.play().catch(e => {});
     
     if (typeof feather !== 'undefined') feather.replace();
 }
@@ -174,7 +180,7 @@ function startListening(patientId) {
     onValue(callsRef, (snapshot) => {
         const calls = snapshot.val();
         if (!calls) {
-            if (currentCallId) hideCallDialog();
+            hideCallDialog();
             return;
         }
         
@@ -191,13 +197,13 @@ function startListening(patientId) {
         }
         
         if (foundCallId) {
-            if (!currentCallId || currentCallId !== foundCallId) {
+            // تحقق مما إذا كان الإشعار معروضًا بالفعل لنفس المكالمة
+            const acceptBtn = document.getElementById('sakoonAcceptCallBtn');
+            if (!acceptBtn || acceptBtn.dataset.callId !== foundCallId) {
                 showCallDialog(foundCallData, foundCallId);
             }
         } else {
-            if (currentCallId) {
-                hideCallDialog();
-            }
+            hideCallDialog();
         }
     });
     
@@ -208,7 +214,7 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         startListening(user.uid);
     } else {
-        if (currentCallId) hideCallDialog();
+        hideCallDialog();
         isListenerActive = false;
         currentPatientId = null;
     }
