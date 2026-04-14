@@ -2,850 +2,446 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>سُكُون — مكالمة</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.2.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+
     <style>
         :root {
-            --primary: #98D8D8;
-            --accent: #5aabab;
-            --accent-dark: #3d8a8a;
-            --danger: #e74c3c;
-            --danger2: #ff6b6b;
-            --success: #2ecc71;
-            --warn: #f0a500;
-            --bg: #1a2332;
-            --bg2: #243447;
-            --glass: rgba(255,255,255,0.08);
-            --glass2: rgba(255,255,255,0.14);
-            --white: #fff;
-            --overlay: rgba(0,0,0,0.45);
-            --radius: 20px;
+            --teal-500: #5aabab; --teal-700: #3d8a8a; --teal-900: #1f4f4f;
+            --white: #ffffff; --danger: #e05252; --success: #34c48a;
+            --bg-dark: #0f1a1a;
         }
-        *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(--white);user-select:none;-webkit-tap-highlight-color:transparent;}
-
-        /* ── SCREENS ── */
-        .screen{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .5s ease;z-index:1;}
-        .screen.active{opacity:1;visibility:visible;z-index:2;}
-
-        /* ── RINGING ── */
-        #ringScreen{
-            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
-            background:linear-gradient(165deg,var(--accent-dark) 0%,var(--bg) 65%);
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-dark);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
         }
-        .ring-bg-blob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
-        .rb1{width:60vw;height:60vw;background:rgba(152,216,216,.15);top:-15%;right:-15%;}
-        .rb2{width:45vw;height:45vw;background:rgba(90,171,171,.1);bottom:-10%;left:-10%;}
-
-        .ring-avatar-wrap{position:relative;z-index:1;}
-        .ring-avatar{
-            width:130px;height:130px;border-radius:50%;
-            background:linear-gradient(135deg,var(--primary),var(--accent));
-            display:flex;align-items:center;justify-content:center;
-            font-size:3.2rem;font-weight:800;
-            border:3px solid rgba(255,255,255,.3);
-            box-shadow:0 0 0 0 rgba(152,216,216,.5);
-            animation:ringPulse 2s infinite;
+        .video-container {
+            flex: 1; position: relative; background: #0a1111;
+            display: flex; align-items: center; justify-content: center;
         }
-        @keyframes ringPulse{0%{box-shadow:0 0 0 0 rgba(152,216,216,.5)}70%{box-shadow:0 0 0 36px rgba(152,216,216,0)}100%{box-shadow:0 0 0 0 rgba(152,216,216,0)}}
-        .ring-avatar-badge{
-            position:absolute;bottom:4px;right:4px;
-            width:30px;height:30px;border-radius:50%;
-            background:var(--accent);
-            display:flex;align-items:center;justify-content:center;
-            font-size:13px;border:2px solid var(--bg);
+        #remoteVideo { width: 100%; height: 100%; object-fit: cover; background: #1a2a2a; }
+        #localVideo {
+            position: absolute; bottom: 20px; left: 20px;
+            width: 100px; height: 140px; border-radius: 16px;
+            border: 3px solid var(--teal-500); object-fit: cover;
+            background: #2a3a3a; z-index: 10;
         }
-
-        .ring-name{font-size:1.8rem;font-weight:700;z-index:1;text-align:center;}
-        .ring-sub{font-size:14px;opacity:.65;z-index:1;}
-        .ring-type-badge{
-            display:flex;align-items:center;gap:7px;
-            font-size:13px;padding:7px 18px;border-radius:20px;
-            background:var(--glass);backdrop-filter:blur(8px);
-            border:1px solid rgba(255,255,255,.12);z-index:1;
+        .audio-call-ui {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center; padding: 2rem;
         }
-
-        .ring-actions{display:flex;gap:28px;align-items:center;z-index:1;margin-top:16px;}
-        .ring-btn{
-            width:70px;height:70px;border-radius:50%;border:none;cursor:pointer;
-            display:flex;align-items:center;justify-content:center;font-size:26px;
-            transition:transform .2s,box-shadow .2s;
+        .avatar-large {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--teal-500), var(--teal-700));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; font-weight: 900; color: var(--white);
+            margin-bottom: 1.5rem; border: 4px solid var(--teal-500);
+            box-shadow: 0 8px 32px rgba(90,171,171,0.3);
         }
-        .ring-btn:active{transform:scale(.92);}
-        .ring-btn.accept{background:linear-gradient(135deg,var(--success),#27ae60);color:#fff;box-shadow:0 6px 24px rgba(46,204,113,.4);animation:acceptGlow 1.4s infinite;}
-        @keyframes acceptGlow{0%,100%{box-shadow:0 6px 24px rgba(46,204,113,.4)}50%{box-shadow:0 6px 36px rgba(46,204,113,.7)}}
-        .ring-btn.decline{background:linear-gradient(135deg,var(--danger),#c0392b);color:#fff;box-shadow:0 6px 24px rgba(231,76,60,.4);}
-        .ring-btn-label{font-size:12px;opacity:.7;text-align:center;margin-top:6px;}
-
-        /* incoming (patient-side) ring screen additions */
-        #incomingBar{display:none;flex-direction:column;align-items:center;gap:6px;z-index:1;margin-bottom:8px;}
-        #incomingBar.show{display:flex;}
-        .incoming-from{font-size:13px;opacity:.65;}
-
-        /* ── ACTIVE CALL ── */
-        #callScreen{background:var(--bg2);}
-        #remoteWrap{position:absolute;inset:0;}
-        #remoteWrap video{width:100%;height:100%;object-fit:cover;transition:opacity .5s;}
-
-        /* audio-only overlay */
-        .audio-overlay{
-            position:absolute;inset:0;
-            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
-            background:linear-gradient(165deg,var(--accent-dark) 0%,var(--bg) 70%);
-            opacity:0;visibility:hidden;transition:opacity .4s;z-index:5;
+        .caller-name { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .call-status { font-size: 1rem; color: rgba(255,255,255,0.7); margin-bottom: 2rem; }
+        .controls-bar {
+            display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+            padding: 1.5rem 1rem 2rem; background: rgba(15, 25, 25, 0.95);
+            backdrop-filter: blur(10px); border-top: 1px solid rgba(90,171,171,0.2);
         }
-        .audio-overlay.show{opacity:1;visibility:visible;}
-        .audio-avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:2.4rem;font-weight:800;box-shadow:0 6px 24px rgba(90,171,171,.4);}
-        .audio-sound-bars{display:flex;gap:4px;align-items:flex-end;height:30px;}
-        .audio-sound-bars span{width:5px;border-radius:3px;background:var(--primary);animation:bar 1.2s infinite ease-in-out;}
-        .audio-sound-bars span:nth-child(1){animation-delay:0s;}
-        .audio-sound-bars span:nth-child(2){height:20px;animation-delay:.15s;}
-        .audio-sound-bars span:nth-child(3){height:28px;animation-delay:.3s;}
-        .audio-sound-bars span:nth-child(4){height:18px;animation-delay:.45s;}
-        .audio-sound-bars span:nth-child(5){height:24px;animation-delay:.6s;}
-        @keyframes bar{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
-
-        /* local video pip */
-        #localPip{
-            position:absolute;top:18px;right:18px;
-            width:110px;height:165px;border-radius:18px;
-            background:rgba(0,0,0,.5);overflow:hidden;
-            border:2px solid rgba(255,255,255,.18);
-            box-shadow:0 8px 28px rgba(0,0,0,.4);
-            cursor:grab;z-index:20;touch-action:none;
-            transition:border-color .2s;
+        .ctrl-btn {
+            width: 60px; height: 60px; border-radius: 50%; border: none;
+            background: rgba(255,255,255,0.1); color: var(--white);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
         }
-        #localPip:active{cursor:grabbing;border-color:var(--primary);}
-        #localPip video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
-        .pip-no-cam{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;font-size:11px;opacity:.5;}
-
-        /* top bar */
-        .top-bar{
-            position:absolute;top:0;left:0;right:0;z-index:30;
-            padding:14px 18px;
-            display:flex;align-items:center;justify-content:space-between;
-            background:linear-gradient(to bottom,rgba(0,0,0,.55) 0%,transparent 100%);
+        .ctrl-btn:hover { transform: scale(1.1); }
+        .ctrl-btn.active { background: var(--teal-500); }
+        .ctrl-btn.end-call { background: var(--danger); width: 70px; height: 70px; }
+        .toast-message {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); color: white; padding: 10px 24px;
+            border-radius: 40px; font-size: 0.9rem; z-index: 1000;
+            backdrop-filter: blur(8px); white-space: nowrap;
         }
-        .tb-pill{
-            display:flex;align-items:center;gap:7px;
-            background:rgba(0,0,0,.35);backdrop-filter:blur(10px);
-            padding:7px 14px;border-radius:20px;font-size:13px;
-            border:1px solid rgba(255,255,255,.1);
+        .waiting-screen {
+            position: absolute; inset: 0; background: var(--bg-dark);
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; z-index: 20;
         }
-        .quality-dot{width:9px;height:9px;border-radius:50%;background:var(--success);transition:background .5s;}
-        .quality-dot.warn{background:var(--warn);}
-        .quality-dot.bad{background:var(--danger2);}
-        #timerEl{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;}
-        .rec-dot{width:9px;height:9px;border-radius:50%;background:var(--danger2);animation:recBlink 1s infinite;}
-        @keyframes recBlink{0%,100%{opacity:1}50%{opacity:.2}}
-
-        /* bottom controls */
-        .ctrl-bar{
-            position:absolute;bottom:0;left:0;right:0;z-index:30;
-            padding:22px 18px 30px;
-            background:linear-gradient(to top,rgba(0,0,0,.65) 0%,transparent 100%);
+        .pulse-ring {
+            width: 80px; height: 80px; border-radius: 50%; background: var(--teal-500);
+            opacity: 0.6; animation: pulse 1.5s infinite; margin-bottom: 2rem;
         }
-        .ctrl-row{display:flex;align-items:center;justify-content:center;gap:14px;}
-        .ctrl-row2{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:14px;}
-
-        .cb{
-            display:flex;flex-direction:column;align-items:center;gap:5px;
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.6; }
+            70% { transform: scale(1.2); opacity: 0.2; }
+            100% { transform: scale(0.8); opacity: 0.6; }
         }
-        .cb-btn{
-            width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;
-            display:flex;align-items:center;justify-content:center;font-size:21px;
-            background:var(--glass);color:var(--white);
-            backdrop-filter:blur(12px);
-            border:1px solid rgba(255,255,255,.12);
-            transition:all .2s;
+        .hidden { display: none !important; }
+        .error-details {
+            margin-top: 1rem; font-size: 0.9rem; color: var(--danger);
+            max-width: 300px; text-align: center;
         }
-        .cb-btn:active{transform:scale(.9);}
-        .cb-btn:hover{background:var(--glass2);}
-        .cb-btn.on{background:var(--white);color:var(--bg);}
-        .cb-btn.off-state{background:rgba(255,255,255,.15);}
-        .cb-btn.hangup{background:linear-gradient(135deg,var(--danger),#c0392b);width:68px;height:68px;font-size:26px;box-shadow:0 6px 24px rgba(231,76,60,.5);}
-        .cb-btn.hangup:hover{box-shadow:0 8px 32px rgba(231,76,60,.65);}
-        .cb-label{font-size:10px;opacity:.6;}
-
-        /* toast */
-        #toasts{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
-        .toast{display:flex;align-items:center;gap:8px;background:rgba(30,40,55,.95);color:#fff;padding:10px 20px;border-radius:25px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.3);backdrop-filter:blur(10px);animation:tIn .3s ease,tOut .3s ease 2.7s forwards;border:1px solid rgba(255,255,255,.1);}
-        .toast.ok{background:rgba(46,204,113,.9);}
-        .toast.warn{background:rgba(240,165,0,.9);}
-        .toast.err{background:rgba(231,76,60,.9);}
-        @keyframes tIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes tOut{from{opacity:1}to{opacity:0;transform:translateY(-8px)}}
-
-        /* pip minimize btn */
-        .pip-min{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:6px;border:none;background:rgba(0,0,0,.5);color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;}
-
-        /* network toast */
-        .net-warn{position:absolute;top:70px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(240,165,0,.9);padding:7px 18px;border-radius:20px;font-size:12px;display:none;backdrop-filter:blur(8px);}
-        .net-warn.show{display:block;animation:tIn .3s ease;}
-
-        /* ── END SCREEN ── */
-        #endScreen{
-            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
-            background:linear-gradient(165deg,#1a2332 0%,#0f1824 100%);
+        .retry-btn {
+            margin-top: 1.5rem; background: var(--teal-500); color: white;
+            border: none; padding: 0.8rem 2.5rem; border-radius: 60px;
+            font-family: 'Cairo', sans-serif; font-weight: bold; font-size: 1.2rem;
+            cursor: pointer; transition: background 0.2s;
         }
-        .end-icon{width:80px;height:80px;border-radius:50%;background:rgba(231,76,60,.15);border:2px solid rgba(231,76,60,.3);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--danger2);}
-        .end-dur{font-size:2rem;font-weight:800;color:var(--primary);}
-        .end-lbl{font-size:14px;opacity:.6;}
-        .end-name{font-size:1.4rem;font-weight:700;}
-        .end-back{margin-top:8px;padding:12px 32px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(90,171,171,.4);}
-        .end-back:hover{transform:translateY(-1px);}
-
-        /* media query */
-        @media(max-width:400px){
-            .cb-btn{width:50px;height:50px;font-size:19px;}
-            .cb-btn.hangup{width:62px;height:62px;font-size:23px;}
-            .ctrl-row{gap:10px;}
+        .retry-btn:hover { background: var(--teal-700); }
+        @media(max-width:500px){
+            .ctrl-btn{width:50px;height:50px}
+            .ctrl-btn.end-call{width:60px;height:60px}
+            #localVideo{width:80px;height:110px}
         }
     </style>
 </head>
 <body>
 
-<div id="toasts"></div>
-
-<!-- ══ RINGING / CONNECTING SCREEN ══ -->
-<div id="ringScreen" class="screen active">
-    <div class="ring-bg-blob rb1"></div>
-    <div class="ring-bg-blob rb2"></div>
-
-    <!-- incoming bar (shown for incoming calls on patient side) -->
-    <div id="incomingBar">
-        <div class="incoming-from">مكالمة واردة من</div>
-    </div>
-
-    <div class="ring-avatar-wrap">
-        <div class="ring-avatar" id="ringAv">د</div>
-        <div class="ring-avatar-badge" id="ringTypeBadge"><i class="fas fa-video"></i></div>
-    </div>
-
-    <div class="ring-name" id="ringName">جاري الاتصال...</div>
-    <div class="ring-sub" id="ringSub">جاري الاتصال...</div>
-
-    <div class="ring-type-badge" id="ringTypePill">
-        <i class="fas fa-video"></i><span>مكالمة فيديو</span>
-    </div>
-
-    <div class="ring-actions" id="ringActions">
-        <!-- outgoing: just cancel -->
-        <div class="cb" id="cancelWrap">
-            <button class="ring-btn decline" id="cancelBtn"><i class="fas fa-phone-slash"></i></button>
-            <div class="ring-btn-label">إلغاء</div>
-        </div>
-        <!-- incoming: decline + accept (hidden by default) -->
-        <div class="cb" id="declineWrap" style="display:none">
-            <button class="ring-btn decline" id="declineBtn"><i class="fas fa-phone-slash"></i></button>
-            <div class="ring-btn-label">رفض</div>
-        </div>
-        <div class="cb" id="acceptWrap" style="display:none">
-            <button class="ring-btn accept" id="acceptBtn"><i class="fas fa-phone"></i></button>
-            <div class="ring-btn-label">قبول</div>
-        </div>
-    </div>
+<div id="waitingScreen" class="waiting-screen">
+    <div class="pulse-ring"></div>
+    <div class="caller-name" id="waitingName">...</div>
+    <div class="call-status" id="waitingStatus">جاري التهيئة...</div>
+    <div id="errorMessage" class="error-details"></div>
+    <button id="retryButton" class="retry-btn hidden">إعادة المحاولة</button>
 </div>
 
-<!-- ══ ACTIVE CALL SCREEN ══ -->
-<div id="callScreen" class="screen">
-    <!-- remote video -->
-    <div id="remoteWrap">
+<div id="callInterface" class="hidden" style="display:flex; flex-direction:column; height:100%;">
+    <div id="videoContainer" class="video-container hidden">
         <video id="remoteVideo" autoplay playsinline></video>
-        <div class="audio-overlay" id="audioOverlay">
-            <div class="audio-avatar" id="audioAv">د</div>
-            <div id="remName" style="font-size:1.3rem;font-weight:700;"></div>
-            <div class="audio-sound-bars"><span style="height:14px"></span><span></span><span></span><span></span><span></span></div>
-            <div style="font-size:13px;opacity:.6">مكالمة صوتية</div>
-        </div>
-    </div>
-
-    <!-- local pip -->
-    <div id="localPip">
         <video id="localVideo" autoplay playsinline muted></video>
-        <div class="pip-no-cam" id="pipNoCam"><i class="fas fa-video-slash" style="font-size:22px"></i><span>لا كاميرا</span></div>
-        <button class="pip-min" onclick="Call.togglePip()" title="تصغير"><i class="fas fa-minus"></i></button>
     </div>
-
-    <!-- top bar -->
-    <div class="top-bar">
-        <div class="tb-pill">
-            <div class="quality-dot" id="qualDot"></div>
-            <span id="qualText">ممتاز</span>
-        </div>
-        <div class="tb-pill">
-            <i class="fas fa-clock" style="opacity:.6;font-size:12px"></i>
-            <span id="timerEl">00:00</span>
-        </div>
-        <div class="tb-pill" id="recPill" style="display:none">
-            <div class="rec-dot"></div>
-            <span style="font-size:12px">تسجيل</span>
-        </div>
+    <div id="audioOnlyUI" class="audio-call-ui">
+        <div class="avatar-large" id="remoteAvatar">م</div>
+        <div class="caller-name" id="remoteName">مريض</div>
+        <div class="call-status" id="callStatusText">متصل • الصوت فقط</div>
     </div>
-
-    <!-- network warning -->
-    <div class="net-warn" id="netWarn"><i class="fas fa-wifi" style="margin-left:6px"></i>اتصال ضعيف</div>
-
-    <!-- controls -->
-    <div class="ctrl-bar">
-        <div class="ctrl-row">
-            <div class="cb">
-                <button class="cb-btn on" id="micBtn" title="ميكروفون"><i class="fas fa-microphone"></i></button>
-                <div class="cb-label">ميكروفون</div>
-            </div>
-            <div class="cb">
-                <button class="cb-btn hangup" id="hangupBtn" title="إنهاء المكالمة"><i class="fas fa-phone-slash"></i></button>
-                <div class="cb-label" style="opacity:.8;font-size:11px">إنهاء</div>
-            </div>
-            <div class="cb">
-                <button class="cb-btn" id="camBtn" title="كاميرا"><i class="fas fa-video-slash"></i></button>
-                <div class="cb-label">كاميرا</div>
-            </div>
-        </div>
-        <div class="ctrl-row2">
-            <div class="cb">
-                <button class="cb-btn" id="speakerBtn" title="مكبر الصوت"><i class="fas fa-volume-up"></i></button>
-                <div class="cb-label">صوت</div>
-            </div>
-            <div class="cb">
-                <button class="cb-btn" id="flipBtn" title="قلب الكاميرا"><i class="fas fa-camera-rotate"></i></button>
-                <div class="cb-label">قلب</div>
-            </div>
-            <div class="cb" id="blurWrap">
-                <button class="cb-btn" id="blurBtn" title="تمويه الخلفية"><i class="fas fa-circle-half-stroke"></i></button>
-                <div class="cb-label">خلفية</div>
-            </div>
-            <div class="cb">
-                <button class="cb-btn" id="fullBtn" title="ملء الشاشة"><i class="fas fa-expand"></i></button>
-                <div class="cb-label">ملء</div>
-            </div>
-        </div>
+    <div class="controls-bar">
+        <button class="ctrl-btn" id="toggleMicBtn" title="كتم الصوت">
+            <i data-feather="mic" style="width:22px;height:22px"></i>
+        </button>
+        <button class="ctrl-btn end-call" id="hangupBtn" title="إنهاء المكالمة">
+            <i data-feather="phone-off" style="width:24px;height:24px"></i>
+        </button>
+        <button class="ctrl-btn" id="toggleVideoBtn" title="تشغيل الفيديو">
+            <i data-feather="video" style="width:22px;height:22px"></i>
+        </button>
     </div>
 </div>
 
-<!-- ══ END SCREEN ══ -->
-<div id="endScreen" class="screen">
-    <div class="end-icon"><i class="fas fa-phone-slash"></i></div>
-    <div class="end-name" id="endName">—</div>
-    <div class="end-lbl">انتهت المكالمة</div>
-    <div class="end-dur" id="endDur">00:00</div>
-    <div class="end-lbl">مدة المكالمة</div>
-    <button class="end-back" onclick="Call.goBack()">العودة للمحادثات</button>
-</div>
+<div id="toast" class="toast-message hidden"></div>
 
-<script src="firebase-config.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script>
-const Call = (() => {
-    'use strict';
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    // ── Firebase ──────────────────────────────────────────
-    let db;
-    try {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-    } catch(e) { console.error('Firebase init failed:', e); }
-
-    // ── Agora ─────────────────────────────────────────────
-    const AGORA_APP_ID = '13534a183d7941c2b324b5c29c15ca8a';
-    const client = AgoraRTC.createClient({ mode:'rtc', codec:'vp8' });
-    AgoraRTC.setLogLevel(4); // suppress verbose logs
-
-    // ── URL Params ────────────────────────────────────────
-    const p = new URLSearchParams(window.location.search);
-    const DOC_ID      = p.get('docId')      || '';
-    const PATIENT_ID  = p.get('patientId')  || localStorage.getItem('sokoon_patient_id') || '';
-    const CALL_TYPE   = p.get('type')       || 'video';        // 'video' | 'audio'
-    const ROLE        = p.get('role')       || 'caller';       // 'caller' | 'receiver'
-    const DOC_NAME    = decodeURIComponent(p.get('docName')    || 'المعالج');
-    const PATIENT_NAME= decodeURIComponent(p.get('patientName')|| 'المريض');
-    const CALL_ID     = p.get('callId')     || '';
-
-    // Channel: sorted so both sides use the same name
-    const CHANNEL = [DOC_ID, PATIENT_ID].sort().join('_');
-    const IS_DOCTOR  = ROLE === 'doctor';   // doctor side
-    const REMOTE_NAME = IS_DOCTOR ? PATIENT_NAME : DOC_NAME;
-
-    // ── State ─────────────────────────────────────────────
-    let tracks = { audio: null, video: null };
-    let remoteUsers = {};
-    let timerSec = 0, timerInterval = null;
-    let isMicOn = true, isCamOn = false, isSpeaker = false;
-    let facingMode = 'user';
-    let pipMinimised = false;
-    let qualityInterval = null;
-    let callStartedAt = null;
-    let callDocRef = null;
-    let unsubCall = null;
-
-    // ── DOM ───────────────────────────────────────────────
-    const $ = id => document.getElementById(id);
-    const dom = {
-        ringScreen:   $('ringScreen'),
-        callScreen:   $('callScreen'),
-        endScreen:    $('endScreen'),
-        ringAv:       $('ringAv'),
-        ringName:     $('ringName'),
-        ringSub:      $('ringSub'),
-        ringTypePill: $('ringTypePill'),
-        ringTypeBadge:$('ringTypeBadge'),
-        incomingBar:  $('incomingBar'),
-        cancelWrap:   $('cancelWrap'),
-        declineWrap:  $('declineWrap'),
-        acceptWrap:   $('acceptWrap'),
-        cancelBtn:    $('cancelBtn'),
-        declineBtn:   $('declineBtn'),
-        acceptBtn:    $('acceptBtn'),
-        remoteVideo:  $('remoteVideo'),
-        localVideo:   $('localVideo'),
-        localPip:     $('localPip'),
-        pipNoCam:     $('pipNoCam'),
-        audioOverlay: $('audioOverlay'),
-        audioAv:      $('audioAv'),
-        remName:      $('remName'),
-        timerEl:      $('timerEl'),
-        qualDot:      $('qualDot'),
-        qualText:     $('qualText'),
-        netWarn:      $('netWarn'),
-        micBtn:       $('micBtn'),
-        camBtn:       $('camBtn'),
-        speakerBtn:   $('speakerBtn'),
-        hangupBtn:    $('hangupBtn'),
-        flipBtn:      $('flipBtn'),
-        blurBtn:      $('blurBtn'),
-        fullBtn:      $('fullBtn'),
-        recPill:      $('recPill'),
-        endName:      $('endName'),
-        endDur:       $('endDur'),
-        toasts:       $('toasts'),
+    const firebaseConfig = {
+        apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
+        authDomain: "sakina-937c4.firebaseapp.com",
+        databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
+        projectId: "sakina-937c4",
+        storageBucket: "sakina-937c4.firebasestorage.app",
+        messagingSenderId: "25215790734",
+        appId: "1:25215790734:web:46c5d893d5818530b3a3df"
     };
 
-    // ── Toast ─────────────────────────────────────────────
-    function toast(msg, type='info') {
-        const t = document.createElement('div');
-        t.className = `toast ${type}`;
-        const ic = {ok:'fa-check-circle',warn:'fa-exclamation-circle',err:'fa-times-circle',info:'fa-info-circle'};
-        t.innerHTML = `<i class="fas ${ic[type]||ic.info}"></i> ${msg}`;
-        dom.toasts.appendChild(t);
-        setTimeout(() => t.remove(), 3300);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    feather.replace();
+
+    // DOM elements
+    const waitingScreen = document.getElementById('waitingScreen');
+    const callInterface = document.getElementById('callInterface');
+    const videoContainer = document.getElementById('videoContainer');
+    const audioOnlyUI = document.getElementById('audioOnlyUI');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const localVideo = document.getElementById('localVideo');
+    const remoteNameEl = document.getElementById('remoteName');
+    const remoteAvatar = document.getElementById('remoteAvatar');
+    const callStatusText = document.getElementById('callStatusText');
+    const waitingName = document.getElementById('waitingName');
+    const waitingStatus = document.getElementById('waitingStatus');
+    const errorMessageEl = document.getElementById('errorMessage');
+    const retryButton = document.getElementById('retryButton');
+    const toggleMicBtn = document.getElementById('toggleMicBtn');
+    const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+    const hangupBtn = document.getElementById('hangupBtn');
+    const toastEl = document.getElementById('toast');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const callType = urlParams.get('type') || 'audio';
+    const doctorId = urlParams.get('doctorId');
+    const patientId = urlParams.get('patientId');
+    const role = urlParams.get('role') || 'callee'; // افتراضي callee للمريض
+
+    let localUid = null;
+    let remoteUid = null;
+    let callId = null;
+    let peerConnection = null;
+    let localStream = null;
+    let isAudioMuted = false;
+    let isVideoOff = (callType === 'audio');
+    let isCallActive = false;
+    let hasRemoteVideo = false;
+
+    // Web Audio للرنين (432Hz مريح)
+    let audioContext = null;
+    let ringtoneGain = null;
+    let ringtoneTimeout = null;
+    let currentOscillator = null;
+
+    const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+    function log(msg, data) { console.log(`[${role}] ${msg}`, data || ''); }
+    function showToast(msg, duration = 3000) {
+        toastEl.textContent = msg;
+        toastEl.classList.remove('hidden');
+        setTimeout(() => toastEl.classList.add('hidden'), duration);
+    }
+    function updateWaitingStatus(text, isError = false) {
+        waitingStatus.textContent = text;
+        waitingStatus.style.color = isError ? 'var(--danger)' : '';
+    }
+    function displayError(message) {
+        errorMessageEl.textContent = message;
+        errorMessageEl.classList.remove('hidden');
+        retryButton.classList.remove('hidden');
+        updateWaitingStatus('فشل الاتصال', true);
+    }
+    function hideError() {
+        errorMessageEl.classList.add('hidden');
+        retryButton.classList.add('hidden');
+    }
+    function formatName(uid) {
+        if (uid === doctorId) return 'الطبيب';
+        if (uid === patientId) return 'المريض';
+        return uid;
+    }
+    function stopLocalStream() {
+        if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     }
 
-    function initial(n='') { return n.replace(/[^\u0600-\u06FFa-zA-Z]/g,'').charAt(0) || '؟'; }
-
-    // ── Init UI ───────────────────────────────────────────
-    function initUI() {
-        const callIcon = CALL_TYPE === 'video' ? 'fa-video' : 'fa-phone';
-        const callLabel = CALL_TYPE === 'video' ? 'مكالمة فيديو' : 'مكالمة صوتية';
-
-        dom.ringAv.textContent = initial(REMOTE_NAME);
-        dom.audioAv.textContent = initial(REMOTE_NAME);
-        dom.remName.textContent = REMOTE_NAME;
-        dom.endName.textContent = REMOTE_NAME;
-
-        dom.ringTypeBadge.innerHTML = `<i class="fas ${callIcon}"></i>`;
-        dom.ringTypePill.innerHTML = `<i class="fas ${callIcon}"></i><span>${callLabel}</span>`;
-
-        if (ROLE === 'receiver') {
-            // Incoming call — show accept/decline
-            dom.cancelWrap.style.display = 'none';
-            dom.declineWrap.style.display = 'flex';
-            dom.acceptWrap.style.display  = 'flex';
-            dom.incomingBar.classList.add('show');
-            dom.ringName.textContent = REMOTE_NAME;
-            dom.ringSub.textContent  = callLabel;
-            toast('مكالمة واردة 📞','info');
-        } else {
-            // Outgoing call
-            dom.cancelWrap.style.display = 'flex';
-            dom.ringName.textContent = REMOTE_NAME;
-            dom.ringSub.textContent  = 'جاري الاتصال...';
+    // --- رنين مريح 432Hz ---
+    function playTone() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        if (currentOscillator) {
+            try { currentOscillator.stop(); } catch(e) {}
+            currentOscillator = null;
+        }
+        const now = audioContext.currentTime;
+        const osc = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 432;
+        gainNode.gain.setValueAtTime(0.12, now);
+        osc.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        osc.start();
+        osc.stop(now + 1.2);
+        currentOscillator = osc;
+        osc.onended = () => { currentOscillator = null; };
+        ringtoneTimeout = setTimeout(() => playTone(), 2500);
+    }
 
-        // Cam button state depends on call type
-        if (CALL_TYPE === 'video') {
-            isCamOn = true;
-            dom.camBtn.classList.add('on');
-            dom.camBtn.innerHTML = '<i class="fas fa-video"></i>';
-        } else {
-            dom.camBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
+    function startRingtone() {
+        stopRingtone();
+        playTone();
+        ringtoneTimeout = setTimeout(() => {
+            stopRingtone();
+            if (!isCallActive) {
+                displayError('لم يتم الرد على المكالمة');
+                endCall();
+            }
+        }, 45000); // 45 ثانية
+    }
+
+    function stopRingtone() {
+        if (ringtoneTimeout) {
+            clearTimeout(ringtoneTimeout);
+            ringtoneTimeout = null;
+        }
+        if (currentOscillator) {
+            try { currentOscillator.stop(); } catch(e) {}
+            currentOscillator = null;
         }
     }
 
-    // ── Firestore call doc ────────────────────────────────
-    async function createCallDoc(status) {
-        if (!db || !DOC_ID || !PATIENT_ID) return;
-        try {
-            const data = {
-                doctorId: DOC_ID, patientId: PATIENT_ID,
-                callType: CALL_TYPE, status,
-                channel: CHANNEL, role: ROLE,
-                startedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            };
-            if (CALL_ID) {
-                callDocRef = db.collection('calls').doc(CALL_ID);
-                await callDocRef.update({...data});
-            } else {
-                callDocRef = await db.collection('calls').add(data);
-            }
-        } catch(e) { console.warn('Call doc error:', e); }
+    function updateUIForVideo(hasRemoteVideoTrack) {
+        hasRemoteVideo = hasRemoteVideoTrack;
+        if (hasRemoteVideo || !isVideoOff) {
+            videoContainer.classList.remove('hidden');
+            audioOnlyUI.classList.add('hidden');
+        } else {
+            videoContainer.classList.add('hidden');
+            audioOnlyUI.classList.remove('hidden');
+        }
     }
 
-    async function updateCallDoc(data) {
-        if (!callDocRef) return;
-        try { await callDocRef.update({...data, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}); }
-        catch(e) { console.warn('Call update error:', e); }
+    function createPeerConnection() {
+        const pc = new RTCPeerConnection(servers);
+        pc.onicecandidate = (e) => { if (e.candidate) sendSignalingMessage({ type: 'candidate', candidate: e.candidate }); };
+        pc.ontrack = (e) => {
+            if (e.track.kind === 'video') { remoteVideo.srcObject = e.streams[0]; updateUIForVideo(true); }
+            else if (e.track.kind === 'audio') { const a = new Audio(); a.srcObject = e.streams[0]; a.autoplay = true; document.body.appendChild(a); }
+            stopRingtone();
+            waitingScreen.classList.add('hidden');
+            callStatusText.textContent = 'متصل';
+            isCallActive = true;
+            hideError();
+        };
+        pc.onconnectionstatechange = () => {
+            if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') displayError('انقطع الاتصال');
+        };
+        return pc;
     }
 
-    // Listen for call status changes (so if other side hangs up, we know)
-    function listenCallDoc() {
-        if (!callDocRef || !db) return;
-        unsubCall = callDocRef.onSnapshot(snap => {
-            if (!snap.exists) return;
-            const d = snap.data();
-            if ((d.status === 'ended' || d.status === 'declined') && dom.callScreen.classList.contains('active')) {
-                toast('أنهى الطرف الآخر المكالمة','warn');
-                setTimeout(() => endCall(false), 1200);
-            }
-            if (d.status === 'declined' && dom.ringScreen.classList.contains('active')) {
-                toast('تم رفض المكالمة','warn');
-                setTimeout(() => goBack(), 2000);
-            }
-        }, () => {});
+    const callRef = () => ref(db, `calls/${callId}`);
+    function sendSignalingMessage(msg) {
+        update(callRef(), { [`signaling/${role === 'caller' ? 'caller' : 'callee'}`]: msg });
     }
-
-    // ── Agora join ────────────────────────────────────────
-    async function joinChannel() {
-        client.on('user-published',    handlePublished);
-        client.on('user-unpublished',  handleUnpublished);
-        client.on('user-left',         handleUserLeft);
-        client.on('network-quality',   handleNetQuality);
-        client.on('connection-state-change', handleConnState);
-
-        try {
-            await client.join(AGORA_APP_ID, CHANNEL, null, null);
-
-            // Audio always
-            tracks.audio = await AgoraRTC.createMicrophoneAudioTrack({ encoderConfig:'music_standard' });
-
-            // Video only if video call
-            if (CALL_TYPE === 'video' || ROLE === 'receiver') {
-                try {
-                    tracks.video = await AgoraRTC.createCameraVideoTrack({ encoderConfig:'720p_1', facingMode });
-                    if (CALL_TYPE === 'video') {
-                        tracks.video.play(dom.localVideo);
-                        dom.pipNoCam.style.display = 'none';
-                    }
-                } catch(e) {
-                    toast('تعذّر تشغيل الكاميرا','warn');
-                    isCamOn = false;
-                    dom.camBtn.classList.remove('on');
-                    dom.camBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
+    function listenForSignaling() {
+        onValue(ref(db, `calls/${callId}/signaling`), async (snap) => {
+            const data = snap.val();
+            if (!data) return;
+            const other = role === 'caller' ? 'callee' : 'caller';
+            const msg = data[other];
+            if (!msg) return;
+            try {
+                if (msg.type === 'offer') {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(msg));
+                    const ans = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(ans);
+                    sendSignalingMessage(ans);
+                } else if (msg.type === 'answer') {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(msg));
+                } else if (msg.type === 'candidate') {
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(msg.candidate));
                 }
-            }
-
-            // If outgoing, publish now; if incoming, publish after accepting
-            if (ROLE !== 'receiver') {
-                const toPublish = [tracks.audio, CALL_TYPE==='video' && tracks.video].filter(Boolean);
-                await client.publish(toPublish);
-                await createCallDoc('ringing');
-                listenCallDoc();
-            }
-        } catch(e) {
-            toast('فشل الاتصال بالخادم: ' + e.message, 'err');
-            console.error('Join error:', e);
-        }
-    }
-
-    // ── Accept (incoming) ─────────────────────────────────
-    async function acceptCall() {
-        dom.acceptBtn.disabled = true;
-        try {
-            const toPublish = [tracks.audio, isCamOn && tracks.video].filter(Boolean);
-            await client.publish(toPublish);
-            await createCallDoc('accepted');
-            listenCallDoc();
-            goToCallScreen();
-        } catch(e) {
-            toast('فشل قبول المكالمة: ' + e.message,'err');
-            dom.acceptBtn.disabled = false;
-        }
-    }
-
-    // ── Decline (incoming) ────────────────────────────────
-    async function declineCall() {
-        await updateCallDoc({status:'declined'});
-        goBack();
-    }
-
-    // ── Agora event handlers ──────────────────────────────
-    async function handlePublished(user, mediaType) {
-        await client.subscribe(user, mediaType);
-        remoteUsers[user.uid] = user;
-
-        // Switch to call screen when first remote joins
-        if (!dom.callScreen.classList.contains('active')) {
-            goToCallScreen();
-        }
-
-        if (mediaType === 'video') {
-            dom.audioOverlay.classList.remove('show');
-            dom.remoteVideo.style.opacity = '1';
-            user.videoTrack.play(dom.remoteVideo);
-        }
-        if (mediaType === 'audio') {
-            user.audioTrack.play();
-        }
-
-        await updateCallDoc({status:'active'});
-    }
-
-    function handleUnpublished(user, mediaType) {
-        if (mediaType === 'video') {
-            dom.remoteVideo.style.opacity = '0';
-            dom.audioOverlay.classList.add('show');
-        }
-    }
-
-    function handleUserLeft(user) {
-        delete remoteUsers[user.uid];
-        toast('غادر الطرف الآخر المكالمة','warn');
-        setTimeout(() => endCall(false), 1400);
-    }
-
-    function handleConnState(curState) {
-        if (curState === 'DISCONNECTED' || curState === 'RECONNECTING') {
-            dom.netWarn.classList.add('show');
-        } else {
-            dom.netWarn.classList.remove('show');
-        }
-    }
-
-    function handleNetQuality(stats) {
-        const up = stats.uplinkNetworkQuality;
-        const dn = stats.downlinkNetworkQuality;
-        const worst = Math.max(up, dn);
-        let label='ممتاز', cls='';
-        if(worst>=4){label='ضعيف';cls='bad';dom.netWarn.classList.add('show');}
-        else if(worst>=3){label='متوسط';cls='warn';dom.netWarn.classList.remove('show');}
-        else{dom.netWarn.classList.remove('show');}
-        dom.qualDot.className='quality-dot'+' '+cls;
-        dom.qualText.textContent=label;
-    }
-
-    // ── Screen transitions ────────────────────────────────
-    function showScreen(id) {
-        ['ringScreen','callScreen','endScreen'].forEach(s=>{
-            $(s).classList.toggle('active', s===id);
+            } catch (e) { log('خطأ signaling', e); }
         });
     }
 
-    function goToCallScreen() {
-        showScreen('callScreen');
-        startTimer();
-        callStartedAt = Date.now();
-        toast('المكالمة متصلة ✓','ok');
-    }
-
-    // ── Timer ─────────────────────────────────────────────
-    function startTimer() {
-        timerSec = 0;
-        timerInterval = setInterval(() => {
-            timerSec++;
-            const m = Math.floor(timerSec/60).toString().padStart(2,'0');
-            const s = (timerSec%60).toString().padStart(2,'0');
-            dom.timerEl.textContent = `${m}:${s}`;
-        }, 1000);
-    }
-
-    function stopTimer() {
-        clearInterval(timerInterval);
-        const m = Math.floor(timerSec/60).toString().padStart(2,'0');
-        const s = (timerSec%60).toString().padStart(2,'0');
-        dom.endDur.textContent = `${m}:${s}`;
-    }
-
-    // ── End call ──────────────────────────────────────────
-    async function endCall(updateDb=true) {
-        if (unsubCall) { unsubCall(); unsubCall=null; }
-        stopTimer();
-        // Release tracks
-        for(const t of Object.values(tracks)) { if(t){try{t.stop();t.close();}catch(e){}} }
-        tracks = {audio:null,video:null};
-        try { await client.leave(); } catch(e){}
-        if (updateDb) await updateCallDoc({status:'ended', duration: timerSec});
-        // Log call to chat conversation
-        if(db && DOC_ID && PATIENT_ID && timerSec > 5) {
-            const cid = [DOC_ID,PATIENT_ID].sort().join('_');
-            const durStr = dom.endDur.textContent;
-            db.collection('chats').doc(cid).collection('messages').add({
-                text:`📞 مكالمة ${CALL_TYPE==='video'?'فيديو':'صوتية'} • ${durStr}`,
-                senderId: IS_DOCTOR ? DOC_ID : PATIENT_ID,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                type:'call_log', read:false,
-            }).catch(()=>{});
-        }
-        showScreen('endScreen');
-    }
-
-    // ── Controls ──────────────────────────────────────────
-    // Mic
-    dom.micBtn.addEventListener('click', async () => {
-        if (!tracks.audio) return;
-        isMicOn = !isMicOn;
-        await tracks.audio.setEnabled(isMicOn);
-        dom.micBtn.classList.toggle('on', isMicOn);
-        dom.micBtn.innerHTML = `<i class="fas fa-microphone${isMicOn?'':'-slash'}"></i>`;
-        toast(isMicOn?'الميكروفون مفعّل':'الميكروفون مكتوم', isMicOn?'ok':'warn');
-    });
-
-    // Camera
-    dom.camBtn.addEventListener('click', async () => {
-        if (isCamOn) {
-            // Turn off
-            if (tracks.video) {
-                try { await client.unpublish(tracks.video); } catch(e){}
-                tracks.video.stop(); tracks.video.close(); tracks.video=null;
+    async function startCallProcess() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: callType === 'video' });
+            if (callType === 'video') { localVideo.srcObject = localStream; updateUIForVideo(false); }
+            peerConnection = createPeerConnection();
+            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
+            if (role === 'caller') {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                sendSignalingMessage(offer);
+                listenForSignaling();
+                waitingStatus.textContent = 'في انتظار الرد...';
+                startRingtone();
+            } else {
+                listenForSignaling();
+                waitingStatus.textContent = 'جاري الاتصال...';
             }
-            isCamOn=false;
-            dom.camBtn.classList.remove('on');
-            dom.camBtn.innerHTML='<i class="fas fa-video-slash"></i>';
-            dom.localPip.style.opacity='.4';
-            dom.pipNoCam.style.display='flex';
+            showCallInterface();
+        } catch (e) {
+            log('فشل بدء المكالمة', e);
+            displayError('تعذر الوصول إلى الميكروفون/الكاميرا');
+        }
+    }
+
+    function showCallInterface() {
+        waitingScreen.classList.add('hidden');
+        callInterface.classList.remove('hidden');
+        callInterface.style.display = 'flex';
+        if (callType === 'audio') { videoContainer.classList.add('hidden'); audioOnlyUI.classList.remove('hidden'); }
+    }
+
+    async function endCall() {
+        stopRingtone();
+        if (audioContext) { audioContext.close(); audioContext = null; }
+        stopLocalStream();
+        if (peerConnection) peerConnection.close();
+        if (callId) await remove(callRef());
+        const returnUrl = role === 'caller' ? `doctor-conversation.html?patientId=${patientId}` : `conversation.html?doctorId=${doctorId}`;
+        window.location.href = returnUrl;
+    }
+
+    // أحداث الأزرار
+    retryButton.addEventListener('click', () => window.location.reload());
+    toggleMicBtn.addEventListener('click', () => {
+        if (localStream) {
+            const t = localStream.getAudioTracks()[0];
+            if (t) { t.enabled = !t.enabled; isAudioMuted = !t.enabled; }
+            toggleMicBtn.classList.toggle('active', isAudioMuted);
+            toggleMicBtn.innerHTML = isAudioMuted ? '<i data-feather="mic-off" style="width:22px;height:22px"></i>' : '<i data-feather="mic" style="width:22px;height:22px"></i>';
+            feather.replace();
+        }
+    });
+    toggleVideoBtn.addEventListener('click', () => {
+        if (!localStream || callType === 'audio') return showToast('المكالمة صوتية');
+        const t = localStream.getVideoTracks()[0];
+        if (t) { t.enabled = !t.enabled; isVideoOff = !t.enabled; }
+        toggleVideoBtn.classList.toggle('active', isVideoOff);
+        toggleVideoBtn.innerHTML = isVideoOff ? '<i data-feather="video-off" style="width:22px;height:22px"></i>' : '<i data-feather="video" style="width:22px;height:22px"></i>';
+        feather.replace();
+        updateUIForVideo(hasRemoteVideo);
+    });
+    hangupBtn.addEventListener('click', endCall);
+
+    async function initPage() {
+        localUid = auth.currentUser.uid;
+        remoteUid = role === 'caller' ? patientId : doctorId;
+        const remoteName = formatName(remoteUid);
+        remoteNameEl.textContent = remoteName;
+        remoteAvatar.textContent = remoteName.charAt(0);
+        waitingName.textContent = remoteName;
+        updateWaitingStatus('جاري التهيئة...');
+
+        if (role === 'caller') {
+            callId = `${doctorId}_${patientId}_${Date.now()}`;
+            await set(callRef(), { caller: doctorId, callee: patientId, type: callType, status: 'ringing', createdAt: Date.now() });
+            onValue(ref(db, `calls/${callId}/status`), (snap) => {
+                if (snap.val() === 'rejected') { stopRingtone(); displayError('تم رفض المكالمة'); setTimeout(endCall, 1500); }
+                else if (snap.val() === 'answered') waitingStatus.textContent = 'تم الرد...';
+            });
+            startCallProcess();
         } else {
-            // Turn on
-            try {
-                tracks.video = await AgoraRTC.createCameraVideoTrack({facingMode, encoderConfig:'720p_1'});
-                tracks.video.play(dom.localVideo);
-                await client.publish(tracks.video);
-                isCamOn=true;
-                dom.camBtn.classList.add('on');
-                dom.camBtn.innerHTML='<i class="fas fa-video"></i>';
-                dom.localPip.style.opacity='1';
-                dom.pipNoCam.style.display='none';
-            } catch(e) { toast('تعذّر تشغيل الكاميرا','err'); }
+            const snap = await get(ref(db, 'calls'));
+            if (snap.exists()) {
+                for (const id in snap.val()) {
+                    if (snap.val()[id].callee === patientId && snap.val()[id].status === 'ringing') {
+                        callId = id; break;
+                    }
+                }
+            }
+            if (!callId) { displayError('لا توجد مكالمة واردة'); return; }
+            await update(callRef(), { status: 'answered' });
+            startCallProcess();
         }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) initPage();
+        else window.location.href = 'index.html';
     });
 
-    // Speaker
-    dom.speakerBtn.addEventListener('click', async () => {
-        isSpeaker = !isSpeaker;
-        dom.speakerBtn.classList.toggle('on', isSpeaker);
-        dom.speakerBtn.innerHTML = `<i class="fas fa-volume-${isSpeaker?'up':'down'}"></i>`;
-        try { await AgoraRTC.setPlaybackDevice(isSpeaker?'default':'earpiece'); }
-        catch(e) {}
+    window.addEventListener('beforeunload', () => {
+        stopRingtone();
+        if (audioContext) audioContext.close();
+        stopLocalStream();
+        if (peerConnection) peerConnection.close();
+        if (callId) remove(callRef());
     });
-
-    // Flip camera
-    dom.flipBtn.addEventListener('click', async () => {
-        if (!tracks.video) return;
-        facingMode = facingMode==='user'?'environment':'user';
-        try {
-            await client.unpublish(tracks.video);
-            tracks.video.stop(); tracks.video.close();
-            tracks.video = await AgoraRTC.createCameraVideoTrack({facingMode, encoderConfig:'720p_1'});
-            tracks.video.play(dom.localVideo);
-            await client.publish(tracks.video);
-            toast('تم قلب الكاميرا','ok');
-        } catch(e) { toast('فشل قلب الكاميرا','err'); }
-    });
-
-    // Background blur (virtual background, if supported)
-    dom.blurBtn.addEventListener('click', async () => {
-        if (!tracks.video) { toast('الكاميرا غير مفعّلة','warn'); return; }
-        try {
-            const ext = new window.VirtualBackgroundExtension?.();
-            if (!ext) { toast('تمويه الخلفية غير مدعوم في هذا الجهاز','warn'); return; }
-            toast('جاري تفعيل تمويه الخلفية...','info');
-        } catch(e) { toast('غير مدعوم حالياً','warn'); }
-    });
-
-    // Fullscreen
-    dom.fullBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(()=>{});
-            dom.fullBtn.innerHTML='<i class="fas fa-compress"></i>';
-        } else {
-            document.exitFullscreen().catch(()=>{});
-            dom.fullBtn.innerHTML='<i class="fas fa-expand"></i>';
-        }
-    });
-
-    // Hangup
-    dom.hangupBtn.addEventListener('click', () => endCall(true));
-    dom.cancelBtn.addEventListener('click', async () => { await updateCallDoc({status:'cancelled'}); goBack(); });
-    dom.declineBtn.addEventListener('click', declineCall);
-    dom.acceptBtn.addEventListener('click', acceptCall);
-
-    // ── PIP drag (mouse + touch) ──────────────────────────
-    const pip = dom.localPip;
-    let dragging=false, dStartX, dStartY, pStartX, pStartY;
-
-    function pipPointerDown(e) {
-        if(e.target.tagName==='BUTTON') return;
-        dragging=true;
-        const pt=e.touches?e.touches[0]:e;
-        dStartX=pt.clientX; dStartY=pt.clientY;
-        pStartX=pip.offsetLeft; pStartY=pip.offsetTop;
-        pip.style.transition='none';
-    }
-    function pipPointerMove(e) {
-        if(!dragging) return;
-        e.preventDefault();
-        const pt=e.touches?e.touches[0]:e;
-        const dx=pt.clientX-dStartX, dy=pt.clientY-dStartY;
-        const maxX=window.innerWidth-pip.offsetWidth;
-        const maxY=window.innerHeight-pip.offsetHeight;
-        pip.style.right='auto';pip.style.left=`${Math.max(0,Math.min(pStartX+dx,maxX))}px`;
-        pip.style.top=`${Math.max(0,Math.min(pStartY+dy,maxY))}px`;
-    }
-    function pipPointerUp() { dragging=false; pip.style.transition='border-color .2s'; }
-
-    pip.addEventListener('mousedown',  pipPointerDown);
-    pip.addEventListener('touchstart', pipPointerDown, {passive:false});
-    document.addEventListener('mousemove',  pipPointerMove);
-    document.addEventListener('touchmove',  pipPointerMove, {passive:false});
-    document.addEventListener('mouseup',    pipPointerUp);
-    document.addEventListener('touchend',   pipPointerUp);
-
-    function togglePip() {
-        pipMinimised = !pipMinimised;
-        pip.style.opacity = pipMinimised?'0':'1';
-        pip.style.pointerEvents = pipMinimised?'none':'auto';
-    }
-
-    // ── Navigation ────────────────────────────────────────
-    function goBack() {
-        const back = IS_DOCTOR ? 'therapist_dashboard.html' : 'chats-list.html';
-        window.location.href = back;
-    }
-
-    // ── Wake lock (keep screen on) ────────────────────────
-    async function requestWakeLock() {
-        try {
-            if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
-        } catch(e) {}
-    }
-
-    // ── Init ─────────────────────────────────────────────
-    async function init() {
-        if (!DOC_ID || !PATIENT_ID) {
-            alert('خطأ: بيانات المكالمة غير مكتملة.');
-            goBack(); return;
-        }
-        initUI();
-        await requestWakeLock();
-        await joinChannel();
-    }
-
-    window.addEventListener('load', init);
-    window.addEventListener('beforeunload', () => { endCall(true); });
-
-    return { togglePip, goBack };
-})();
 </script>
 </body>
 </html>
