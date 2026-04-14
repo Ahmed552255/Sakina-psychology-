@@ -11,7 +11,6 @@
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
-        /* ... نفس التنسيقات السابقة ... */
         :root {
             --teal-500: #5aabab; --teal-700: #3d8a8a; --teal-900: #1f4f4f;
             --white: #ffffff; --danger: #e05252; --success: #34c48a;
@@ -183,7 +182,7 @@
     const doctorId = urlParams.get('doctorId');
     const patientId = urlParams.get('patientId');
     const role = urlParams.get('role') || 'callee';
-    const callIdFromUrl = urlParams.get('callId'); // جديد
+    const callIdFromUrl = urlParams.get('callId');
 
     let localUid = null;
     let remoteUid = null;
@@ -196,7 +195,6 @@
     let hasRemoteVideo = false;
 
     let audioContext = null;
-    let ringtoneGain = null;
     let ringtoneTimeout = null;
     let currentOscillator = null;
 
@@ -404,15 +402,24 @@
         } else {
             if (callIdFromUrl) {
                 callId = callIdFromUrl;
-                // تحقق من وجود المكالمة
                 const snap = await get(callRef());
-                if (!snap.exists() || snap.val().status !== 'ringing') {
-                    displayError('انتهت المكالمة أو لم تعد متاحة');
+                if (!snap.exists()) {
+                    displayError('المكالمة غير موجودة');
                     setTimeout(() => window.history.back(), 2000);
                     return;
                 }
-                await update(callRef(), { status: 'answered' });
+                const callStatus = snap.val().status;
+                if (callStatus === 'rejected' || callStatus === 'ended') {
+                    displayError('انتهت المكالمة أو تم رفضها');
+                    setTimeout(() => window.history.back(), 2000);
+                    return;
+                }
+                // إذا كانت ringing نقوم بتحديثها إلى answered
+                if (callStatus === 'ringing') {
+                    await update(callRef(), { status: 'answered' });
+                }
             } else {
+                // رجوع للبحث (للتوافق)
                 const snap = await get(ref(db, 'calls'));
                 if (snap.exists()) {
                     for (const id in snap.val()) {
