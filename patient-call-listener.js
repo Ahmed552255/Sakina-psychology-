@@ -27,6 +27,7 @@ let currentPatientId = null;
 let incomingCallDialog = null;
 let ringtoneAudio = null;
 let isListenerActive = false;
+let manualLink = null;
 
 function createCallDialog() {
     if (incomingCallDialog) return;
@@ -64,6 +65,9 @@ function createCallDialog() {
                     <i data-feather="phone" style="width: 18px; height: 18px;"></i> رد
                 </button>
             </div>
+            <div id="sakoonManualLinkContainer" style="margin-top: 1.5rem; display: none;">
+                <a id="sakoonManualLink" href="#" style="color: #98D8D8; text-decoration: underline; font-size: 0.9rem;">إذا لم تفتح المكالمة، اضغط هنا</a>
+            </div>
         </div>
     `;
     document.body.appendChild(dialog);
@@ -72,11 +76,14 @@ function createCallDialog() {
         if (e.target === dialog) { /* منع الإغلاق */ }
     });
 
+    document.getElementById('sakoonDeclineCallBtn').addEventListener('click', declineCall);
+    document.getElementById('sakoonAcceptCallBtn').addEventListener('click', acceptCall);
+
     incomingCallDialog = dialog;
+    manualLink = document.getElementById('sakoonManualLink');
     dialog.style.display = 'none';
 }
 
-// رفض المكالمة
 async function declineCall() {
     const declineBtn = document.getElementById('sakoonDeclineCallBtn');
     const callId = declineBtn.dataset.callId;
@@ -88,7 +95,6 @@ async function declineCall() {
     hideCallDialog();
 }
 
-// قبول المكالمة
 async function acceptCall() {
     const acceptBtn = document.getElementById('sakoonAcceptCallBtn');
     const callId = acceptBtn.dataset.callId;
@@ -112,18 +118,32 @@ async function acceptCall() {
     
     const doctorId = callData.caller;
     const callType = callData.type || 'audio';
+    const url = `call.html?type=${callType}&doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(currentPatientId)}&role=callee`;
+    
+    console.log('[acceptCall] الانتقال إلى:', url);
     
     // تحديث الحالة (غير مانع)
     update(ref(db, `calls/${callId}`), { status: 'answered' }).catch(e => {});
     
-    const url = `call.html?type=${callType}&doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(currentPatientId)}&role=callee`;
-    console.log('[acceptCall] الانتقال إلى:', url);
+    // إظهار الرابط الاحتياطي
+    const container = document.getElementById('sakoonManualLinkContainer');
+    if (container) container.style.display = 'block';
+    if (manualLink) {
+        manualLink.href = url;
+        manualLink.textContent = 'إذا لم تفتح المكالمة تلقائيًا، اضغط هنا';
+    }
     
-    // إخفاء النافذة فوراً
-    hideCallDialog();
+    // محاولة الانتقال التلقائي
+    try {
+        window.location.assign(url);
+    } catch (e) {
+        console.warn('فشل window.location.assign:', e);
+    }
     
-    // الانتقال
-    window.location.href = url;
+    // إخفاء النافذة بعد قليل (حتى لا تختفي فجأة إذا لم ينتقل)
+    setTimeout(() => {
+        hideCallDialog();
+    }, 1000);
 }
 
 function hideCallDialog() {
@@ -134,7 +154,8 @@ function hideCallDialog() {
         ringtoneAudio.pause();
         ringtoneAudio.currentTime = 0;
     }
-    // لا نمسح dataset هنا لأنه قد يكون مطلوبًا للرفض
+    const container = document.getElementById('sakoonManualLinkContainer');
+    if (container) container.style.display = 'none';
 }
 
 async function showCallDialog(callData, callId) {
@@ -154,7 +175,6 @@ async function showCallDialog(callData, callId) {
     document.getElementById('sakoonCallerNameDisplay').textContent = callerName;
     document.getElementById('sakoonCallerInitial').textContent = callerName.charAt(0);
     
-    // تخزين البيانات في الأزرار
     const acceptBtn = document.getElementById('sakoonAcceptCallBtn');
     const declineBtn = document.getElementById('sakoonDeclineCallBtn');
     acceptBtn.dataset.callId = callId;
@@ -197,7 +217,6 @@ function startListening(patientId) {
         }
         
         if (foundCallId) {
-            // تحقق مما إذا كان الإشعار معروضًا بالفعل لنفس المكالمة
             const acceptBtn = document.getElementById('sakoonAcceptCallBtn');
             if (!acceptBtn || acceptBtn.dataset.callId !== foundCallId) {
                 showCallDialog(foundCallData, foundCallId);
