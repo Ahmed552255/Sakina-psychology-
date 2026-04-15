@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>سُكُون · محادثة</title>
 
-    <!-- تحميل الخط مع استراتيجية العرض الفوري -->
+    <!-- تحميل الخط -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* ==================== إعدادات متقدمة للأداء والجمال ==================== */
+        /* ==================== إعدادات الألوان والمتغيرات ==================== */
         :root {
             --bg-primary: #f6faf9;
-            --bg-secondary: #eef5f4;
             --surface: rgba(255, 255, 255, 0.85);
             --surface-solid: #ffffff;
             --primary-50: #e6f3f3;
@@ -43,19 +42,17 @@
             --shadow-lg: 0 20px 40px rgba(22, 86, 86, 0.12);
             --shadow-focus: 0 0 0 3px rgba(42, 136, 136, 0.15);
             
-            --radius-card: 28px;
+            --radius-bubble: 24px;
             --radius-element: 18px;
             --radius-full: 9999px;
             
             --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-            
             color-scheme: light;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-primary: #0a1818;
-                --bg-secondary: #0f2222;
                 --surface: rgba(18, 30, 30, 0.85);
                 --surface-solid: #142424;
                 --text-primary: #e3f0f0;
@@ -104,7 +101,7 @@
                         radial-gradient(circle at 100% 100%, rgba(61, 138, 138, 0.06) 0%, transparent 50%);
         }
 
-        /* ==================== رأس المحادثة ==================== */
+        /* ==================== رأس المحادثة (ثابت) ==================== */
         .chat-header {
             display: flex;
             align-items: center;
@@ -117,8 +114,6 @@
             box-shadow: var(--shadow-xs);
             z-index: 100;
             flex-shrink: 0;
-            position: sticky;
-            top: 0;
         }
 
         .back-btn {
@@ -188,7 +183,7 @@
             gap: 4px;
         }
 
-        /* ==================== منطقة الرسائل ==================== */
+        /* ==================== منطقة الرسائل (قابلة للتمرير فقط) ==================== */
         .messages-container {
             flex: 1;
             overflow-y: auto;
@@ -199,7 +194,6 @@
             position: relative;
             z-index: 2;
             overscroll-behavior: contain;
-            /* تسريع التمرير */
             content-visibility: auto;
             contain-intrinsic-size: auto 100vh;
         }
@@ -233,7 +227,7 @@
             box-shadow: var(--shadow-xs);
         }
 
-        /* فقاعات الرسائل */
+        /* ==================== فقاعات الرسائل (معكوسة) ==================== */
         .message-row {
             display: flex;
             margin-bottom: 2px;
@@ -245,61 +239,61 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .message-row.out {
-            justify-content: flex-end;
-        }
-
-        .message-row.in {
+        /* المريض (المستخدم) على اليسار */
+        .message-row.patient {
             justify-content: flex-start;
         }
 
+        /* الطبيب على اليمين */
+        .message-row.doctor {
+            justify-content: flex-end;
+        }
+
         .message-bubble {
-            max-width: 80%;
+            max-width: 82%;
             position: relative;
         }
 
-        .message-row.out .message-bubble {
-            background: linear-gradient(145deg, var(--primary-600), var(--primary-500));
-            color: white;
-            border-radius: 22px 4px 22px 22px;
-            box-shadow: var(--shadow-md);
-        }
-
-        .message-row.in .message-bubble {
+        /* فقاعة المريض (يسار) – خلفية فاتحة وذيل أعلى اليمين */
+        .message-row.patient .message-bubble {
             background: var(--surface-solid);
             color: var(--text-primary);
-            border-radius: 4px 22px 22px 22px;
+            border-radius: 4px var(--radius-bubble) var(--radius-bubble) var(--radius-bubble);
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--primary-100);
         }
 
+        /* فقاعة الطبيب (يمين) – خلفية متدرجة وذيل أعلى اليسار */
+        .message-row.doctor .message-bubble {
+            background: linear-gradient(145deg, var(--primary-600), var(--primary-500));
+            color: white;
+            border-radius: var(--radius-bubble) 4px var(--radius-bubble) var(--radius-bubble);
+            box-shadow: var(--shadow-md);
+        }
+
         .message-content {
-            padding: 12px 16px;
+            padding: 14px 18px;
             font-size: 0.95rem;
             line-height: 1.6;
             word-break: break-word;
         }
 
+        /* تذييل الرسالة (بدون وقت، فقط علامة صح للمريض) */
         .message-footer {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 6px;
-            padding: 0 14px 10px;
+            padding: 0 16px 8px;
             font-size: 0.7rem;
         }
 
-        .message-row.out .message-footer {
-            color: rgba(255, 255, 255, 0.75);
-        }
-
-        .message-row.in .message-footer {
+        .message-row.patient .message-footer {
             color: var(--text-tertiary);
         }
 
-        .message-status {
-            display: flex;
-            align-items: center;
+        .message-row.doctor .message-footer {
+            /* الطبيب ليس له تذييل حاليًا */
+            display: none;
         }
 
         /* حالات التحميل والفراغ */
@@ -331,7 +325,7 @@
             opacity: 0.7;
         }
 
-        /* ==================== شريط الإدخال ==================== */
+        /* ==================== شريط الإدخال (ثابت) ==================== */
         .input-bar {
             display: flex;
             align-items: flex-end;
@@ -431,7 +425,7 @@
             background: var(--danger);
         }
 
-        /* ==================== أيقونات SVG ==================== */
+        /* أيقونات SVG */
         .icon {
             width: 22px;
             height: 22px;
@@ -446,14 +440,14 @@
         @media (max-width: 480px) {
             .chat-header { padding: 10px 12px; }
             .message-bubble { max-width: 88%; }
-            .message-content { padding: 10px 14px; font-size: 0.9rem; }
+            .message-content { padding: 12px 16px; font-size: 0.9rem; }
             .input-bar { padding: 10px 12px; }
         }
     </style>
 </head>
 <body>
 
-<!-- رأس المحادثة -->
+<!-- رأس المحادثة (ثابت) -->
 <header class="chat-header">
     <button class="back-btn" id="backBtn" aria-label="رجوع">
         <svg class="icon" viewBox="0 0 24 24">
@@ -473,7 +467,7 @@
     </div>
 </header>
 
-<!-- منطقة الرسائل -->
+<!-- منطقة الرسائل (الجزء القابل للتمرير فقط) -->
 <main class="messages-container" id="messagesContainer">
     <div class="loading-state">
         <div class="spinner"></div>
@@ -481,7 +475,7 @@
     </div>
 </main>
 
-<!-- شريط الإدخال -->
+<!-- شريط الإدخال (ثابت) -->
 <footer class="input-bar">
     <div class="input-wrapper">
         <textarea class="message-input" id="messageInput" placeholder="اكتب رسالتك..." rows="1"></textarea>
@@ -517,70 +511,54 @@
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== إدارة التخزين المحلي (IndexedDB) ====================
+    // ==================== إدارة التخزين المحلي ====================
     class MessageCache {
         constructor() { this.db = null; }
-        
         async init() {
             if (this.db) return;
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open('SakoonMessagesCache', 1);
                 request.onerror = () => reject(request.error);
-                request.onsuccess = () => {
-                    this.db = request.result;
-                    resolve();
-                };
-                request.onupgradeneeded = (event) => {
-                    const db = event.target.result;
-                    if (!db.objectStoreNames.contains('messages')) {
-                        db.createObjectStore('messages', { keyPath: 'convId' });
-                    }
-                    if (!db.objectStoreNames.contains('doctors')) {
-                        db.createObjectStore('doctors', { keyPath: 'id' });
-                    }
+                request.onsuccess = () => { this.db = request.result; resolve(); };
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('messages')) db.createObjectStore('messages', { keyPath: 'convId' });
+                    if (!db.objectStoreNames.contains('doctors')) db.createObjectStore('doctors', { keyPath: 'id' });
                 };
             });
         }
-        
         async getMessages(convId) {
             await this.init();
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 const tx = this.db.transaction('messages', 'readonly');
-                const store = tx.objectStore('messages');
-                const request = store.get(convId);
-                request.onsuccess = () => resolve(request.result?.messages || []);
-                request.onerror = () => resolve([]);
+                const req = tx.objectStore('messages').get(convId);
+                req.onsuccess = () => resolve(req.result?.messages || []);
+                req.onerror = () => resolve([]);
             });
         }
-        
         async saveMessages(convId, messages) {
             await this.init();
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 const tx = this.db.transaction('messages', 'readwrite');
-                const store = tx.objectStore('messages');
-                store.put({ convId, messages });
+                tx.objectStore('messages').put({ convId, messages });
                 tx.oncomplete = () => resolve();
                 tx.onerror = () => resolve();
             });
         }
-        
         async getDoctor(id) {
             await this.init();
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 const tx = this.db.transaction('doctors', 'readonly');
-                const store = tx.objectStore('doctors');
-                const request = store.get(id);
-                request.onsuccess = () => resolve(request.result || null);
-                request.onerror = () => resolve(null);
+                const req = tx.objectStore('doctors').get(id);
+                req.onsuccess = () => resolve(req.result || null);
+                req.onerror = () => resolve(null);
             });
         }
-        
         async saveDoctor(doctor) {
             await this.init();
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 const tx = this.db.transaction('doctors', 'readwrite');
-                const store = tx.objectStore('doctors');
-                store.put(doctor);
+                tx.objectStore('doctors').put(doctor);
                 tx.oncomplete = () => resolve();
                 tx.onerror = () => resolve();
             });
@@ -590,111 +568,95 @@
     const cache = new MessageCache();
 
     // ==================== دوال مساعدة ====================
-    const toast = (message, isError = false) => {
+    const toast = (msg, err = false) => {
         const el = document.getElementById('toast');
-        el.textContent = message;
-        el.className = `toast show ${isError ? 'error' : ''}`;
+        el.textContent = msg;
+        el.className = `toast show ${err ? 'error' : ''}`;
         setTimeout(() => el.classList.remove('show'), 3000);
     };
 
-    const formatTime = (timestamp) => {
-        if (!timestamp) return '';
-        return new Date(timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    const formatDateLabel = (ts) => {
+        if (!ts) return '';
+        const d = new Date(ts);
+        const today = new Date(); today.setHours(0,0,0,0);
+        d.setHours(0,0,0,0);
+        const diff = Math.floor((today - d) / 86400000);
+        if (diff === 0) return 'اليوم';
+        if (diff === 1) return 'أمس';
+        if (diff < 7) return d.toLocaleDateString('ar-EG', { weekday: 'long' });
+        return d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' });
     };
 
-    const formatDateLabel = (timestamp) => {
-        if (!timestamp) return '';
-        const msgDate = new Date(timestamp);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        msgDate.setHours(0, 0, 0, 0);
-        
-        const diffDays = Math.floor((today - msgDate) / (1000 * 60 * 60 * 24));
-        if (diffDays === 0) return 'اليوم';
-        if (diffDays === 1) return 'أمس';
-        if (diffDays < 7) return msgDate.toLocaleDateString('ar-EG', { weekday: 'long' });
-        return msgDate.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' });
+    const escapeHtml = (t) => {
+        if (!t) return '';
+        return String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\n/g, '<br>');
     };
 
-    const escapeHtml = (text) => {
-        if (!text) return '';
-        return String(text).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\n/g, '<br>');
-    };
-
-    // ==================== الحالة العامة ====================
+    // ==================== الحالة ====================
     let currentUserId = null;
     let doctorId = null;
     let conversationId = null;
     let allMessages = [];
-    let lastRenderedDate = '';
     let isNearBottom = true;
 
-    const messagesContainer = document.getElementById('messagesContainer');
-    const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendButton');
+    const container = document.getElementById('messagesContainer');
+    const input = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendButton');
     const doctorNameEl = document.getElementById('doctorName');
     const doctorAvatarEl = document.getElementById('doctorAvatar');
 
-    // مراقبة التمرير
-    messagesContainer.addEventListener('scroll', () => {
-        const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
+    container.addEventListener('scroll', () => {
+        const { scrollTop, scrollHeight, clientHeight } = container;
         isNearBottom = scrollHeight - scrollTop - clientHeight < 80;
     });
 
     const scrollToBottom = (force = false) => {
         if (force || isNearBottom) {
-            requestAnimationFrame(() => {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            });
+            requestAnimationFrame(() => container.scrollTop = container.scrollHeight);
         }
     };
 
-    // ==================== عرض الرسائل ====================
-    const renderMessages = (messages) => {
+    // ==================== عرض الرسائل (بدون وقت) ====================
+    const renderMessages = (msgs) => {
         const fragment = document.createDocumentFragment();
-        let currentDateLabel = '';
-        
-        // ترتيب تصاعدي حسب الوقت
-        const sorted = [...messages].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        let lastDate = '';
+        const sorted = [...msgs].sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
         
         sorted.forEach(msg => {
-            const msgDate = formatDateLabel(msg.timestamp);
-            if (msgDate && msgDate !== currentDateLabel) {
-                currentDateLabel = msgDate;
-                const separator = document.createElement('div');
-                separator.className = 'date-separator';
-                separator.innerHTML = `<div class="date-badge">${msgDate}</div>`;
-                fragment.appendChild(separator);
+            const dateLabel = formatDateLabel(msg.timestamp);
+            if (dateLabel && dateLabel !== lastDate) {
+                lastDate = dateLabel;
+                const sep = document.createElement('div');
+                sep.className = 'date-separator';
+                sep.innerHTML = `<div class="date-badge">${dateLabel}</div>`;
+                fragment.appendChild(sep);
             }
             
-            const isOutgoing = msg.senderId === currentUserId;
+            const isPatient = msg.senderId === currentUserId;
             const row = document.createElement('div');
-            row.className = `message-row ${isOutgoing ? 'out' : 'in'}`;
+            row.className = `message-row ${isPatient ? 'patient' : 'doctor'}`;
             row.dataset.msgId = msg.id;
             
             row.innerHTML = `
                 <div class="message-bubble">
                     <div class="message-content">${escapeHtml(msg.text)}</div>
-                    <div class="message-footer">
-                        <span class="message-time">${formatTime(msg.timestamp)}</span>
-                        ${isOutgoing ? `
-                            <span class="message-status">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                            </span>
-                        ` : ''}
-                    </div>
+                    ${isPatient ? `
+                        <div class="message-footer">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                    ` : ''}
                 </div>
             `;
             fragment.appendChild(row);
         });
         
-        messagesContainer.innerHTML = '';
-        messagesContainer.appendChild(fragment);
+        container.innerHTML = '';
+        container.appendChild(fragment);
         
         if (sorted.length === 0) {
-            messagesContainer.innerHTML = `
+            container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">💬</div>
                     <h3>لا توجد رسائل بعد</h3>
@@ -704,16 +666,11 @@
         }
     };
 
-    // ==================== تحميل بيانات الطبيب ====================
-    const loadDoctorInfo = async () => {
+    // ==================== تحميل الطبيب ====================
+    const loadDoctor = async () => {
         try {
-            // من الكاش أولاً
             let doc = await cache.getDoctor(doctorId);
-            if (doc) {
-                updateDoctorUI(doc);
-            }
-            
-            // من Firebase للتحديث
+            if (doc) updateDoctorUI(doc);
             const snap = await get(ref(database, `doctors/${doctorId}`));
             if (snap.exists()) {
                 const data = snap.val();
@@ -721,9 +678,7 @@
                 await cache.saveDoctor(doc);
                 updateDoctorUI(doc);
             }
-        } catch (e) {
-            console.warn('تعذر تحميل الطبيب:', e);
-        }
+        } catch (e) { /* تجاهل */ }
     };
     
     const updateDoctorUI = (doc) => {
@@ -735,11 +690,10 @@
         }
     };
 
-    // ==================== إنشاء أو استرجاع المحادثة ====================
-    const getOrCreateConversation = async () => {
-        const convsRef = ref(database, 'conversations');
-        const snap = await get(convsRef);
-        
+    // ==================== المحادثة ====================
+    const getOrCreateConv = async () => {
+        const refConv = ref(database, 'conversations');
+        const snap = await get(refConv);
         if (snap.exists()) {
             const convs = snap.val();
             for (const id in convs) {
@@ -749,8 +703,7 @@
                 }
             }
         }
-        
-        const newRef = push(convsRef);
+        const newRef = push(refConv);
         conversationId = newRef.key;
         await set(newRef, {
             patientId: currentUserId,
@@ -763,126 +716,93 @@
         return conversationId;
     };
 
-    // ==================== الاستماع للرسائل مع التخزين المحلي ====================
     const listenToMessages = () => {
         if (!conversationId) return;
+        const msgsRef = ref(database, `conversations/${conversationId}/messages`);
         
-        const messagesRef = ref(database, `conversations/${conversationId}/messages`);
-        
-        // عرض الرسائل المخزنة محلياً فوراً
-        cache.getMessages(conversationId).then(cachedMessages => {
-            if (cachedMessages.length) {
-                allMessages = cachedMessages;
+        cache.getMessages(conversationId).then(cached => {
+            if (cached.length) {
+                allMessages = cached;
                 renderMessages(allMessages);
                 scrollToBottom(true);
             }
         });
         
-        // الاستماع للتغييرات من Firebase
-        onValue(messagesRef, async (snapshot) => {
-            const freshMessages = [];
-            if (snapshot.exists()) {
-                snapshot.forEach(child => {
-                    freshMessages.push({
-                        id: child.key,
-                        ...child.val()
-                    });
-                });
+        onValue(msgsRef, async (snap) => {
+            const fresh = [];
+            if (snap.exists()) {
+                snap.forEach(c => fresh.push({ id: c.key, ...c.val() }));
             }
-            
-            // ترتيب تنازلي مؤقت للمقارنة
-            freshMessages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-            
-            // تحديث الذاكرة المحلية
-            allMessages = freshMessages;
-            await cache.saveMessages(conversationId, freshMessages);
-            
-            // إعادة رسم الواجهة
+            fresh.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
+            allMessages = fresh;
+            await cache.saveMessages(conversationId, fresh);
             renderMessages(allMessages);
             scrollToBottom();
-        }, (error) => {
-            console.error('خطأ في المزامنة:', error);
-            toast('غير متصل - عرض الرسائل المخزنة', false);
+        }, (err) => {
+            console.warn('مزامنة:', err);
+            toast('غير متصل - عرض الرسائل المخزنة');
         });
     };
 
-    // ==================== إرسال رسالة ====================
-    let isSending = false;
-    
+    // ==================== إرسال ====================
+    let sending = false;
     const sendMessage = async () => {
-        const text = messageInput.value.trim();
-        if (!text || !conversationId || !currentUserId || isSending) return;
-        
-        isSending = true;
-        sendButton.classList.add('sending');
-        
-        const messageText = text;
-        messageInput.value = '';
-        messageInput.style.height = 'auto';
-        messageInput.focus();
-        
+        const text = input.value.trim();
+        if (!text || !conversationId || sending) return;
+        sending = true;
+        sendBtn.classList.add('sending');
+        const msgText = text;
+        input.value = '';
+        input.style.height = 'auto';
+        input.focus();
         try {
             const msgRef = push(ref(database, `conversations/${conversationId}/messages`));
             await set(msgRef, {
-                text: messageText,
+                text: msgText,
                 senderId: currentUserId,
                 senderRole: 'patient',
                 timestamp: Date.now(),
                 read: false
             });
-            
             await update(ref(database, `conversations/${conversationId}`), {
-                lastMessage: messageText,
+                lastMessage: msgText,
                 lastMessageTime: Date.now(),
                 unreadPatient: false
             });
-            
-        } catch (error) {
-            console.error('فشل الإرسال:', error);
-            toast('فشل إرسال الرسالة', true);
-            messageInput.value = messageText; // استعادة النص
+        } catch (e) {
+            toast('فشل الإرسال', true);
+            input.value = msgText;
         } finally {
-            isSending = false;
-            sendButton.classList.remove('sending');
-            messageInput.focus();
+            sending = false;
+            sendBtn.classList.remove('sending');
+            input.focus();
         }
     };
 
-    // ==================== معالجة الأحداث ====================
-    messageInput.addEventListener('input', () => {
-        messageInput.style.height = 'auto';
-        messageInput.style.height = Math.min(messageInput.scrollHeight, 130) + 'px';
+    // ==================== الأحداث ====================
+    input.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 130) + 'px';
     });
-
-    messageInput.addEventListener('keydown', (e) => {
+    input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
-
-    sendButton.addEventListener('click', sendMessage);
-    
-    // منع فقدان التركيز عند الضغط على الزر
-    sendButton.addEventListener('mousedown', (e) => e.preventDefault());
-
+    sendBtn.addEventListener('click', sendMessage);
+    sendBtn.addEventListener('mousedown', (e) => e.preventDefault());
     document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = 'patient-chats.html';
     });
 
-    // ==================== بدء التشغيل ====================
+    // ==================== بدء ====================
     const init = async (user) => {
         currentUserId = user.uid;
-        const params = new URLSearchParams(window.location.search);
-        doctorId = params.get('doctorId');
-        
-        if (!doctorId) {
-            toast('معرف الطبيب مفقود', true);
-            return;
-        }
-        
-        await loadDoctorInfo();
-        await getOrCreateConversation();
+        doctorId = new URLSearchParams(window.location.search).get('doctorId');
+        if (!doctorId) { toast('معرف الطبيب مفقود', true); return; }
+        await loadDoctor();
+        await getOrCreateConv();
         listenToMessages();
     };
 
@@ -891,12 +811,10 @@
         else window.location.href = 'patient-login.html';
     });
 
-    // دعم الأجهزة التي لا تدعم backdrop-filter
     if (!CSS.supports('backdrop-filter', 'blur(10px)')) {
         document.documentElement.style.setProperty('--surface', 'rgba(255, 255, 255, 0.98)');
     }
 </script>
-<!-- ملف المكالمات (اختياري) -->
 <script type="module" src="patient-call-listener.js"></script>
 </body>
 </html>
