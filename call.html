@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     
-    <!-- ✅ مكتبة Agora Web SDK NG الرسمية (تم التحديث) -->
+    <!-- ✅ مكتبة Agora Web SDK NG الرسمية -->
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.2.js"></script>
 
     <style>
@@ -204,6 +204,21 @@
     let isVideoOff = (callType === 'audio');
     let remoteUsers = {};
 
+    // ✅ دالة مساعدة لإنشاء اسم قناة صالح لـ Agora
+    function generateValidChannelName(doctorId, patientId) {
+        // نستخدم خوارزمية تجزئة (hash) بسيطة لتحويل المعرّفات إلى سلسلة نصية قصيرة وآمنة
+        let inputString = `${doctorId}_${patientId}`;
+        let hash = 0;
+        for (let i = 0; i < inputString.length; i++) {
+            const char = inputString.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32bit integer
+        }
+        // نستخدم قيمة الهاش مع طابع زمني قصير لضمان التفرد والأمان
+        const timestamp = Date.now().toString(36); // تحويل timestamp إلى base36
+        return `chn_${Math.abs(hash).toString(36)}_${timestamp}`;
+    }
+
     function log(msg, data) { console.log(`[${role}] ${msg}`, data || ''); }
     function showToast(msg, duration = 3000) {
         toastEl.textContent = msg;
@@ -240,6 +255,12 @@
 
             // ⚠️ في الإنتاج يجب توليد الرمز من خادم
             const token = null; // استخدم null إذا كانت شهادة المصادقة معطلة للتطوير
+
+            // التحقق من صحة اسم القناة
+            if (!channelName || channelName.length > 64) {
+                throw new Error('اسم القناة غير صالح (يجب أن يكون أقل من 64 بايت)');
+            }
+            log(`🔑 محاولة الانضمام إلى القناة: ${channelName}`);
 
             await agoraClient.join(AGORA_APP_ID, channelName, token, localUid);
             log(`✅ تم الانضمام إلى القناة: ${channelName}`);
@@ -385,9 +406,12 @@
         waitingName.textContent = remoteName;
         updateWaitingStatus('جاري التهيئة...');
 
+        // ✅ إنشاء اسم قناة صالح لـ Agora
+        channelName = generateValidChannelName(doctorId, patientId);
+        log(`🔑 تم إنشاء اسم القناة: ${channelName}`);
+
         if (role === 'caller') {
             callId = `${doctorId}_${patientId}_${Date.now()}`;
-            channelName = callId;
             
             await set(ref(db, `calls/${callId}`), {
                 caller: doctorId,
@@ -413,12 +437,14 @@
         } else {
             if (callIdFromUrl) {
                 callId = callIdFromUrl;
-                channelName = callId;
                 const snap = await get(ref(db, `calls/${callId}`));
                 if (snap.exists()) {
                     const callData = snap.val();
                     callType = callData.type || 'audio';
                     isVideoOff = (callType === 'audio');
+                    channelName = callData.channelName || generateValidChannelName(doctorId, patientId);
+                    log(`🔑 المستقبل (callee) يستخدم اسم القناة من Firebase: ${channelName}`);
+                    
                     if (callData.status === 'ringing') {
                         await update(ref(db, `calls/${callId}`), { status: 'answered' });
                     }
