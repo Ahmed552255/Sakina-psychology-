@@ -220,6 +220,7 @@
 
         .chat-wrapper {
             position: relative;
+            /* مهم: لا نضع overflow: hidden حتى لا نخفي القائمة */
         }
 
         .chat-card {
@@ -372,7 +373,7 @@
             box-shadow: var(--shadow-lg);
             padding: 8px;
             min-width: 200px;
-            z-index: 100;
+            z-index: 1000; /* تأكيد الظهور فوق كل شيء */
             list-style: none;
             opacity: 0;
             visibility: hidden;
@@ -510,7 +511,7 @@
             background: rgba(10, 30, 30, 0.6);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
-            z-index: 500;
+            z-index: 2000;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1210,6 +1211,13 @@
                 const convId = card.dataset.convId;
                 const conv = conversations.find(c => c.id === convId);
                 if (conv) {
+                    // ✅ تحسين تجربة المستخدم: إخفاء علامة "غير مقروء" فوراً
+                    if (conv.unread) {
+                        conv.unread = false;
+                        // تحديث العرض المحلي فوراً
+                        renderChats();
+                    }
+                    // الانتقال إلى صفحة المحادثة
                     window.location.href = `conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
                 }
             }
