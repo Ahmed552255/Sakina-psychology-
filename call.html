@@ -11,10 +11,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     
-    <!-- مكتبة Agora Web SDK NG -->
-    <script src="https://download.agora.io/sdk/web/AgoraRTC_N-4.20.2.js"></script>
+    <!-- ✅ مكتبة Agora Web SDK NG الرسمية (تم التحديث) -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.2.js"></script>
 
     <style>
+        /* نفس التنسيقات السابقة دون تغيير */
         :root {
             --teal-500: #5aabab; --teal-700: #3d8a8a; --teal-900: #1f4f4f;
             --white: #ffffff; --danger: #e05252; --success: #34c48a;
@@ -164,12 +165,9 @@
     feather.replace();
 
     // ==================== إعدادات Agora ====================
-    const AGORA_APP_ID = 'dcab084bed5243959e742a73de3c8f2d'; // معرف التطبيق الذي قمت بتزويدنا به
+    const AGORA_APP_ID = 'dcab084bed5243959e742a73de3c8f2d';
     
-    // 🚨 في بيئة الإنتاج، يجب توليد الرمز من خادم خلفي (مثل Firebase Cloud Function) لضمان الأمان.
-    const TEMP_TOKEN = null; // سنقوم باستخدامه لاحقاً عبر دالة خلفية أو كقيمة مؤقتة للاختبار فقط
-
-    // ==================== عناصر DOM ====================
+    // عناصر DOM
     const waitingScreen = document.getElementById('waitingScreen');
     const callInterface = document.getElementById('callInterface');
     const videoContainer = document.getElementById('videoContainer');
@@ -188,27 +186,24 @@
     const hangupBtn = document.getElementById('hangupBtn');
     const toastEl = document.getElementById('toast');
 
-    // ==================== متغيرات الجلسة ====================
     const urlParams = new URLSearchParams(window.location.search);
-    let callType = urlParams.get('type') || 'audio'; // 'audio' أو 'video'
+    let callType = urlParams.get('type') || 'audio';
     const doctorId = urlParams.get('doctorId');
     const patientId = urlParams.get('patientId');
-    const role = urlParams.get('role') || 'caller'; // 'caller' أو 'callee'
+    const role = urlParams.get('role') || 'caller';
     const callIdFromUrl = urlParams.get('callId');
 
     let localUid = null;
     let remoteUid = null;
     let callId = null;
-    let channelName = null; // سنستخدم معرف المكالمة كاسم للقناة
+    let channelName = null;
     let agoraClient = null;
     let localAudioTrack = null;
     let localVideoTrack = null;
     let isAudioMuted = false;
     let isVideoOff = (callType === 'audio');
-    let isCallActive = false;
     let remoteUsers = {};
 
-    // ==================== دوال مساعدة ====================
     function log(msg, data) { console.log(`[${role}] ${msg}`, data || ''); }
     function showToast(msg, duration = 3000) {
         toastEl.textContent = msg;
@@ -235,28 +230,22 @@
         return uid;
     }
 
-    // ==================== دوال Agora الأساسية ====================
+    // ✅ دوال Agora الأساسية
     async function initAgoraAndJoin() {
         try {
-            // 1. إنشاء عميل Agora
             agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
             log('✅ تم إنشاء عميل Agora');
 
-            // 2. الاستماع لأحداث Agora
             setupAgoraEventListeners();
 
-            // 3. الحصول على رمز مؤقت (في هذا المثال سنستخدم قيمة مؤقتة للاختبار، لكن في الإنتاج يجب جلبه من الخادم)
-            // ⚠️ تنبيه هام: يجب عليك إنشاء دالة Firebase Cloud Function لتوليد الرمز بشكل آمن.
-            const token = await fetchAgoraToken(channelName, localUid);
-            
-            // 4. الانضمام إلى القناة
+            // ⚠️ في الإنتاج يجب توليد الرمز من خادم
+            const token = null; // استخدم null إذا كانت شهادة المصادقة معطلة للتطوير
+
             await agoraClient.join(AGORA_APP_ID, channelName, token, localUid);
             log(`✅ تم الانضمام إلى القناة: ${channelName}`);
 
-            // 5. إنشاء ونشر المسارات المحلية (الصوت والفيديو)
             await createAndPublishLocalTracks();
 
-            // إخفاء شاشة الانتظار وإظهار واجهة المكالمة
             showCallInterface();
             
         } catch (error) {
@@ -266,7 +255,6 @@
     }
 
     function setupAgoraEventListeners() {
-        // عند انضمام مستخدم جديد
         agoraClient.on('user-published', async (user, mediaType) => {
             await agoraClient.subscribe(user, mediaType);
             log(`📡 تم الاشتراك في مسار ${mediaType} من المستخدم ${user.uid}`);
@@ -285,9 +273,7 @@
             callStatusText.textContent = 'متصل';
         });
 
-        // عند مغادرة مستخدم
         agoraClient.on('user-unpublished', (user, mediaType) => {
-            log(`👋 المستخدم ${user.uid} أوقف نشر ${mediaType}`);
             if (mediaType === 'video') {
                 videoContainer.classList.add('hidden');
                 audioOnlyUI.classList.remove('hidden');
@@ -296,7 +282,6 @@
         });
         
         agoraClient.on('user-left', (user) => {
-            log(`🚪 المستخدم ${user.uid} غادر القناة`);
             delete remoteUsers[user.uid];
             if (Object.keys(remoteUsers).length === 0) {
                 callStatusText.textContent = 'في انتظار الطرف الآخر...';
@@ -305,36 +290,16 @@
             }
         });
 
-        agoraClient.on('connection-state-change', (curState, prevState) => {
-            log(`🔄 حالة الاتصال تغيرت من ${prevState} إلى ${curState}`);
+        agoraClient.on('connection-state-change', (curState) => {
             if (curState === 'DISCONNECTED') {
                 displayError('انقطع الاتصال بالخادم');
             }
         });
     }
 
-    async function fetchAgoraToken(channel, uid) {
-        // 🚨 في بيئة الإنتاج، يجب استبدال هذا بدالة تستدعي خادمك الخلفي (Firebase Cloud Function)
-        // للحصول على رمز مؤمن. استخدام TEMP_TOKEN مباشرة غير آمن!
-        if (TEMP_TOKEN) {
-            return TEMP_TOKEN;
-        }
-        
-        // مثال: استدعاء دالة Firebase Cloud Function
-        // const getToken = httpsCallable(functions, 'getAgoraToken');
-        // const result = await getToken({ channelName: channel, uid: uid });
-        // return result.data.token;
-        
-        // حالياً، سنعيد null ونعتمد على إعدادات الأمان المنخفضة للتطوير (غير مستحسن)
-        log('⚠️ تحذير: لم يتم توفير رمز. تأكد من تعطيل "شهادة المصادقة" في مشروع Agora للتطوير المحلي.');
-        return null;
-    }
-
     async function createAndPublishLocalTracks() {
-        // إنشاء مسار الصوت
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         
-        // إنشاء مسار الفيديو إذا كانت المكالمة فيديو
         if (callType === 'video') {
             localVideoTrack = await AgoraRTC.createCameraVideoTrack();
             localVideoTrack.play('localVideo');
@@ -345,7 +310,6 @@
             audioOnlyUI.classList.remove('hidden');
         }
 
-        // نشر المسارات
         const tracks = [localAudioTrack];
         if (localVideoTrack) tracks.push(localVideoTrack);
         await agoraClient.publish(tracks);
@@ -359,39 +323,24 @@
     }
 
     async function leaveCall() {
-        log('📴 إنهاء المكالمة');
-        
-        // إيقاف المسارات المحلية
         if (localAudioTrack) {
             localAudioTrack.stop();
             localAudioTrack.close();
-            localAudioTrack = null;
         }
         if (localVideoTrack) {
             localVideoTrack.stop();
             localVideoTrack.close();
-            localVideoTrack = null;
         }
-
-        // مغادرة القناة
         if (agoraClient) {
             await agoraClient.leave();
-            agoraClient = null;
         }
-
-        // تحديث حالة المكالمة في Firebase
         if (callId) {
-            try {
-                await update(ref(db, `calls/${callId}`), { status: 'ended' });
-            } catch (e) {}
+            await update(ref(db, `calls/${callId}`), { status: 'ended' });
         }
-
-        // العودة إلى صفحة المحادثة
         const returnUrl = role === 'caller' ? `doctor-conversation.html?patientId=${patientId}` : `conversation.html?doctorId=${doctorId}`;
         window.location.href = returnUrl;
     }
 
-    // ==================== أحداث الأزرار ====================
     retryButton.addEventListener('click', () => window.location.reload());
     toggleMicBtn.addEventListener('click', () => {
         if (localAudioTrack) {
@@ -411,11 +360,10 @@
             toggleVideoBtn.classList.toggle('active', !enabled);
             toggleVideoBtn.innerHTML = !enabled ? '<i data-feather="video-off" style="width:22px;height:22px"></i>' : '<i data-feather="video" style="width:22px;height:22px"></i>';
             feather.replace();
-            
             if (!enabled) {
                 videoContainer.classList.add('hidden');
                 audioOnlyUI.classList.remove('hidden');
-            } else if (remoteUsers && Object.keys(remoteUsers).length > 0) {
+            } else if (Object.keys(remoteUsers).length > 0) {
                 videoContainer.classList.remove('hidden');
                 audioOnlyUI.classList.add('hidden');
             }
@@ -423,7 +371,6 @@
     });
     hangupBtn.addEventListener('click', leaveCall);
 
-    // ==================== التهيئة الرئيسية ====================
     async function initPage() {
         const user = auth.currentUser;
         if (!user) {
@@ -438,12 +385,10 @@
         waitingName.textContent = remoteName;
         updateWaitingStatus('جاري التهيئة...');
 
-        // إنشاء معرف مكالمة فريد (سيكون هو نفسه اسم القناة في Agora)
         if (role === 'caller') {
             callId = `${doctorId}_${patientId}_${Date.now()}`;
             channelName = callId;
             
-            // إنشاء سجل المكالمة في Firebase
             await set(ref(db, `calls/${callId}`), {
                 caller: doctorId,
                 callee: patientId,
@@ -453,7 +398,6 @@
                 createdAt: Date.now()
             });
             
-            // الاستماع لتحديثات حالة المكالمة
             onValue(ref(db, `calls/${callId}/status`), (snap) => {
                 const status = snap.val();
                 if (status === 'rejected') {
@@ -464,11 +408,9 @@
                 }
             });
             
-            // بدء الاتصال بـ Agora
             await initAgoraAndJoin();
             
         } else {
-            // دور المستقبل (callee)
             if (callIdFromUrl) {
                 callId = callIdFromUrl;
                 channelName = callId;
@@ -477,12 +419,9 @@
                     const callData = snap.val();
                     callType = callData.type || 'audio';
                     isVideoOff = (callType === 'audio');
-                    
-                    // تحديث الحالة إلى "تم الرد"
                     if (callData.status === 'ringing') {
                         await update(ref(db, `calls/${callId}`), { status: 'answered' });
                     }
-                    
                     await initAgoraAndJoin();
                 } else {
                     displayError('المكالمة غير موجودة');
@@ -499,12 +438,8 @@
     });
 
     window.addEventListener('beforeunload', () => {
-        if (agoraClient) {
-            agoraClient.leave();
-        }
-        if (callId) {
-            update(ref(db, `calls/${callId}`), { status: 'ended' });
-        }
+        if (agoraClient) agoraClient.leave();
+        if (callId) update(ref(db, `calls/${callId}`), { status: 'ended' });
     });
 </script>
 </body>
