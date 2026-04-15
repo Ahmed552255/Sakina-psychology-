@@ -3,699 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    
+    <!-- تحسينات PWA وأداء المتصفح -->
+    <meta name="theme-color" content="#f6faf9" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a1818" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="manifest.json">
+    
     <title>سُكُون | رحلة العناية النفسية</title>
-
-    <!-- تحميل الخط مع استراتيجية العرض الفوري (font-display: swap) لمنع حجب النص -->
+    
+    <!-- الخط مع استراتيجية العرض الفوري (swap) -->
+    <link rel="preload" as="font" href="https://fonts.gstatic.com/s/cairo/v28/SLXVc1nY6HkvangtZmpQdkhzfH5lkSscQyyS8J4.woff2" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- أيقونات SVG أساسية مدمجة لتجنب تحميل مكتبة خارجية ثقيلة -->
+    <!-- أيقونات SVG مضمنة (بدون مكتبة خارجية) -->
     <style>
-        /* ==================== إعدادات متقدمة للأداء والجمال ==================== */
+        /* ==== Critical CSS - فقط ما يظهر فوراً (فوق الطي) ==== */
         :root {
-            /* لوحة ألوان نفسية مريحة (مستوحاة من الطبيعة) */
             --bg-primary: #f6faf9;
             --bg-secondary: #eef5f4;
-            --surface: rgba(255, 255, 255, 0.85);
+            --surface: rgba(255, 255, 255, 0.88);
             --surface-solid: #ffffff;
-            --primary-50: #e6f3f3;
-            --primary-100: #cce7e7;
-            --primary-200: #99cfcf;
-            --primary-300: #66b8b8;
-            --primary-400: #3da0a0;
             --primary-500: #2a8888;
             --primary-600: #1f6f6f;
             --primary-700: #165656;
-            --primary-800: #0d3d3d;
-            --primary-900: #062424;
-            
             --text-primary: #1a2e2e;
             --text-secondary: #3d5a5a;
             --text-tertiary: #6b8a8a;
-            --text-on-primary: #ffffff;
-            
-            --shadow-xs: 0 2px 4px rgba(22, 86, 86, 0.04);
             --shadow-sm: 0 6px 16px rgba(22, 86, 86, 0.06);
-            --shadow-md: 0 12px 28px rgba(22, 86, 86, 0.08);
-            --shadow-lg: 0 20px 40px rgba(22, 86, 86, 0.12);
-            --shadow-focus: 0 0 0 3px rgba(42, 136, 136, 0.15);
-            
             --radius-card: 28px;
             --radius-element: 18px;
-            --radius-full: 9999px;
-            
-            --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-            
-            /* دعم الوضع الليلي */
-            color-scheme: light;
         }
-
-        /* الوضع الليلي التلقائي (بناءً على إعدادات النظام) */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-primary: #0a1818;
                 --bg-secondary: #0f2222;
-                --surface: rgba(18, 30, 30, 0.85);
+                --surface: rgba(18, 30, 30, 0.88);
                 --surface-solid: #142424;
                 --text-primary: #e3f0f0;
                 --text-secondary: #b3d1d1;
                 --text-tertiary: #7aa3a3;
-                --shadow-xs: 0 2px 4px rgba(0, 0, 0, 0.2);
-                --shadow-sm: 0 6px 16px rgba(0, 0, 0, 0.25);
-                --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.3);
-                --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
-                color-scheme: dark;
             }
         }
-
-        /* إعادة ضبط سلسة ومتوافقة مع الأجهزة الضعيفة */
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+        html{font-size:16px;scroll-behavior:smooth;}
+        body{
+            font-family:'Cairo',-apple-system,sans-serif;
+            background:var(--bg-primary);
+            color:var(--text-primary);
+            min-height:100vh;
+            padding-bottom:95px;
+            line-height:1.5;
+            overflow-x:hidden;
         }
-
-        html {
-            font-size: 16px;
-            scroll-behavior: smooth;
-            -webkit-font-smoothing: antialiased;
+        body::before{
+            content:'';position:fixed;top:-20vh;right:-10vw;
+            width:80vw;height:80vw;max-width:600px;max-height:600px;
+            border-radius:50%;background:radial-gradient(circle,rgba(42,136,136,0.06) 0%,transparent 70%);
+            pointer-events:none;z-index:0;
         }
-
-        body {
-            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            padding-bottom: 95px;
-            line-height: 1.5;
-            position: relative;
-            transition: background 0.2s ease;
+        .app-container{
+            max-width:760px;margin:0 auto;padding:1.75rem 1.25rem;
+            position:relative;z-index:2;
         }
-
-        /* خلفية زخرفية ناعمة جداً (لا تؤثر على الأداء) */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -20vh;
-            right: -10vw;
-            width: 80vw;
-            height: 80vw;
-            max-width: 600px;
-            max-height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(42, 136, 136, 0.08) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
+        .app-header{
+            display:flex;align-items:center;justify-content:space-between;
+            margin-bottom:2rem;
         }
-
-        .app-container {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 1.75rem 1.25rem;
-            position: relative;
-            z-index: 2;
+        .logo{display:flex;align-items:baseline;gap:2px;}
+        .logo-main{font-size:2.2rem;font-weight:800;letter-spacing:-2px;color:var(--primary-600);}
+        .logo-sub{font-size:1.5rem;font-weight:500;color:var(--primary-500);margin-right:2px;}
+        .toolbar{display:flex;gap:12px;margin-bottom:28px;align-items:center;}
+        .search-wrapper{flex:1;position:relative;}
+        .search-input{
+            width:100%;height:56px;padding:0 48px 0 20px;
+            background:var(--surface);backdrop-filter:blur(12px);
+            border:1.5px solid #cce7e7;border-radius:var(--radius-element);
+            font-family:'Cairo',sans-serif;font-size:1rem;color:var(--text-primary);
+            outline:none;box-shadow:0 2px 4px rgba(0,0,0,0.02);
+            transition:border 0.2s;
         }
-
-        /* ==================== رأس الصفحة ==================== */
-        .app-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
+        .search-input:focus{border-color:var(--primary-500);}
+        .search-icon{position:absolute;right:18px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);}
+        .filter-btn{
+            display:flex;align-items:center;gap:8px;height:56px;padding:0 20px;
+            background:var(--surface);backdrop-filter:blur(12px);
+            border:1.5px solid #cce7e7;border-radius:var(--radius-element);
+            font-weight:600;font-size:0.9rem;color:var(--text-secondary);
+            cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.02);
+            white-space:nowrap;
         }
-
-        .logo {
-            display: flex;
-            align-items: baseline;
-            gap: 2px;
+        .cards-grid{
+            display:flex;flex-direction:column;gap:18px;
+            content-visibility:auto;contain-intrinsic-size:auto 200px;
         }
-
-        .logo-main {
-            font-size: 2.2rem;
-            font-weight: 800;
-            letter-spacing: -2px;
-            color: var(--primary-600);
-            line-height: 1;
+        .doctor-card{
+            background:var(--surface);backdrop-filter:blur(12px);
+            border:1.5px solid rgba(255,255,255,0.3);
+            border-radius:var(--radius-card);box-shadow:var(--shadow-sm);
+            padding:1.5rem;display:flex;flex-direction:column;gap:1.2rem;
         }
-
-        .logo-sub {
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: var(--primary-300);
-            margin-right: 2px;
+        .sync-indicator{
+            display:inline-flex;align-items:center;gap:10px;margin-top:24px;
+            padding:8px 16px;background:var(--surface);border-radius:40px;
+            font-size:0.8rem;color:var(--text-secondary);
+            border:1px solid #cce7e7;
         }
-
-        .header-wave {
-            width: 80px;
-            height: 24px;
-            opacity: 0.4;
-            color: var(--primary-200);
-        }
-
-        /* ==================== شريط الأدوات ==================== */
-        .toolbar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 28px;
-            align-items: center;
-        }
-
-        .search-wrapper {
-            flex: 1;
-            position: relative;
-            min-width: 0;
-        }
-
-        .search-input {
-            width: 100%;
-            height: 56px;
-            padding: 0 48px 0 20px;
-            background: var(--surface);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1.5px solid var(--primary-100);
-            border-radius: var(--radius-element);
-            font-family: 'Cairo', sans-serif;
-            font-size: 1rem;
-            color: var(--text-primary);
-            outline: none;
-            box-shadow: var(--shadow-xs);
-            transition: var(--transition);
-        }
-
-        .search-input:focus {
-            border-color: var(--primary-400);
-            background: var(--surface-solid);
-            box-shadow: var(--shadow-focus);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-tertiary);
-            font-weight: 400;
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-tertiary);
-            pointer-events: none;
-            width: 20px;
-            height: 20px;
-        }
-
-        /* زر الفلتر المخصص */
-        .filter-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            height: 56px;
-            padding: 0 20px;
-            background: var(--surface);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1.5px solid var(--primary-100);
-            border-radius: var(--radius-element);
-            font-family: 'Cairo', sans-serif;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            box-shadow: var(--shadow-xs);
-            transition: var(--transition);
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .filter-btn:hover {
-            border-color: var(--primary-300);
-            background: var(--surface-solid);
-        }
-
-        .filter-btn.active {
-            border-color: var(--primary-400);
-            background: var(--primary-50);
-        }
-
-        .filter-dropdown {
-            position: absolute;
-            top: calc(100% + 10px);
-            left: 0;
-            background: var(--surface-solid);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--primary-100);
-            padding: 8px;
-            min-width: 240px;
-            z-index: 100;
-            display: none;
-            transform-origin: top left;
-            animation: dropdownFade 0.18s ease;
-        }
-
-        @keyframes dropdownFade {
-            from { opacity: 0; transform: scale(0.95) translateY(-8px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .filter-dropdown.show {
-            display: block;
-        }
-
-        .filter-option {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .filter-option:hover {
-            background: var(--primary-50);
-            color: var(--primary-700);
-        }
-
-        .filter-option.active {
-            background: var(--primary-500);
-            color: white;
-        }
-
-        /* ==================== شبكة البطاقات (محسنة للأداء) ==================== */
-        .cards-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            /* هذه الخاصية السحرية تخبر المتصفح بأنه يمكن تأجيل رسم العناصر خارج الشاشة */
-            content-visibility: auto;
-            contain-intrinsic-size: auto 200px;
-        }
-
-        .doctor-card {
-            background: var(--surface);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1.5px solid rgba(255, 255, 255, 0.5);
-            border-radius: var(--radius-card);
-            box-shadow: var(--shadow-sm);
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-            transition: transform 0.15s, box-shadow 0.2s;
-            will-change: transform;
-            /* تحسين للشاشات الضعيفة: إلغاء تأثير الـ blur إذا كان الجهاز بطيئاً */
-        }
-
-        @media (prefers-reduced-motion: no-preference) {
-            .doctor-card:active {
-                transform: scale(0.985);
-                box-shadow: var(--shadow-md);
-            }
-        }
-
-        .card-header {
-            display: flex;
-            gap: 1.2rem;
-            align-items: center;
-        }
-
-        .avatar-wrapper {
-            width: 96px;
-            height: 96px;
-            flex-shrink: 0;
-            border-radius: 24px;
-            background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
-            box-shadow: var(--shadow-md);
-            border: 3px solid var(--surface-solid);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: white;
-            text-transform: uppercase;
-        }
-
-        .avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            /* تحميل كسول للصور لتسريع التحميل الأولي */
-            loading: lazy;
-        }
-
-        .doctor-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .doctor-name {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-            line-height: 1.3;
-        }
-
-        .specialty-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--primary-50);
-            color: var(--primary-700);
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            border: 1px solid var(--primary-100);
-            margin-bottom: 8px;
-        }
-
-        .doctor-bio {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .action-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(145deg, var(--primary-600), var(--primary-500));
-            color: white;
-            border: none;
-            border-radius: 18px;
-            font-family: 'Cairo', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            box-shadow: 0 8px 18px rgba(42, 136, 136, 0.25);
-            transition: var(--transition);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .action-button:active {
-            transform: scale(0.97);
-            box-shadow: 0 4px 10px rgba(42, 136, 136, 0.3);
-        }
-
-        /* ==================== حالات التحميل والخطأ ==================== */
-        .skeleton-card {
-            background: var(--surface);
-            border-radius: var(--radius-card);
-            padding: 1.5rem;
-            display: flex;
-            gap: 1.2rem;
-            border: 1.5px solid var(--primary-100);
-        }
-
-        .skeleton-avatar {
-            width: 96px;
-            height: 96px;
-            border-radius: 24px;
-            background: var(--primary-100);
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-
-        .skeleton-lines {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding-top: 8px;
-        }
-
-        .skeleton-line {
-            height: 16px;
-            background: var(--primary-100);
-            border-radius: 20px;
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 0.9; }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 4rem 1rem;
-            color: var(--text-tertiary);
-            display: none;
-        }
-
-        .empty-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.7;
-        }
-
-        /* ==================== شريط المزامنة ==================== */
-        .sync-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 24px;
-            padding: 8px 16px;
-            background: var(--surface);
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            border: 1px solid var(--primary-100);
-            box-shadow: var(--shadow-xs);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-
-        .sync-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--primary-400);
-            transition: background 0.2s;
-        }
-
-        .sync-dot.syncing {
-            background: #f4b740;
-            animation: blink 1.2s infinite;
-        }
-
-        .sync-dot.online {
-            background: #2ecc71;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        /* ==================== شريط التنقل السفلي ==================== */
-        .bottom-nav {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 500px;
-            background: var(--surface);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 36px;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 8px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            z-index: 500;
-        }
-
-        .nav-link {
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 18px;
-            border-radius: 30px;
-            color: var(--text-tertiary);
-            font-weight: 600;
-            font-size: 0.7rem;
-            transition: var(--transition);
-        }
-
-        .nav-link.active {
-            color: var(--primary-600);
-            background: var(--primary-50);
-        }
-
-        /* ==================== أيقونات SVG مدمجة (خفيفة) ==================== */
-        .icon {
-            width: 22px;
-            height: 22px;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: none;
-        }
-
-        .icon-sm {
-            width: 18px;
-            height: 18px;
-        }
-
-        /* تجاوب مع الشاشات الصغيرة */
-        @media (max-width: 480px) {
-            .app-container {
-                padding: 1.25rem 1rem;
-            }
-            .doctor-card {
-                padding: 1.2rem;
-            }
-            .avatar-wrapper {
-                width: 80px;
-                height: 80px;
-                border-radius: 20px;
-            }
-            .doctor-name {
-                font-size: 1.1rem;
-            }
-        }
+        /* باقي CSS غير الحرج يتم تحميله لاحقاً */
+    </style>
+    
+    <!-- تحميل CSS غير الحرج بعد التحميل الأولي -->
+    <link rel="preload" as="style" href="data:text/css;base64,LnN5bmMtZG90e2Rpc3BsYXk6YmxvY2s7fQ==" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="data:text/css;base64,Lm5vLWpzew=="></noscript>
+    
+    <style>
+        /* سيتم حقن باقي الأنماط عبر JavaScript بعد التحميل لتجنب حجب العرض */
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- رأس الصفحة -->
     <header class="app-header">
         <div class="logo">
             <span class="logo-main">سُ</span>
             <span class="logo-sub">كُون</span>
         </div>
-        <!-- موجة صغيرة للزينة -->
-        <svg class="header-wave" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 10 Q 25 0, 50 10 T 100 10" stroke="currentColor" stroke-width="2" fill="none"/>
+        <svg width="80" height="24" viewBox="0 0 100 20" fill="none" stroke="var(--primary-300)" opacity="0.4">
+            <path d="M0 10 Q 25 0, 50 10 T 100 10" stroke="currentColor" stroke-width="2"/>
         </svg>
     </header>
 
-    <!-- شريط البحث والتصفية -->
     <div class="toolbar">
         <div class="search-wrapper">
-            <input type="text" id="searchInput" class="search-input" placeholder="ابحث باسم الأخصائي..." autocomplete="off" aria-label="بحث">
+            <input type="text" id="searchInput" class="search-input" placeholder="ابحث باسم الأخصائي..." autocomplete="off">
             <span class="search-icon">
-                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
             </span>
         </div>
-
-        <div style="position: relative;">
+        <div style="position:relative;">
             <button class="filter-btn" id="filterBtn">
-                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
-                    <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
-                    <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
-                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+                    <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+                    <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/>
+                    <line x1="17" y1="16" x2="23" y2="16"/>
                 </svg>
                 <span id="filterLabel">كل التخصصات</span>
-                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <polyline points="6 9 12 15 18 9"></polyline>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="6 9 12 15 18 9"/>
                 </svg>
             </button>
-            <div class="filter-dropdown" id="filterDropdown"></div>
+            <div id="filterDropdown" style="position:absolute;top:calc(100% + 10px);left:0;background:var(--surface-solid);border-radius:24px;box-shadow:0 12px 28px rgba(0,0,0,0.08);border:1px solid #cce7e7;padding:8px;min-width:240px;z-index:100;display:none;"></div>
         </div>
     </div>
 
-    <!-- حاوية البطاقات (سيتم تعبئتها ديناميكيًا) -->
-    <div class="cards-grid" id="cardsGrid">
-        <!-- هيكل عظمي أولي للتحميل -->
-        <div class="skeleton-card">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-lines">
-                <div class="skeleton-line" style="width: 60%"></div>
-                <div class="skeleton-line" style="width: 40%"></div>
-                <div class="skeleton-line" style="width: 90%"></div>
-                <div class="skeleton-line" style="width: 70%"></div>
-            </div>
-        </div>
-        <div class="skeleton-card">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-lines">
-                <div class="skeleton-line" style="width: 50%"></div>
-                <div class="skeleton-line" style="width: 35%"></div>
-                <div class="skeleton-line" style="width: 85%"></div>
-                <div class="skeleton-line" style="width: 65%"></div>
+    <!-- حاوية البطاقات -->
+    <div id="cardsGrid" class="cards-grid">
+        <!-- هيكل عظمي أولي -->
+        <div style="background:var(--surface);border-radius:28px;padding:1.5rem;display:flex;gap:1.2rem;border:1.5px solid #cce7e7;">
+            <div style="width:96px;height:96px;border-radius:24px;background:#cce7e7;animation:pulse 1.5s infinite;"></div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:12px;padding-top:8px;">
+                <div style="height:16px;background:#cce7e7;border-radius:20px;width:60%;animation:pulse 1.5s infinite;"></div>
+                <div style="height:16px;background:#cce7e7;border-radius:20px;width:40%;animation:pulse 1.5s infinite;"></div>
+                <div style="height:16px;background:#cce7e7;border-radius:20px;width:90%;animation:pulse 1.5s infinite;"></div>
             </div>
         </div>
     </div>
 
-    <!-- حالة فارغة -->
-    <div class="empty-state" id="emptyState">
-        <div class="empty-icon">🍃</div>
-        <p style="font-size: 1.1rem; font-weight: 500;">لا يوجد أخصائيون مطابقون</p>
-        <p style="font-size: 0.9rem; margin-top: 8px;">جرب تعديل البحث أو الفلتر</p>
+    <div id="emptyState" style="text-align:center;padding:4rem 1rem;color:var(--text-tertiary);display:none;">
+        <div style="font-size:4rem;margin-bottom:1rem;">🍃</div>
+        <p style="font-size:1.1rem;">لا يوجد أخصائيون مطابقون</p>
     </div>
 
-    <!-- مؤشر المزامنة -->
-    <div class="sync-indicator" id="syncIndicator">
-        <span class="sync-dot" id="syncDot"></span>
-        <span id="syncMessage">تحميل البيانات...</span>
+    <div id="syncIndicator" class="sync-indicator">
+        <span id="syncDot" style="width:8px;height:8px;border-radius:50%;background:#2ecc71;"></span>
+        <span id="syncMessage">تحميل...</span>
     </div>
 </div>
 
 <!-- شريط التنقل السفلي -->
-<nav class="bottom-nav">
-    <a href="patient-home.html" class="nav-link active">
-        <svg class="icon" viewBox="0 0 24 24">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
+<nav style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:500px;background:var(--surface);backdrop-filter:blur(25px);border-radius:36px;display:flex;justify-content:space-around;padding:10px 8px;box-shadow:0 12px 28px rgba(0,0,0,0.08);border:1px solid rgba(255,255,255,0.3);z-index:500;">
+    <a href="patient-home.html" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 18px;border-radius:30px;color:var(--primary-600);background:#e6f3f3;font-weight:600;font-size:0.7rem;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span>الرئيسية</span>
     </a>
-    <a href="patient-chats.html" class="nav-link">
-        <svg class="icon" viewBox="0 0 24 24">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-        </svg>
+    <a href="patient-chats.html" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 18px;border-radius:30px;color:var(--text-tertiary);font-weight:600;font-size:0.7rem;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
         <span>محادثاتي</span>
     </a>
-    <a href="patient-agenda.html" class="nav-link">
-        <svg class="icon" viewBox="0 0 24 24">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
+    <a href="patient-agenda.html" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 18px;border-radius:30px;color:var(--text-tertiary);font-weight:600;font-size:0.7rem;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <span>الأجندة</span>
     </a>
-    <a href="patient-tools.html" class="nav-link">
-        <svg class="icon" viewBox="0 0 24 24">
-            <path d="M2 12h6M22 12h-6M12 2v6M12 22v-6M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M14.83 9.17l4.24-4.24M14.83 9.17l3.53-3.53M4.93 19.07l4.24-4.24"></path>
-        </svg>
+    <a href="patient-tools.html" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 18px;border-radius:30px;color:var(--text-tertiary);font-weight:600;font-size:0.7rem;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 12h6M22 12h-6M12 2v6M12 22v-6M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M14.83 9.17l4.24-4.24"/></svg>
         <span>أدوات</span>
     </a>
 </nav>
 
+<script>
+    // ==================== Service Worker للتخزين المؤقت (أداء فائق) ====================
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch(()=>{});
+        });
+    }
+
+    // ==================== تحميل CSS غير الحرج بعد التحميل ====================
+    const loadDeferredStyles = () => {
+        const styles = `
+            .filter-btn.active { border-color: var(--primary-500); background: var(--primary-50); }
+            .filter-dropdown.show { display: block; }
+            .filter-option { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 16px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+            .filter-option:hover { background: #e6f3f3; }
+            .filter-option.active { background: var(--primary-500); color: white; }
+            .avatar-wrapper { width: 96px; height: 96px; border-radius: 24px; background: linear-gradient(135deg, var(--primary-500), var(--primary-700)); box-shadow: var(--shadow-sm); border: 3px solid var(--surface-solid); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; color: white; }
+            .avatar-img { width: 100%; height: 100%; object-fit: cover; }
+            .doctor-name { font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+            .specialty-badge { display: inline-flex; align-items: center; gap: 6px; background: #e6f3f3; color: var(--primary-700); padding: 4px 12px; border-radius: 30px; font-size: 0.8rem; font-weight: 700; border: 1px solid #cce7e7; margin-bottom: 8px; }
+            .doctor-bio { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            .action-button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px; background: linear-gradient(145deg, var(--primary-600), var(--primary-500)); color: white; border: none; border-radius: 18px; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 8px 18px rgba(42,136,136,0.25); border: 1px solid rgba(255,255,255,0.2); }
+            .action-button:active { transform: scale(0.97); }
+            @keyframes pulse { 0%,100%{opacity:0.5}50%{opacity:0.9} }
+            .sync-dot.syncing { background: #f4b740; animation: blink 1.2s infinite; }
+            .sync-dot.online { background: #2ecc71; }
+            @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.4} }
+        `;
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = styles;
+        document.head.appendChild(styleSheet);
+    };
+    if (window.requestIdleCallback) {
+        requestIdleCallback(loadDeferredStyles);
+    } else {
+        setTimeout(loadDeferredStyles, 50);
+    }
+</script>
+
 <script type="module">
-    // ==================== استيراد Firebase (محسن) ====================
+    // ==================== إعدادات Firebase ====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
@@ -709,89 +261,73 @@
         messagingSenderId: "25215790734",
         appId: "1:25215790734:web:46c5d893d5818530b3a3df"
     };
-    
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== إدارة التخزين المحلي (IndexedDB) ====================
-    class LocalCache {
+    // ==================== طبقة تخزين متطورة (Memory + IndexedDB) ====================
+    const memoryCache = new Map();
+    
+    class TurboCache {
         constructor() {
             this.db = null;
             this.ready = false;
+            this.initPromise = this.init();
         }
-        
         async init() {
-            if(this.ready) return;
+            if (this.ready) return;
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open('SakoonCache', 1);
+                const request = indexedDB.open('SakoonTurboCache', 1);
                 request.onerror = () => reject(request.error);
                 request.onsuccess = () => {
                     this.db = request.result;
                     this.ready = true;
                     resolve();
                 };
-                request.onupgradeneeded = (event) => {
-                    const db = event.target.result;
-                    if(!db.objectStoreNames.contains('doctors')) {
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('doctors')) {
                         db.createObjectStore('doctors', { keyPath: 'id' });
                     }
-                    if(!db.objectStoreNames.contains('meta')) {
+                    if (!db.objectStoreNames.contains('meta')) {
                         db.createObjectStore('meta', { keyPath: 'key' });
                     }
                 };
             });
         }
-        
         async getDoctors() {
-            await this.init();
+            await this.initPromise;
             return new Promise((resolve) => {
                 const tx = this.db.transaction('doctors', 'readonly');
                 const store = tx.objectStore('doctors');
-                const request = store.getAll();
-                request.onsuccess = () => resolve(request.result || []);
-                request.onerror = () => resolve([]);
+                const req = store.getAll();
+                req.onsuccess = () => {
+                    const data = req.result || [];
+                    // تخزين في الذاكرة للقراءة الفورية
+                    data.forEach(d => memoryCache.set(d.id, d));
+                    resolve(data);
+                };
+                req.onerror = () => resolve([]);
             });
         }
-        
         async saveDoctors(doctors) {
-            await this.init();
+            await this.initPromise;
             return new Promise((resolve) => {
                 const tx = this.db.transaction('doctors', 'readwrite');
                 const store = tx.objectStore('doctors');
                 store.clear();
-                doctors.forEach(d => store.put(d));
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => resolve();
-            });
-        }
-        
-        async getLastSync() {
-            await this.init();
-            return new Promise((resolve) => {
-                const tx = this.db.transaction('meta', 'readonly');
-                const store = tx.objectStore('meta');
-                const req = store.get('lastSync');
-                req.onsuccess = () => resolve(req.result?.value || 0);
-                req.onerror = () => resolve(0);
-            });
-        }
-        
-        async setLastSync(time) {
-            await this.init();
-            return new Promise((resolve) => {
-                const tx = this.db.transaction('meta', 'readwrite');
-                const store = tx.objectStore('meta');
-                store.put({ key: 'lastSync', value: time });
+                doctors.forEach(d => {
+                    store.put(d);
+                    memoryCache.set(d.id, d);
+                });
                 tx.oncomplete = () => resolve();
                 tx.onerror = () => resolve();
             });
         }
     }
+    const turboCache = new TurboCache();
 
-    const cache = new LocalCache();
-
-    // ==================== الدوال المساعدة ====================
+    // ==================== دوال مساعدة ====================
     const specialtyLabels = {
         'psychiatrist': 'طبيب نفسي',
         'psychologist': 'أخصائي نفسي',
@@ -801,7 +337,6 @@
         'cbt': 'معالج سلوكي معرفي',
         'trauma_therapist': 'معالج صدمات'
     };
-    
     const getSpecialtyName = (key) => specialtyLabels[key] || key || 'معالج';
 
     // عناصر DOM
@@ -819,15 +354,14 @@
     let searchQuery = '';
     let currentUser = null;
 
-    // تحديث واجهة المزامنة
-    function setSyncStatus(status, message) {
-        syncDot.className = 'sync-dot';
+    function setSyncStatus(status, msg) {
+        syncDot.className = '';
         if (status === 'syncing') syncDot.classList.add('syncing');
         else if (status === 'online') syncDot.classList.add('online');
-        syncMessage.textContent = message;
+        syncMessage.textContent = msg;
     }
 
-    // عرض البطاقات (محسّن مع DocumentFragment)
+    // عرض البطاقات على دفعات (تحسين الأداء)
     function renderCards() {
         const query = searchQuery.toLowerCase().trim();
         const filtered = allDoctors.filter(doc => {
@@ -844,64 +378,77 @@
         }
         emptyState.style.display = 'none';
 
+        // عرض أول 6 عناصر فقط لتحسين الرسم الأولي
+        const firstBatch = filtered.slice(0, 6);
         const fragment = document.createDocumentFragment();
-        filtered.forEach(doc => {
-            const card = document.createElement('div');
-            card.className = 'doctor-card';
-            
-            const avatarContent = doc.photoURL 
-                ? `<img src="${escapeAttr(doc.photoURL)}" alt="${escapeAttr(doc.name)}" class="avatar-img" loading="lazy">`
-                : (doc.name || 'د').charAt(0).toUpperCase();
-            
-            const avatarHtml = doc.photoURL 
-                ? `<div class="avatar-wrapper">${avatarContent}</div>`
-                : `<div class="avatar-wrapper">${avatarContent}</div>`;
-            
-            const specLabel = getSpecialtyName(doc.specialty);
-            const bio = (doc.quickBlurb || '').substring(0, 120);
-            
-            card.innerHTML = `
-                <div class="card-header">
-                    ${avatarHtml}
-                    <div class="doctor-info">
-                        <div class="doctor-name">${escapeHtml(doc.name || '—')}</div>
-                        <div class="specialty-badge">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <circle cx="12" cy="8" r="4"></circle><path d="M5 20v-2a7 7 0 0 1 14 0v2"></path>
-                            </svg>
-                            ${escapeHtml(specLabel)}
-                        </div>
-                        <div class="doctor-bio">${escapeHtml(bio)}${bio.length > 100 ? '...' : ''}</div>
-                    </div>
-                </div>
-                <button class="action-button" data-doctor-id="${escapeAttr(doc.authUid || doc.id)}" data-patient-id="${escapeAttr(currentUser?.uid || '')}">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                    </svg>
-                    راسل الآن
-                </button>
-            `;
-            fragment.appendChild(card);
+        
+        firstBatch.forEach(doc => {
+            fragment.appendChild(createCardElement(doc));
         });
         
         grid.innerHTML = '';
         grid.appendChild(fragment);
+        
+        // عرض الباقي لاحقاً باستخدام requestIdleCallback
+        if (filtered.length > 6) {
+            const remaining = filtered.slice(6);
+            const renderRemaining = () => {
+                const frag = document.createDocumentFragment();
+                remaining.forEach(doc => frag.appendChild(createCardElement(doc)));
+                grid.appendChild(frag);
+            };
+            if ('scheduler' in window && 'postTask' in scheduler) {
+                scheduler.postTask(renderRemaining, { priority: 'background' });
+            } else if (window.requestIdleCallback) {
+                requestIdleCallback(renderRemaining);
+            } else {
+                setTimeout(renderRemaining, 100);
+            }
+        }
     }
 
-    // دوال الحماية
-    function escapeHtml(text) {
-        if (!text) return '';
-        return String(text).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-    }
-    function escapeAttr(text) {
-        return String(text).replace(/"/g, '&quot;');
+    function createCardElement(doc) {
+        const card = document.createElement('div');
+        card.className = 'doctor-card';
+        
+        const avatarContent = doc.photoURL 
+            ? `<img src="${escapeAttr(doc.photoURL)}" alt="${escapeAttr(doc.name)}" class="avatar-img" loading="lazy" decoding="async" fetchpriority="low">`
+            : (doc.name || 'د').charAt(0).toUpperCase();
+        
+        const avatarHtml = `<div class="avatar-wrapper">${avatarContent}</div>`;
+        const specLabel = getSpecialtyName(doc.specialty);
+        const bio = (doc.quickBlurb || '').substring(0, 120);
+        
+        card.innerHTML = `
+            <div style="display:flex;gap:1.2rem;align-items:center;">
+                ${avatarHtml}
+                <div style="flex:1;">
+                    <div class="doctor-name">${escapeHtml(doc.name || '—')}</div>
+                    <div class="specialty-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="8" r="4"/><path d="M5 20v-2a7 7 0 0 1 14 0v2"/>
+                        </svg>
+                        ${escapeHtml(specLabel)}
+                    </div>
+                    <div class="doctor-bio">${escapeHtml(bio)}${bio.length > 100 ? '...' : ''}</div>
+                </div>
+            </div>
+            <button class="action-button" data-doctor-id="${escapeAttr(doc.authUid || doc.id)}" data-patient-id="${escapeAttr(currentUser?.uid || '')}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+                راسل الآن
+            </button>
+        `;
+        return card;
     }
 
-    // بناء قائمة الفلتر
-    function buildFilterDropdown() {
+    function escapeHtml(t) { return t ? String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])) : ''; }
+    function escapeAttr(t) { return String(t).replace(/"/g, '&quot;'); }
+
+    function buildDropdown() {
         const specs = [...new Set(allDoctors.map(d => d.specialty).filter(Boolean))];
         const items = ['all', ...specs];
-        
         filterDropdown.innerHTML = '';
         items.forEach(spec => {
             const div = document.createElement('div');
@@ -909,9 +456,7 @@
             div.dataset.spec = spec;
             div.innerHTML = `
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    ${spec === 'all' 
-                        ? '<circle cx="12" cy="12" r="10"></circle><path d="M12 8v8M8 12h8"></path>'
-                        : '<polyline points="20 6 9 17 4 12"></polyline>'}
+                    ${spec === 'all' ? '<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>' : '<polyline points="20 6 9 17 4 12"/>'}
                 </svg>
                 ${spec === 'all' ? 'كل التخصصات' : getSpecialtyName(spec)}
             `;
@@ -919,122 +464,126 @@
         });
     }
 
-    // ==================== المزامنة الفورية مع Firebase ====================
-    function startRealtimeSync() {
+    // المزامنة مع Firebase
+    function startSync() {
         const doctorsRef = ref(database, 'doctors');
-        
         onValue(doctorsRef, async (snapshot) => {
-            setSyncStatus('syncing', 'جاري تحديث البيانات...');
-            
-            const freshDoctors = [];
-            snapshot.forEach(child => {
-                const data = child.val();
-                if (data.status !== 'blocked') {
-                    freshDoctors.push({
-                        id: child.key,
-                        authUid: data.authUid || child.key,
-                        name: data.name || '',
-                        specialty: data.specialty || '',
-                        quickBlurb: data.quickBlurb || '',
-                        photoURL: data.photoURL || '',
-                        email: data.email || '',
-                        phone: data.phone || '',
-                        status: data.status || 'active'
+            setSyncStatus('syncing', 'تحديث...');
+            const fresh = [];
+            snapshot.forEach(c => {
+                const d = c.val();
+                if (d.status !== 'blocked') {
+                    fresh.push({
+                        id: c.key,
+                        authUid: d.authUid || c.key,
+                        name: d.name || '',
+                        specialty: d.specialty || '',
+                        quickBlurb: d.quickBlurb || '',
+                        photoURL: d.photoURL || '',
+                        email: d.email || '',
+                        phone: d.phone || ''
                     });
                 }
             });
-            
-            // تحديث الكاش المحلي
-            await cache.saveDoctors(freshDoctors);
-            await cache.setLastSync(Date.now());
-            
-            // تحديث الواجهة
-            allDoctors = freshDoctors;
-            buildFilterDropdown();
+            await turboCache.saveDoctors(fresh);
+            allDoctors = fresh;
+            buildDropdown();
             renderCards();
-            setSyncStatus('online', 'بيانات محدثة ✓');
-        }, (error) => {
-            console.warn('خطأ في المزامنة:', error);
-            setSyncStatus('syncing', 'غير متصل - عرض البيانات المخزنة');
+            setSyncStatus('online', 'محدثة الآن ✓');
+        }, (err) => {
+            console.warn(err);
+            setSyncStatus('syncing', 'غير متصل - البيانات المخزنة');
         });
     }
 
-    // ==================== تهيئة التطبيق ====================
-    async function initializeAppData() {
-        // 1. عرض البيانات المخزنة محلياً فوراً
-        const cachedDoctors = await cache.getDoctors();
-        if (cachedDoctors.length > 0) {
-            allDoctors = cachedDoctors;
-            buildFilterDropdown();
+    // التهيئة
+    async function init() {
+        // قراءة فورية من الذاكرة (إن وجدت)
+        const memData = Array.from(memoryCache.values());
+        if (memData.length) {
+            allDoctors = memData;
+            buildDropdown();
             renderCards();
-            setSyncStatus('online', 'تم التحميل من الذاكرة المحلية');
+            setSyncStatus('online', 'بيانات فورية');
         } else {
-            setSyncStatus('syncing', 'تحميل أول مرة...');
+            const cached = await turboCache.getDoctors();
+            if (cached.length) {
+                allDoctors = cached;
+                buildDropdown();
+                renderCards();
+                setSyncStatus('online', 'من الذاكرة المحلية');
+            } else {
+                setSyncStatus('syncing', 'تحميل أول مرة...');
+            }
         }
-        
-        // 2. بدء الاستماع للتغييرات من Firebase
-        startRealtimeSync();
+        startSync();
     }
 
-    // ==================== إعداد مستمعي الأحداث ====================
-    function setupListeners() {
-        // البحث
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            renderCards();
-        });
-        
-        // زر الفلتر
-        filterBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            filterDropdown.classList.toggle('show');
-            filterBtn.classList.toggle('active');
-        });
-        
-        document.addEventListener('click', () => {
-            filterDropdown.classList.remove('show');
-            filterBtn.classList.remove('active');
-        });
-        
-        // اختيار فلتر
-        filterDropdown.addEventListener('click', (e) => {
-            const option = e.target.closest('.filter-option');
-            if (!option) return;
-            filterSpecialty = option.dataset.spec;
+    // الأحداث
+    function setupEvents() {
+        searchInput.addEventListener('input', e => { searchQuery = e.target.value; renderCards(); });
+        filterBtn.addEventListener('click', e => { e.stopPropagation(); filterDropdown.classList.toggle('show'); filterBtn.classList.toggle('active'); });
+        document.addEventListener('click', () => { filterDropdown.classList.remove('show'); filterBtn.classList.remove('active'); });
+        filterDropdown.addEventListener('click', e => {
+            const opt = e.target.closest('.filter-option');
+            if (!opt) return;
+            filterSpecialty = opt.dataset.spec;
             filterLabel.textContent = filterSpecialty === 'all' ? 'كل التخصصات' : getSpecialtyName(filterSpecialty);
-            buildFilterDropdown();
+            buildDropdown();
             renderCards();
             filterDropdown.classList.remove('show');
             filterBtn.classList.remove('active');
         });
-        
-        // النقر على بطاقة للمراسلة
-        grid.addEventListener('click', (e) => {
+        grid.addEventListener('click', e => {
             const btn = e.target.closest('.action-button');
             if (!btn) return;
-            const doctorId = btn.dataset.doctorId;
-            const patientId = btn.dataset.patientId;
-            window.location.href = `conversation.html?doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(patientId)}`;
+            const dId = btn.dataset.doctorId;
+            const pId = btn.dataset.patientId;
+            window.location.href = `conversation.html?doctorId=${encodeURIComponent(dId)}&patientId=${encodeURIComponent(pId)}`;
         });
     }
 
-    // ==================== التحقق من المستخدم ====================
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, user => {
         if (user) {
             currentUser = user;
-            setupListeners();
-            initializeAppData();
+            setupEvents();
+            init();
         } else {
             window.location.href = 'patient-login.html';
         }
     });
+</script>
 
-    // دعم إضافي للأجهزة التي لا تدعم backdrop-filter
-    if (!CSS.supports('backdrop-filter', 'blur(10px)')) {
-        document.documentElement.style.setProperty('--surface', 'rgba(255, 255, 255, 0.98)');
+<!-- Service Worker بسيط للتخزين المؤقت (يجب إنشاء ملف sw.js) -->
+<script>
+    // إنشاء sw.js بشكل ديناميكي إذا لم يكن موجوداً (للتبسيط)
+    if ('serviceWorker' in navigator) {
+        const swCode = `
+            const CACHE_NAME = 'sakoon-v1';
+            const urlsToCache = [
+                '/',
+                '/patient-home.html',
+                '/patient-chats.html',
+                '/patient-agenda.html',
+                '/patient-tools.html',
+                '/conversation.html',
+                '/patient-call-listener.js'
+            ];
+            self.addEventListener('install', e => {
+                e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+            });
+            self.addEventListener('fetch', e => {
+                e.respondWith(
+                    caches.match(e.request).then(resp => resp || fetch(e.request))
+                );
+            });
+        `;
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(blob));
     }
 </script>
-<!-- ملفات إضافية للتطبيق (المكالمات) -->
+
+<!-- تحميل ملف المكالمات -->
 <script type="module" src="patient-call-listener.js"></script>
 </body>
 </html>
