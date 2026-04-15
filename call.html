@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>سُكُون — مكالمة (مريض)</title>
+    <title>سُكُون — مكالمة (Agora)</title>
 
+    <!-- الخطوط والأيقونات -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- مكتبة Agora Web SDK NG -->
+    <script src="https://download.agora.io/sdk/web/AgoraRTC_N-4.20.2.js"></script>
 
     <style>
         :root {
@@ -139,6 +143,7 @@
 <div id="toast" class="toast-message hidden"></div>
 
 <script type="module">
+    // ==================== تهيئة Firebase ====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, set, update, remove, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -158,7 +163,13 @@
     const auth = getAuth(app);
     feather.replace();
 
-    // DOM elements
+    // ==================== إعدادات Agora ====================
+    const AGORA_APP_ID = 'dcab084bed5243959e742a73de3c8f2d'; // معرف التطبيق الذي قمت بتزويدنا به
+    
+    // 🚨 في بيئة الإنتاج، يجب توليد الرمز من خادم خلفي (مثل Firebase Cloud Function) لضمان الأمان.
+    const TEMP_TOKEN = null; // سنقوم باستخدامه لاحقاً عبر دالة خلفية أو كقيمة مؤقتة للاختبار فقط
+
+    // ==================== عناصر DOM ====================
     const waitingScreen = document.getElementById('waitingScreen');
     const callInterface = document.getElementById('callInterface');
     const videoContainer = document.getElementById('videoContainer');
@@ -177,54 +188,27 @@
     const hangupBtn = document.getElementById('hangupBtn');
     const toastEl = document.getElementById('toast');
 
+    // ==================== متغيرات الجلسة ====================
     const urlParams = new URLSearchParams(window.location.search);
-    let callType = urlParams.get('type') || 'audio';
+    let callType = urlParams.get('type') || 'audio'; // 'audio' أو 'video'
     const doctorId = urlParams.get('doctorId');
     const patientId = urlParams.get('patientId');
-    const role = urlParams.get('role') || 'callee';
+    const role = urlParams.get('role') || 'caller'; // 'caller' أو 'callee'
     const callIdFromUrl = urlParams.get('callId');
 
     let localUid = null;
     let remoteUid = null;
     let callId = null;
-    let peerConnection = null;
-    let localStream = null;
+    let channelName = null; // سنستخدم معرف المكالمة كاسم للقناة
+    let agoraClient = null;
+    let localAudioTrack = null;
+    let localVideoTrack = null;
     let isAudioMuted = false;
     let isVideoOff = (callType === 'audio');
     let isCallActive = false;
-    let hasRemoteVideo = false;
-    let remoteAudioEl = null;
+    let remoteUsers = {};
 
-    let audioContext = null;
-    let ringtoneTimeout = null;
-    let currentOscillator = null;
-
-    // خوادم ICE محسّنة
-    const servers = {
-        iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { 
-                urls: 'turn:openrelay.metered.ca:80',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            },
-            { 
-                urls: 'turn:openrelay.metered.ca:443',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            },
-            { 
-                urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            }
-        ],
-        iceTransportPolicy: 'all',
-        iceCandidatePoolSize: 10
-    };
-
-    // دوال المساعدة والسجلات
+    // ==================== دوال مساعدة ====================
     function log(msg, data) { console.log(`[${role}] ${msg}`, data || ''); }
     function showToast(msg, duration = 3000) {
         toastEl.textContent = msg;
@@ -250,286 +234,203 @@
         if (uid === patientId) return 'المريض';
         return uid;
     }
-    function stopLocalStream() {
-        if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-    }
-    function stopRemoteAudio() {
-        if (remoteAudioEl) { remoteAudioEl.srcObject = null; remoteAudioEl.remove(); remoteAudioEl = null; }
-    }
 
-    // إلغاء مؤقت الرنين بشكل آمن
-    function clearRingtoneTimer() {
-        if (ringtoneTimeout) {
-            clearTimeout(ringtoneTimeout);
-            ringtoneTimeout = null;
-            log('⏱️ تم إلغاء مؤقت الرنين');
+    // ==================== دوال Agora الأساسية ====================
+    async function initAgoraAndJoin() {
+        try {
+            // 1. إنشاء عميل Agora
+            agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+            log('✅ تم إنشاء عميل Agora');
+
+            // 2. الاستماع لأحداث Agora
+            setupAgoraEventListeners();
+
+            // 3. الحصول على رمز مؤقت (في هذا المثال سنستخدم قيمة مؤقتة للاختبار، لكن في الإنتاج يجب جلبه من الخادم)
+            // ⚠️ تنبيه هام: يجب عليك إنشاء دالة Firebase Cloud Function لتوليد الرمز بشكل آمن.
+            const token = await fetchAgoraToken(channelName, localUid);
+            
+            // 4. الانضمام إلى القناة
+            await agoraClient.join(AGORA_APP_ID, channelName, token, localUid);
+            log(`✅ تم الانضمام إلى القناة: ${channelName}`);
+
+            // 5. إنشاء ونشر المسارات المحلية (الصوت والفيديو)
+            await createAndPublishLocalTracks();
+
+            // إخفاء شاشة الانتظار وإظهار واجهة المكالمة
+            showCallInterface();
+            
+        } catch (error) {
+            log('❌ فشل بدء المكالمة', error);
+            displayError(`فشل بدء المكالمة: ${error.message || 'خطأ غير معروف'}`);
         }
     }
 
-    // نغمة الرنين (432Hz)
-    function playTone() {
-        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioContext.state === 'suspended') audioContext.resume();
-        if (currentOscillator) { try { currentOscillator.stop(); } catch(e) {} }
-        const now = audioContext.currentTime;
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = 432;
-        gain.gain.setValueAtTime(0.12, now);
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        osc.start();
-        osc.stop(now + 1.2);
-        currentOscillator = osc;
-        osc.onended = () => { currentOscillator = null; };
-        ringtoneTimeout = setTimeout(() => playTone(), 2500);
-    }
-
-    function startRingtone() {
-        stopRingtone();
-        playTone();
-        ringtoneTimeout = setTimeout(() => {
-            log('⏰ انتهت مهلة 45 ثانية - لم يتم الرد');
-            stopRingtone();
-            if (!isCallActive) {
-                displayError('لم يتم الرد على المكالمة');
-                endCall();
+    function setupAgoraEventListeners() {
+        // عند انضمام مستخدم جديد
+        agoraClient.on('user-published', async (user, mediaType) => {
+            await agoraClient.subscribe(user, mediaType);
+            log(`📡 تم الاشتراك في مسار ${mediaType} من المستخدم ${user.uid}`);
+            
+            if (mediaType === 'video') {
+                const remoteVideoTrack = user.videoTrack;
+                remoteVideoTrack.play('remoteVideo');
+                videoContainer.classList.remove('hidden');
+                audioOnlyUI.classList.add('hidden');
+                callStatusText.textContent = 'متصل • فيديو';
+            } else if (mediaType === 'audio') {
+                const remoteAudioTrack = user.audioTrack;
+                remoteAudioTrack.play();
             }
-        }, 45000);
+            remoteUsers[user.uid] = user;
+            callStatusText.textContent = 'متصل';
+        });
+
+        // عند مغادرة مستخدم
+        agoraClient.on('user-unpublished', (user, mediaType) => {
+            log(`👋 المستخدم ${user.uid} أوقف نشر ${mediaType}`);
+            if (mediaType === 'video') {
+                videoContainer.classList.add('hidden');
+                audioOnlyUI.classList.remove('hidden');
+                callStatusText.textContent = 'متصل • الصوت فقط';
+            }
+        });
+        
+        agoraClient.on('user-left', (user) => {
+            log(`🚪 المستخدم ${user.uid} غادر القناة`);
+            delete remoteUsers[user.uid];
+            if (Object.keys(remoteUsers).length === 0) {
+                callStatusText.textContent = 'في انتظار الطرف الآخر...';
+                videoContainer.classList.add('hidden');
+                audioOnlyUI.classList.remove('hidden');
+            }
+        });
+
+        agoraClient.on('connection-state-change', (curState, prevState) => {
+            log(`🔄 حالة الاتصال تغيرت من ${prevState} إلى ${curState}`);
+            if (curState === 'DISCONNECTED') {
+                displayError('انقطع الاتصال بالخادم');
+            }
+        });
     }
 
-    function stopRingtone() {
-        clearRingtoneTimer();
-        if (currentOscillator) { try { currentOscillator.stop(); } catch(e) {} currentOscillator = null; }
+    async function fetchAgoraToken(channel, uid) {
+        // 🚨 في بيئة الإنتاج، يجب استبدال هذا بدالة تستدعي خادمك الخلفي (Firebase Cloud Function)
+        // للحصول على رمز مؤمن. استخدام TEMP_TOKEN مباشرة غير آمن!
+        if (TEMP_TOKEN) {
+            return TEMP_TOKEN;
+        }
+        
+        // مثال: استدعاء دالة Firebase Cloud Function
+        // const getToken = httpsCallable(functions, 'getAgoraToken');
+        // const result = await getToken({ channelName: channel, uid: uid });
+        // return result.data.token;
+        
+        // حالياً، سنعيد null ونعتمد على إعدادات الأمان المنخفضة للتطوير (غير مستحسن)
+        log('⚠️ تحذير: لم يتم توفير رمز. تأكد من تعطيل "شهادة المصادقة" في مشروع Agora للتطوير المحلي.');
+        return null;
     }
 
-    function updateUIForVideo(hasRemoteVideoTrack) {
-        hasRemoteVideo = hasRemoteVideoTrack;
-        if (hasRemoteVideo || !isVideoOff) {
+    async function createAndPublishLocalTracks() {
+        // إنشاء مسار الصوت
+        localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        
+        // إنشاء مسار الفيديو إذا كانت المكالمة فيديو
+        if (callType === 'video') {
+            localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+            localVideoTrack.play('localVideo');
             videoContainer.classList.remove('hidden');
             audioOnlyUI.classList.add('hidden');
         } else {
             videoContainer.classList.add('hidden');
             audioOnlyUI.classList.remove('hidden');
         }
-    }
 
-    function createPeerConnection() {
-        const pc = new RTCPeerConnection(servers);
-        
-        pc.onicecandidate = (e) => {
-            if (e.candidate) {
-                log('🧊 إرسال مرشح ICE', e.candidate);
-                sendSignalingMessage({ type: 'candidate', candidate: e.candidate });
-            } else {
-                log('✅ انتهى جمع مرشحات ICE');
-            }
-        };
-
-        pc.oniceconnectionstatechange = () => {
-            log('🔄 حالة ICE:', pc.iceConnectionState);
-            if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
-                callStatusText.textContent = 'متصل';
-                isCallActive = true;
-                clearRingtoneTimer();
-            }
-        };
-
-        pc.onconnectionstatechange = () => {
-            log('📡 حالة الاتصال:', pc.connectionState);
-            switch (pc.connectionState) {
-                case 'connected':
-                    callStatusText.textContent = 'متصل';
-                    isCallActive = true;
-                    clearRingtoneTimer();
-                    break;
-                case 'disconnected':
-                    callStatusText.textContent = 'انقطع الاتصال - جاري إعادة المحاولة...';
-                    break;
-                case 'failed':
-                    displayError('فشل الاتصال. قد يكون هناك مشكلة في الشبكة.');
-                    break;
-                case 'closed':
-                    callStatusText.textContent = 'تم إنهاء المكالمة';
-                    break;
-            }
-        };
-
-        pc.ontrack = (e) => {
-            log('🎥 ontrack', e.track.kind, e.streams.length);
-            if (e.track.kind === 'video') {
-                remoteVideo.srcObject = e.streams[0];
-                updateUIForVideo(true);
-                remoteVideo.play().catch(e => log('تحذير: تشغيل الفيديو البعيد يتطلب تفاعل المستخدم'));
-            } else if (e.track.kind === 'audio') {
-                stopRemoteAudio();
-                remoteAudioEl = new Audio();
-                remoteAudioEl.srcObject = e.streams[0];
-                remoteAudioEl.autoplay = true;
-                remoteAudioEl.playsinline = true;
-                document.body.appendChild(remoteAudioEl);
-                remoteAudioEl.play().catch(e => {
-                    log('⚠️ تشغيل الصوت البعيد يتطلب تفاعل المستخدم');
-                    const playOnInteraction = () => {
-                        remoteAudioEl.play().catch(() => {});
-                        document.removeEventListener('click', playOnInteraction);
-                        document.removeEventListener('touchstart', playOnInteraction);
-                    };
-                    document.addEventListener('click', playOnInteraction);
-                    document.addEventListener('touchstart', playOnInteraction);
-                });
-            }
-            clearRingtoneTimer();
-            waitingScreen.classList.add('hidden');
-            callStatusText.textContent = 'متصل';
-            isCallActive = true;
-            hideError();
-        };
-
-        return pc;
-    }
-
-    const callRef = () => ref(db, `calls/${callId}`);
-    function sendSignalingMessage(msg) {
-        const roleKey = role === 'caller' ? 'caller' : 'callee';
-        set(ref(db, `calls/${callId}/signaling/${roleKey}`), msg);
-    }
-
-    function listenForSignaling() {
-        const otherRole = role === 'caller' ? 'callee' : 'caller';
-        const otherSignalingRef = ref(db, `calls/${callId}/signaling/${otherRole}`);
-        
-        onValue(otherSignalingRef, async (snap) => {
-            const msg = snap.val();
-            if (!msg) return;
-            log(`📨 رسالة إشارات من ${otherRole}:`, msg.type);
-            
-            try {
-                if (msg.type === 'offer' && role === 'callee') {
-                    await peerConnection.setRemoteDescription(new RTCSessionDescription(msg));
-                    const answer = await peerConnection.createAnswer();
-                    await peerConnection.setLocalDescription(answer);
-                    sendSignalingMessage(answer);
-                } else if (msg.type === 'answer' && role === 'caller') {
-                    await peerConnection.setRemoteDescription(new RTCSessionDescription(msg));
-                    clearRingtoneTimer();
-                    waitingStatus.textContent = 'تم الرد، جاري تأسيس الاتصال...';
-                } else if (msg.type === 'candidate') {
-                    await peerConnection.addIceCandidate(new RTCIceCandidate(msg.candidate));
-                }
-            } catch (e) {
-                log('❌ خطأ في معالجة الإشارات:', e);
-            }
-        });
-    }
-
-    async function startCallProcess() {
-        try {
-            const constraints = {
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true,
-                    channelCount: 1,
-                    sampleRate: 48000
-                },
-                video: callType === 'video' ? {
-                    width: { ideal: 1280, max: 1920 },
-                    height: { ideal: 720, max: 1080 },
-                    frameRate: { ideal: 24, max: 30 },
-                    facingMode: 'user'
-                } : false
-            };
-            
-            localStream = await navigator.mediaDevices.getUserMedia(constraints);
-            log('✅ تم الحصول على الوسائط المحلية');
-            
-            if (callType === 'video') {
-                localVideo.srcObject = localStream;
-                updateUIForVideo(false);
-            }
-            
-            peerConnection = createPeerConnection();
-            
-            localStream.getTracks().forEach(track => {
-                peerConnection.addTrack(track, localStream);
-                log(`➕ أضيف المسار: ${track.kind}`);
-            });
-            
-            listenForSignaling();
-            
-            if (role === 'caller') {
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                sendSignalingMessage(offer);
-                waitingStatus.textContent = 'في انتظار الرد...';
-                startRingtone();
-            } else {
-                waitingStatus.textContent = 'في انتظار الاتصال...';
-            }
-            
-            showCallInterface();
-        } catch (e) {
-            log('❌ فشل بدء المكالمة', e);
-            let errorMsg = 'تعذر الوصول إلى الميكروفون/الكاميرا.';
-            if (e.name === 'NotAllowedError') errorMsg = 'تم رفض الإذن بالوصول إلى الميكروفون/الكاميرا.';
-            else if (e.name === 'NotFoundError') errorMsg = 'لم يتم العثور على كاميرا أو ميكروفون.';
-            displayError(errorMsg);
-        }
+        // نشر المسارات
+        const tracks = [localAudioTrack];
+        if (localVideoTrack) tracks.push(localVideoTrack);
+        await agoraClient.publish(tracks);
+        log('✅ تم نشر المسارات المحلية');
     }
 
     function showCallInterface() {
         waitingScreen.classList.add('hidden');
         callInterface.classList.remove('hidden');
         callInterface.style.display = 'flex';
-        if (callType === 'audio') {
-            videoContainer.classList.add('hidden');
-            audioOnlyUI.classList.remove('hidden');
-        }
     }
 
-    async function endCall() {
+    async function leaveCall() {
         log('📴 إنهاء المكالمة');
-        stopRingtone();
-        if (audioContext) { audioContext.close(); audioContext = null; }
-        stopLocalStream();
-        stopRemoteAudio();
-        if (peerConnection) {
-            peerConnection.close();
-            peerConnection = null;
+        
+        // إيقاف المسارات المحلية
+        if (localAudioTrack) {
+            localAudioTrack.stop();
+            localAudioTrack.close();
+            localAudioTrack = null;
         }
+        if (localVideoTrack) {
+            localVideoTrack.stop();
+            localVideoTrack.close();
+            localVideoTrack = null;
+        }
+
+        // مغادرة القناة
+        if (agoraClient) {
+            await agoraClient.leave();
+            agoraClient = null;
+        }
+
+        // تحديث حالة المكالمة في Firebase
         if (callId) {
-            try { await remove(callRef()); } catch (e) {}
+            try {
+                await update(ref(db, `calls/${callId}`), { status: 'ended' });
+            } catch (e) {}
         }
+
+        // العودة إلى صفحة المحادثة
         const returnUrl = role === 'caller' ? `doctor-conversation.html?patientId=${patientId}` : `conversation.html?doctorId=${doctorId}`;
         window.location.href = returnUrl;
     }
 
-    // أحداث الأزرار
+    // ==================== أحداث الأزرار ====================
     retryButton.addEventListener('click', () => window.location.reload());
     toggleMicBtn.addEventListener('click', () => {
-        if (localStream) {
-            const t = localStream.getAudioTracks()[0];
-            if (t) { t.enabled = !t.enabled; isAudioMuted = !t.enabled; }
-            toggleMicBtn.classList.toggle('active', isAudioMuted);
-            toggleMicBtn.innerHTML = isAudioMuted ? '<i data-feather="mic-off" style="width:22px;height:22px"></i>' : '<i data-feather="mic" style="width:22px;height:22px"></i>';
+        if (localAudioTrack) {
+            const enabled = !localAudioTrack.enabled;
+            localAudioTrack.setEnabled(enabled);
+            isAudioMuted = !enabled;
+            toggleMicBtn.classList.toggle('active', !enabled);
+            toggleMicBtn.innerHTML = !enabled ? '<i data-feather="mic-off" style="width:22px;height:22px"></i>' : '<i data-feather="mic" style="width:22px;height:22px"></i>';
             feather.replace();
         }
     });
     toggleVideoBtn.addEventListener('click', () => {
-        if (!localStream || callType === 'audio') return showToast('المكالمة صوتية');
-        const t = localStream.getVideoTracks()[0];
-        if (t) { t.enabled = !t.enabled; isVideoOff = !t.enabled; }
-        toggleVideoBtn.classList.toggle('active', isVideoOff);
-        toggleVideoBtn.innerHTML = isVideoOff ? '<i data-feather="video-off" style="width:22px;height:22px"></i>' : '<i data-feather="video" style="width:22px;height:22px"></i>';
-        feather.replace();
-        updateUIForVideo(hasRemoteVideo);
+        if (localVideoTrack) {
+            const enabled = !localVideoTrack.enabled;
+            localVideoTrack.setEnabled(enabled);
+            isVideoOff = !enabled;
+            toggleVideoBtn.classList.toggle('active', !enabled);
+            toggleVideoBtn.innerHTML = !enabled ? '<i data-feather="video-off" style="width:22px;height:22px"></i>' : '<i data-feather="video" style="width:22px;height:22px"></i>';
+            feather.replace();
+            
+            if (!enabled) {
+                videoContainer.classList.add('hidden');
+                audioOnlyUI.classList.remove('hidden');
+            } else if (remoteUsers && Object.keys(remoteUsers).length > 0) {
+                videoContainer.classList.remove('hidden');
+                audioOnlyUI.classList.add('hidden');
+            }
+        }
     });
-    hangupBtn.addEventListener('click', endCall);
+    hangupBtn.addEventListener('click', leaveCall);
 
+    // ==================== التهيئة الرئيسية ====================
     async function initPage() {
-        localUid = auth.currentUser.uid;
+        const user = auth.currentUser;
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+        localUid = user.uid;
         remoteUid = role === 'caller' ? patientId : doctorId;
         const remoteName = formatName(remoteUid);
         remoteNameEl.textContent = remoteName;
@@ -537,64 +438,58 @@
         waitingName.textContent = remoteName;
         updateWaitingStatus('جاري التهيئة...');
 
+        // إنشاء معرف مكالمة فريد (سيكون هو نفسه اسم القناة في Agora)
         if (role === 'caller') {
             callId = `${doctorId}_${patientId}_${Date.now()}`;
-            await set(callRef(), { 
-                caller: doctorId, 
-                callee: patientId, 
-                type: callType, 
-                status: 'ringing', 
-                createdAt: Date.now() 
+            channelName = callId;
+            
+            // إنشاء سجل المكالمة في Firebase
+            await set(ref(db, `calls/${callId}`), {
+                caller: doctorId,
+                callee: patientId,
+                type: callType,
+                status: 'ringing',
+                channelName: channelName,
+                createdAt: Date.now()
             });
             
+            // الاستماع لتحديثات حالة المكالمة
             onValue(ref(db, `calls/${callId}/status`), (snap) => {
                 const status = snap.val();
-                log('📊 تغير حالة المكالمة إلى:', status);
                 if (status === 'rejected') {
-                    stopRingtone();
                     displayError('تم رفض المكالمة');
-                    setTimeout(endCall, 2000);
+                    setTimeout(leaveCall, 2000);
                 } else if (status === 'answered') {
-                    stopRingtone();
                     waitingStatus.textContent = 'تم الرد، جاري الاتصال...';
                 }
             });
             
-            startCallProcess();
+            // بدء الاتصال بـ Agora
+            await initAgoraAndJoin();
+            
         } else {
+            // دور المستقبل (callee)
             if (callIdFromUrl) {
                 callId = callIdFromUrl;
-                const snap = await get(callRef());
-                if (!snap.exists()) {
+                channelName = callId;
+                const snap = await get(ref(db, `calls/${callId}`));
+                if (snap.exists()) {
+                    const callData = snap.val();
+                    callType = callData.type || 'audio';
+                    isVideoOff = (callType === 'audio');
+                    
+                    // تحديث الحالة إلى "تم الرد"
+                    if (callData.status === 'ringing') {
+                        await update(ref(db, `calls/${callId}`), { status: 'answered' });
+                    }
+                    
+                    await initAgoraAndJoin();
+                } else {
                     displayError('المكالمة غير موجودة');
-                    setTimeout(() => window.history.back(), 2000);
-                    return;
-                }
-                const callStatus = snap.val().status;
-                if (callStatus === 'rejected' || callStatus === 'ended') {
-                    displayError('انتهت المكالمة أو تم رفضها');
-                    setTimeout(() => window.history.back(), 2000);
-                    return;
-                }
-                if (callStatus === 'ringing') {
-                    await update(callRef(), { status: 'answered' });
                 }
             } else {
-                const snap = await get(ref(db, 'calls'));
-                if (snap.exists()) {
-                    for (const id in snap.val()) {
-                        if (snap.val()[id].callee === patientId && snap.val()[id].status === 'ringing') {
-                            callId = id;
-                            callType = snap.val()[id].type || 'audio';
-                            isVideoOff = (callType === 'audio');
-                            break;
-                        }
-                    }
-                }
-                if (!callId) { displayError('لا توجد مكالمة واردة'); return; }
-                await update(callRef(), { status: 'answered' });
+                displayError('معرف المكالمة مفقود');
             }
-            startCallProcess();
         }
     }
 
@@ -604,12 +499,12 @@
     });
 
     window.addEventListener('beforeunload', () => {
-        stopRingtone();
-        if (audioContext) audioContext.close();
-        stopLocalStream();
-        stopRemoteAudio();
-        if (peerConnection) peerConnection.close();
-        if (callId) remove(callRef());
+        if (agoraClient) {
+            agoraClient.leave();
+        }
+        if (callId) {
+            update(ref(db, `calls/${callId}`), { status: 'ended' });
+        }
     });
 </script>
 </body>
