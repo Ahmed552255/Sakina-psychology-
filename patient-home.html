@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>سُكُون — رحلة العناية النفسية</title>
+    <title>سُكُون | رحلة العناية النفسية</title>
 
-    <!-- تحسينات مسبقة للاتصال بخطوط Google (مع استراتيجية عرض فورية) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <!-- تحميل الخط مع استراتيجية العرض الفوري (font-display: swap) لمنع حجب النص -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- أيقونات SVG مدمجة خفيفة بدلاً من مكتبات خارجية ثقيلة -->
+    <!-- أيقونات SVG أساسية مدمجة لتجنب تحميل مكتبة خارجية ثقيلة -->
     <style>
-        /* ==================== الأساسيات: متغيرات وأداء فائق ==================== */
+        /* ==================== إعدادات متقدمة للأداء والجمال ==================== */
         :root {
-            /* لوحة ألوان نفسية مريحة (ثابتة للسرعة) */
+            /* لوحة ألوان نفسية مريحة (مستوحاة من الطبيعة) */
             --bg-primary: #f6faf9;
             --bg-secondary: #eef5f4;
-            --surface: rgba(255, 255, 255, 0.88);
+            --surface: rgba(255, 255, 255, 0.85);
             --surface-solid: #ffffff;
             --primary-50: #e6f3f3;
             --primary-100: #cce7e7;
@@ -45,17 +45,18 @@
             --radius-element: 18px;
             --radius-full: 9999px;
             
-            --transition-fast: 0.12s cubic-bezier(0.2, 0, 0, 1);
+            --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
             
-            /* دعم الوضع الليلي التلقائي */
+            /* دعم الوضع الليلي */
             color-scheme: light;
         }
 
+        /* الوضع الليلي التلقائي (بناءً على إعدادات النظام) */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-primary: #0a1818;
                 --bg-secondary: #0f2222;
-                --surface: rgba(18, 30, 30, 0.88);
+                --surface: rgba(18, 30, 30, 0.85);
                 --surface-solid: #142424;
                 --text-primary: #e3f0f0;
                 --text-secondary: #b3d1d1;
@@ -68,7 +69,7 @@
             }
         }
 
-        /* إعادة ضبط سريعة ومتوافقة مع الأجهزة الضعيفة */
+        /* إعادة ضبط سلسة ومتوافقة مع الأجهزة الضعيفة */
         *, *::before, *::after {
             margin: 0;
             padding: 0;
@@ -93,7 +94,7 @@
             transition: background 0.2s ease;
         }
 
-        /* خلفية زخرفية خفيفة جداً (لا تؤثر على الأداء) */
+        /* خلفية زخرفية ناعمة جداً (لا تؤثر على الأداء) */
         body::before {
             content: '';
             position: fixed;
@@ -181,7 +182,7 @@
             color: var(--text-primary);
             outline: none;
             box-shadow: var(--shadow-xs);
-            transition: var(--transition-fast);
+            transition: var(--transition);
         }
 
         .search-input:focus {
@@ -224,7 +225,7 @@
             color: var(--text-secondary);
             cursor: pointer;
             box-shadow: var(--shadow-xs);
-            transition: var(--transition-fast);
+            transition: var(--transition);
             white-space: nowrap;
             flex-shrink: 0;
         }
@@ -254,7 +255,7 @@
             z-index: 100;
             display: none;
             transform-origin: top left;
-            animation: dropdownFade 0.15s ease;
+            animation: dropdownFade 0.18s ease;
         }
 
         @keyframes dropdownFade {
@@ -288,15 +289,14 @@
             color: white;
         }
 
-        /* ==================== شبكة البطاقات (محسنة للأداء الفائق) ==================== */
+        /* ==================== شبكة البطاقات (محسنة للأداء) ==================== */
         .cards-grid {
             display: flex;
             flex-direction: column;
             gap: 18px;
-            /* سحر الأداء: تأجيل رسم العناصر خارج الشاشة */
+            /* هذه الخاصية السحرية تخبر المتصفح بأنه يمكن تأجيل رسم العناصر خارج الشاشة */
             content-visibility: auto;
             contain-intrinsic-size: auto 200px;
-            contain: layout style paint;
         }
 
         .doctor-card {
@@ -312,7 +312,7 @@
             gap: 1.2rem;
             transition: transform 0.15s, box-shadow 0.2s;
             will-change: transform;
-            contain: layout style;
+            /* تحسين للشاشات الضعيفة: إلغاء تأثير الـ blur إذا كان الجهاز بطيئاً */
         }
 
         @media (prefers-reduced-motion: no-preference) {
@@ -344,7 +344,6 @@
             font-weight: 800;
             color: white;
             text-transform: uppercase;
-            contain: strict;
         }
 
         .avatar-img {
@@ -352,6 +351,7 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            /* تحميل كسول للصور لتسريع التحميل الأولي */
             loading: lazy;
         }
 
@@ -408,7 +408,7 @@
             font-size: 1rem;
             cursor: pointer;
             box-shadow: 0 8px 18px rgba(42, 136, 136, 0.25);
-            transition: var(--transition-fast);
+            transition: var(--transition);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -417,7 +417,7 @@
             box-shadow: 0 4px 10px rgba(42, 136, 136, 0.3);
         }
 
-        /* ==================== الهياكل العظمية (Skeletons) ==================== */
+        /* ==================== حالات التحميل والخطأ ==================== */
         .skeleton-card {
             background: var(--surface);
             border-radius: var(--radius-card);
@@ -425,7 +425,6 @@
             display: flex;
             gap: 1.2rem;
             border: 1.5px solid var(--primary-100);
-            contain: layout style;
         }
 
         .skeleton-avatar {
@@ -469,7 +468,7 @@
             opacity: 0.7;
         }
 
-        /* ==================== مؤشر المزامنة ==================== */
+        /* ==================== شريط المزامنة ==================== */
         .sync-indicator {
             display: inline-flex;
             align-items: center;
@@ -540,7 +539,7 @@
             color: var(--text-tertiary);
             font-weight: 600;
             font-size: 0.7rem;
-            transition: var(--transition-fast);
+            transition: var(--transition);
         }
 
         .nav-link.active {
@@ -548,7 +547,7 @@
             background: var(--primary-50);
         }
 
-        /* ==================== أيقونات SVG مدمجة (خفيفة جداً) ==================== */
+        /* ==================== أيقونات SVG مدمجة (خفيفة) ==================== */
         .icon {
             width: 22px;
             height: 22px;
@@ -581,24 +580,18 @@
                 font-size: 1.1rem;
             }
         }
-
-        /* تحسينات إضافية للأجهزة التي لا تدعم backdrop-filter */
-        @supports not (backdrop-filter: blur(10px)) {
-            :root {
-                --surface: rgba(255, 255, 255, 0.98);
-            }
-        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- رأس الصفحة بتصميم "سُكُون" الأصلي -->
+    <!-- رأس الصفحة -->
     <header class="app-header">
         <div class="logo">
             <span class="logo-main">سُ</span>
             <span class="logo-sub">كُون</span>
         </div>
+        <!-- موجة صغيرة للزينة -->
         <svg class="header-wave" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 10 Q 25 0, 50 10 T 100 10" stroke="currentColor" stroke-width="2" fill="none"/>
         </svg>
@@ -633,9 +626,9 @@
         </div>
     </div>
 
-    <!-- حاوية البطاقات (ستُملأ ديناميكيًا) -->
+    <!-- حاوية البطاقات (سيتم تعبئتها ديناميكيًا) -->
     <div class="cards-grid" id="cardsGrid">
-        <!-- هيكل عظمي أولي (سيظهر فورًا) -->
+        <!-- هيكل عظمي أولي للتحميل -->
         <div class="skeleton-card">
             <div class="skeleton-avatar"></div>
             <div class="skeleton-lines">
@@ -704,7 +697,7 @@
 <script type="module">
     // ==================== استيراد Firebase (محسن) ====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -721,19 +714,17 @@
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== إدارة التخزين المحلي (IndexedDB) متطورة ====================
-    class PersistentCache {
+    // ==================== إدارة التخزين المحلي (IndexedDB) ====================
+    class LocalCache {
         constructor() {
             this.db = null;
             this.ready = false;
-            this.DB_NAME = 'SakoonPersistentCache';
-            this.DB_VERSION = 2;
         }
         
         async init() {
             if(this.ready) return;
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+                const request = indexedDB.open('SakoonCache', 1);
                 request.onerror = () => reject(request.error);
                 request.onsuccess = () => {
                     this.db = request.result;
@@ -742,17 +733,11 @@
                 };
                 request.onupgradeneeded = (event) => {
                     const db = event.target.result;
-                    // تخزين الأطباء
                     if(!db.objectStoreNames.contains('doctors')) {
                         db.createObjectStore('doctors', { keyPath: 'id' });
                     }
-                    // تخزين البيانات الوصفية (مثل وقت آخر مزامنة)
                     if(!db.objectStoreNames.contains('meta')) {
                         db.createObjectStore('meta', { keyPath: 'key' });
-                    }
-                    // مخزن للمزامنة المعلقة (في حالة استخدام مزامنة يدوية)
-                    if(!db.objectStoreNames.contains('pendingSync')) {
-                        db.createObjectStore('pendingSync', { autoIncrement: true });
                     }
                 };
             });
@@ -804,7 +789,7 @@
         }
     }
 
-    const cache = new PersistentCache();
+    const cache = new LocalCache();
 
     // ==================== الدوال المساعدة ====================
     const specialtyLabels = {
@@ -833,8 +818,6 @@
     let filterSpecialty = 'all';
     let searchQuery = '';
     let currentUser = null;
-    let renderPending = false;
-    let lastRenderTimestamp = 0;
 
     // تحديث واجهة المزامنة
     function setSyncStatus(status, message) {
@@ -844,90 +827,82 @@
         syncMessage.textContent = message;
     }
 
-    // عرض البطاقات (محسّن مع DocumentFragment وتقليل إعادة الرسم)
+    // عرض البطاقات (محسّن مع DocumentFragment)
     function renderCards() {
-        // منع تكدس طلبات الرسم (debounce)
-        if (renderPending) return;
-        renderPending = true;
-        
-        // استخدام requestAnimationFrame لمزامنة الرسم مع دورة تحديث الشاشة
-        requestAnimationFrame(() => {
-            const query = searchQuery.toLowerCase().trim();
-            const filtered = allDoctors.filter(doc => {
-                if (filterSpecialty !== 'all' && doc.specialty !== filterSpecialty) return false;
-                if (!query) return true;
-                return (doc.name || '').toLowerCase().includes(query) ||
-                       getSpecialtyName(doc.specialty).includes(query);
-            });
-
-            if (filtered.length === 0) {
-                grid.innerHTML = '';
-                emptyState.style.display = 'block';
-                renderPending = false;
-                return;
-            }
-            emptyState.style.display = 'none';
-
-            const fragment = document.createDocumentFragment();
-            filtered.forEach(doc => {
-                const card = document.createElement('div');
-                card.className = 'doctor-card';
-                
-                const avatarContent = doc.photoURL 
-                    ? `<img src="${escapeAttr(doc.photoURL)}" alt="${escapeAttr(doc.name)}" class="avatar-img" loading="lazy">`
-                    : (doc.name || 'د').charAt(0).toUpperCase();
-                
-                const avatarHtml = doc.photoURL 
-                    ? `<div class="avatar-wrapper">${avatarContent}</div>`
-                    : `<div class="avatar-wrapper">${avatarContent}</div>`;
-                
-                const specLabel = getSpecialtyName(doc.specialty);
-                const bio = (doc.quickBlurb || '').substring(0, 120);
-                
-                card.innerHTML = `
-                    <div class="card-header">
-                        ${avatarHtml}
-                        <div class="doctor-info">
-                            <div class="doctor-name">${escapeHtml(doc.name || '—')}</div>
-                            <div class="specialty-badge">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <circle cx="12" cy="8" r="4"></circle><path d="M5 20v-2a7 7 0 0 1 14 0v2"></path>
-                                </svg>
-                                ${escapeHtml(specLabel)}
-                            </div>
-                            <div class="doctor-bio">${escapeHtml(bio)}${bio.length > 100 ? '...' : ''}</div>
-                        </div>
-                    </div>
-                    <button class="action-button" data-doctor-id="${escapeAttr(doc.authUid || doc.id)}" data-patient-id="${escapeAttr(currentUser?.uid || '')}">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                        </svg>
-                        راسل الآن
-                    </button>
-                `;
-                fragment.appendChild(card);
-            });
-            
-            grid.innerHTML = '';
-            grid.appendChild(fragment);
-            renderPending = false;
-            lastRenderTimestamp = performance.now();
+        const query = searchQuery.toLowerCase().trim();
+        const filtered = allDoctors.filter(doc => {
+            if (filterSpecialty !== 'all' && doc.specialty !== filterSpecialty) return false;
+            if (!query) return true;
+            return (doc.name || '').toLowerCase().includes(query) ||
+                   getSpecialtyName(doc.specialty).includes(query);
         });
+
+        if (filtered.length === 0) {
+            grid.innerHTML = '';
+            emptyState.style.display = 'block';
+            return;
+        }
+        emptyState.style.display = 'none';
+
+        const fragment = document.createDocumentFragment();
+        filtered.forEach(doc => {
+            const card = document.createElement('div');
+            card.className = 'doctor-card';
+            
+            const avatarContent = doc.photoURL 
+                ? `<img src="${escapeAttr(doc.photoURL)}" alt="${escapeAttr(doc.name)}" class="avatar-img" loading="lazy">`
+                : (doc.name || 'د').charAt(0).toUpperCase();
+            
+            const avatarHtml = doc.photoURL 
+                ? `<div class="avatar-wrapper">${avatarContent}</div>`
+                : `<div class="avatar-wrapper">${avatarContent}</div>`;
+            
+            const specLabel = getSpecialtyName(doc.specialty);
+            const bio = (doc.quickBlurb || '').substring(0, 120);
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    ${avatarHtml}
+                    <div class="doctor-info">
+                        <div class="doctor-name">${escapeHtml(doc.name || '—')}</div>
+                        <div class="specialty-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="8" r="4"></circle><path d="M5 20v-2a7 7 0 0 1 14 0v2"></path>
+                            </svg>
+                            ${escapeHtml(specLabel)}
+                        </div>
+                        <div class="doctor-bio">${escapeHtml(bio)}${bio.length > 100 ? '...' : ''}</div>
+                    </div>
+                </div>
+                <button class="action-button" data-doctor-id="${escapeAttr(doc.authUid || doc.id)}" data-patient-id="${escapeAttr(currentUser?.uid || '')}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    </svg>
+                    راسل الآن
+                </button>
+            `;
+            fragment.appendChild(card);
+        });
+        
+        grid.innerHTML = '';
+        grid.appendChild(fragment);
     }
 
-    // دوال الحماية (سريعة وآمنة)
-    const escapeHtml = (text) => {
+    // دوال الحماية
+    function escapeHtml(text) {
         if (!text) return '';
         return String(text).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-    };
-    const escapeAttr = (text) => String(text).replace(/"/g, '&quot;');
+    }
+    function escapeAttr(text) {
+        return String(text).replace(/"/g, '&quot;');
+    }
 
-    // بناء قائمة الفلتر (باستخدام DocumentFragment)
+    // بناء قائمة الفلتر
     function buildFilterDropdown() {
         const specs = [...new Set(allDoctors.map(d => d.specialty).filter(Boolean))];
         const items = ['all', ...specs];
         
-        const fragment = document.createDocumentFragment();
+        filterDropdown.innerHTML = '';
         items.forEach(spec => {
             const div = document.createElement('div');
             div.className = 'filter-option' + (filterSpecialty === spec ? ' active' : '');
@@ -940,19 +915,17 @@
                 </svg>
                 ${spec === 'all' ? 'كل التخصصات' : getSpecialtyName(spec)}
             `;
-            fragment.appendChild(div);
+            filterDropdown.appendChild(div);
         });
-        filterDropdown.innerHTML = '';
-        filterDropdown.appendChild(fragment);
     }
 
-    // ==================== المزامنة الفائقة: كاش أولاً، ثم Firebase بصمت ====================
-    async function startRealtimeSync() {
+    // ==================== المزامنة الفورية مع Firebase ====================
+    function startRealtimeSync() {
         const doctorsRef = ref(database, 'doctors');
         
-        // 1. جلب أولي سريع (مرة واحدة) لتحديث الكاش بعد عرض الكاش
-        try {
-            const snapshot = await get(doctorsRef);
+        onValue(doctorsRef, async (snapshot) => {
+            setSyncStatus('syncing', 'جاري تحديث البيانات...');
+            
             const freshDoctors = [];
             snapshot.forEach(child => {
                 const data = child.val();
@@ -975,62 +948,20 @@
             await cache.saveDoctors(freshDoctors);
             await cache.setLastSync(Date.now());
             
-            // تحديث الواجهة فقط إذا اختلفت البيانات (تقليل الرسم غير الضروري)
-            if (JSON.stringify(allDoctors) !== JSON.stringify(freshDoctors)) {
-                allDoctors = freshDoctors;
-                buildFilterDropdown();
-                renderCards();
-                setSyncStatus('online', 'بيانات محدثة ✓');
-            } else {
-                setSyncStatus('online', 'جاهز');
-            }
-        } catch (error) {
-            console.warn('تعذر الجلب الأولي من Firebase:', error);
-            setSyncStatus('syncing', 'عرض البيانات المخزنة');
-        }
-        
-        // 2. الاستماع للتغييرات اللاحقة
-        onValue(doctorsRef, async (snapshot) => {
-            setSyncStatus('syncing', 'جاري تحديث البيانات...');
-            
-            const freshDoctors = [];
-            snapshot.forEach(child => {
-                const data = child.val();
-                if (data.status !== 'blocked') {
-                    freshDoctors.push({
-                        id: child.key,
-                        authUid: data.authUid || child.key,
-                        name: data.name || '',
-                        specialty: data.specialty || '',
-                        quickBlurb: data.quickBlurb || '',
-                        photoURL: data.photoURL || '',
-                        email: data.email || '',
-                        phone: data.phone || '',
-                        status: data.status || 'active'
-                    });
-                }
-            });
-            
-            await cache.saveDoctors(freshDoctors);
-            await cache.setLastSync(Date.now());
-            
-            if (JSON.stringify(allDoctors) !== JSON.stringify(freshDoctors)) {
-                allDoctors = freshDoctors;
-                buildFilterDropdown();
-                renderCards();
-                setSyncStatus('online', 'بيانات محدثة ✓');
-            } else {
-                setSyncStatus('online', 'جاهز');
-            }
+            // تحديث الواجهة
+            allDoctors = freshDoctors;
+            buildFilterDropdown();
+            renderCards();
+            setSyncStatus('online', 'بيانات محدثة ✓');
         }, (error) => {
-            console.warn('خطأ في المزامنة المستمرة:', error);
+            console.warn('خطأ في المزامنة:', error);
             setSyncStatus('syncing', 'غير متصل - عرض البيانات المخزنة');
         });
     }
 
-    // ==================== تهيئة التطبيق: عرض فوري من الكاش ====================
+    // ==================== تهيئة التطبيق ====================
     async function initializeAppData() {
-        // 1. عرض البيانات المخزنة محلياً فوراً (أقل من 50ms)
+        // 1. عرض البيانات المخزنة محلياً فوراً
         const cachedDoctors = await cache.getDoctors();
         if (cachedDoctors.length > 0) {
             allDoctors = cachedDoctors;
@@ -1041,20 +972,16 @@
             setSyncStatus('syncing', 'تحميل أول مرة...');
         }
         
-        // 2. بدء المزامنة مع Firebase (ستقوم بتحديث الواجهة إذا لزم الأمر)
+        // 2. بدء الاستماع للتغييرات من Firebase
         startRealtimeSync();
     }
 
     // ==================== إعداد مستمعي الأحداث ====================
     function setupListeners() {
-        // البحث (مع debounce بسيط)
-        let searchDebounce;
+        // البحث
         searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchDebounce);
-            searchDebounce = setTimeout(() => {
-                searchQuery = e.target.value;
-                renderCards();
-            }, 150);
+            searchQuery = e.target.value;
+            renderCards();
         });
         
         // زر الفلتر
@@ -1102,12 +1029,9 @@
         }
     });
 
-    // تسريع إضافي: استخدام requestIdleCallback لتحميل المهام غير الضرورية
-    if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => {
-            // يمكن هنا تحميل موارد إضافية أو تحسينات لاحقة
-            console.log('🚀 وضع الخمول: يمكن تنفيذ مهام تحسين إضافية.');
-        });
+    // دعم إضافي للأجهزة التي لا تدعم backdrop-filter
+    if (!CSS.supports('backdrop-filter', 'blur(10px)')) {
+        document.documentElement.style.setProperty('--surface', 'rgba(255, 255, 255, 0.98)');
     }
 </script>
 <!-- ملفات إضافية للتطبيق (المكالمات) -->
