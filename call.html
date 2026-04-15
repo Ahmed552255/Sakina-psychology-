@@ -2,471 +2,121 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>سُكُون — مكالمة (Agora)</title>
-
-    <!-- الخطوط والأيقونات -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/feather-icons"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>سُكُون — مكالمة مباشرة</title>
     
-    <!-- ✅ مكتبة Agora Web SDK NG الرسمية -->
+    <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.2.js"></script>
 
     <style>
-        /* نفس التنسيقات السابقة دون تغيير */
-        :root {
-            --teal-500: #5aabab; --teal-700: #3d8a8a; --teal-900: #1f4f4f;
-            --white: #ffffff; --danger: #e05252; --success: #34c48a;
-            --bg-dark: #0f1a1a;
+        :root { --teal: #5aabab; --dark: #0f1a1a; --danger: #e05252; }
+        body { font-family: sans-serif; background: var(--dark); color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* منطقة الفيديو */
+        .video-grid { flex: 1; position: relative; background: #000; }
+        #remote-player { width: 100%; height: 100%; object-fit: cover; }
+        #local-player { 
+            position: absolute; bottom: 20px; left: 20px; width: 120px; height: 160px; 
+            border: 2px solid var(--teal); border-radius: 10px; z-index: 10; background: #222;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; overflow: hidden; }
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: var(--bg-dark);
-            color: var(--white);
-            display: flex;
-            flex-direction: column;
-        }
-        .video-container {
-            flex: 1; position: relative; background: #0a1111;
-            display: flex; align-items: center; justify-content: center;
-        }
-        #remoteVideo { width: 100%; height: 100%; object-fit: cover; background: #1a2a2a; }
-        #localVideo {
-            position: absolute; bottom: 20px; left: 20px;
-            width: 100px; height: 140px; border-radius: 16px;
-            border: 3px solid var(--teal-500); object-fit: cover;
-            background: #2a3a3a; z-index: 10;
-        }
-        .audio-call-ui {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center; padding: 2rem;
-        }
-        .avatar-large {
-            width: 120px; height: 120px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--teal-500), var(--teal-700));
-            display: flex; align-items: center; justify-content: center;
-            font-size: 3rem; font-weight: 900; color: var(--white);
-            margin-bottom: 1.5rem; border: 4px solid var(--teal-500);
-            box-shadow: 0 8px 32px rgba(90,171,171,0.3);
-        }
-        .caller-name { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .call-status { font-size: 1rem; color: rgba(255,255,255,0.7); margin-bottom: 2rem; }
-        .controls-bar {
-            display: flex; align-items: center; justify-content: center; gap: 1.5rem;
-            padding: 1.5rem 1rem 2rem; background: rgba(15, 25, 25, 0.95);
-            backdrop-filter: blur(10px); border-top: 1px solid rgba(90,171,171,0.2);
-        }
-        .ctrl-btn {
-            width: 60px; height: 60px; border-radius: 50%; border: none;
-            background: rgba(255,255,255,0.1); color: var(--white);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s;
-        }
-        .ctrl-btn:hover { transform: scale(1.1); }
-        .ctrl-btn.active { background: var(--teal-500); }
-        .ctrl-btn.end-call { background: var(--danger); width: 70px; height: 70px; }
-        .toast-message {
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.8); color: white; padding: 10px 24px;
-            border-radius: 40px; font-size: 0.9rem; z-index: 1000;
-            backdrop-filter: blur(8px); white-space: nowrap;
-        }
-        .waiting-screen {
-            position: absolute; inset: 0; background: var(--bg-dark);
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; z-index: 20;
-        }
-        .pulse-ring {
-            width: 80px; height: 80px; border-radius: 50%; background: var(--teal-500);
-            opacity: 0.6; animation: pulse 1.5s infinite; margin-bottom: 2rem;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0.8); opacity: 0.6; }
-            70% { transform: scale(1.2); opacity: 0.2; }
-            100% { transform: scale(0.8); opacity: 0.6; }
-        }
-        .hidden { display: none !important; }
-        .error-details {
-            margin-top: 1rem; font-size: 0.9rem; color: var(--danger);
-            max-width: 300px; text-align: center;
-        }
-        .retry-btn {
-            margin-top: 1.5rem; background: var(--teal-500); color: white;
-            border: none; padding: 0.8rem 2.5rem; border-radius: 60px;
-            font-family: 'Cairo', sans-serif; font-weight: bold; font-size: 1.2rem;
-            cursor: pointer; transition: background 0.2s;
-        }
-        .retry-btn:hover { background: var(--teal-700); }
-        @media(max-width:500px){
-            .ctrl-btn{width:50px;height:50px}
-            .ctrl-btn.end-call{width:60px;height:60px}
-            #localVideo{width:80px;height:110px}
-        }
+
+        /* شريط التحكم */
+        .controls { height: 90px; display: flex; justify-content: center; align-items: center; gap: 20px; background: #162525; }
+        .btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: #333; color: white; cursor: pointer; }
+        .btn.active { background: var(--teal); }
+        .btn-end { background: var(--danger); width: 60px; height: 60px; }
+        
+        #info { position: fixed; top: 10px; width: 100%; text-align: center; color: var(--teal); z-index: 100; }
     </style>
 </head>
 <body>
 
-<div id="waitingScreen" class="waiting-screen">
-    <div class="pulse-ring"></div>
-    <div class="caller-name" id="waitingName">...</div>
-    <div class="call-status" id="waitingStatus">جاري التهيئة...</div>
-    <div id="errorMessage" class="error-details"></div>
-    <button id="retryButton" class="retry-btn hidden">إعادة المحاولة</button>
-</div>
+    <div id="info">جاري التحضير...</div>
 
-<div id="callInterface" class="hidden" style="display:flex; flex-direction:column; height:100%;">
-    <div id="videoContainer" class="video-container hidden">
-        <video id="remoteVideo" autoplay playsinline></video>
-        <video id="localVideo" autoplay playsinline muted></video>
+    <div class="video-grid">
+        <div id="remote-player"></div>
+        <div id="local-player"></div>
     </div>
-    <div id="audioOnlyUI" class="audio-call-ui">
-        <div class="avatar-large" id="remoteAvatar">ط</div>
-        <div class="caller-name" id="remoteName">طبيب</div>
-        <div class="call-status" id="callStatusText">متصل • الصوت فقط</div>
+
+    <div class="controls">
+        <button class="btn" id="mic-btn" onclick="toggleMic()"><i data-feather="mic"></i></button>
+        <button class="btn btn-end" onclick="leave()"><i data-feather="phone-off"></i></button>
+        <button class="btn" id="vid-btn" onclick="toggleVid()"><i data-feather="video"></i></button>
     </div>
-    <div class="controls-bar">
-        <button class="ctrl-btn" id="toggleMicBtn" title="كتم الصوت">
-            <i data-feather="mic" style="width:22px;height:22px"></i>
-        </button>
-        <button class="ctrl-btn end-call" id="hangupBtn" title="إنهاء المكالمة">
-            <i data-feather="phone-off" style="width:24px;height:24px"></i>
-        </button>
-        <button class="ctrl-btn" id="toggleVideoBtn" title="تشغيل الفيديو">
-            <i data-feather="video" style="width:22px;height:22px"></i>
-        </button>
-    </div>
-</div>
 
-<div id="toast" class="toast-message hidden"></div>
+<script>
+    // الإعدادات (باستخدام مفتاح المشروع الأصفر)
+    const APP_ID = "dcab084bed5243959e742a73de3c8f2d"; 
+    const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-<script type="module">
-    // ==================== تهيئة Firebase ====================
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, update, remove, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
-        authDomain: "sakina-937c4.firebaseapp.com",
-        databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
-        projectId: "sakina-937c4",
-        storageBucket: "sakina-937c4.firebasestorage.app",
-        messagingSenderId: "25215790734",
-        appId: "1:25215790734:web:46c5d893d5818530b3a3df"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
-    feather.replace();
-
-    // ==================== إعدادات Agora ====================
-    const AGORA_APP_ID = 'dcab084bed5243959e742a73de3c8f2d';
+    let localTracks = { video: null, audio: null };
     
-    // عناصر DOM
-    const waitingScreen = document.getElementById('waitingScreen');
-    const callInterface = document.getElementById('callInterface');
-    const videoContainer = document.getElementById('videoContainer');
-    const audioOnlyUI = document.getElementById('audioOnlyUI');
-    const remoteVideo = document.getElementById('remoteVideo');
-    const localVideo = document.getElementById('localVideo');
-    const remoteNameEl = document.getElementById('remoteName');
-    const remoteAvatar = document.getElementById('remoteAvatar');
-    const callStatusText = document.getElementById('callStatusText');
-    const waitingName = document.getElementById('waitingName');
-    const waitingStatus = document.getElementById('waitingStatus');
-    const errorMessageEl = document.getElementById('errorMessage');
-    const retryButton = document.getElementById('retryButton');
-    const toggleMicBtn = document.getElementById('toggleMicBtn');
-    const toggleVideoBtn = document.getElementById('toggleVideoBtn');
-    const hangupBtn = document.getElementById('hangupBtn');
-    const toastEl = document.getElementById('toast');
-
+    // الحصول على البيانات من الرابط
     const urlParams = new URLSearchParams(window.location.search);
-    let callType = urlParams.get('type') || 'audio';
-    const doctorId = urlParams.get('doctorId');
-    const patientId = urlParams.get('patientId');
-    const role = urlParams.get('role') || 'caller';
-    const callIdFromUrl = urlParams.get('callId');
+    const channelName = urlParams.get('channel') || "default_room";
 
-    let localUid = null;
-    let remoteUid = null;
-    let callId = null;
-    let channelName = null;
-    let agoraClient = null;
-    let localAudioTrack = null;
-    let localVideoTrack = null;
-    let isAudioMuted = false;
-    let isVideoOff = (callType === 'audio');
-    let remoteUsers = {};
-
-    // ✅ دالة مساعدة لإنشاء اسم قناة صالح لـ Agora
-    function generateValidChannelName(doctorId, patientId) {
-        // نستخدم خوارزمية تجزئة (hash) بسيطة لتحويل المعرّفات إلى سلسلة نصية قصيرة وآمنة
-        let inputString = `${doctorId}_${patientId}`;
-        let hash = 0;
-        for (let i = 0; i < inputString.length; i++) {
-            const char = inputString.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32bit integer
-        }
-        // نستخدم قيمة الهاش مع طابع زمني قصير لضمان التفرد والأمان
-        const timestamp = Date.now().toString(36); // تحويل timestamp إلى base36
-        return `chn_${Math.abs(hash).toString(36)}_${timestamp}`;
-    }
-
-    function log(msg, data) { console.log(`[${role}] ${msg}`, data || ''); }
-    function showToast(msg, duration = 3000) {
-        toastEl.textContent = msg;
-        toastEl.classList.remove('hidden');
-        setTimeout(() => toastEl.classList.add('hidden'), duration);
-    }
-    function updateWaitingStatus(text, isError = false) {
-        waitingStatus.textContent = text;
-        waitingStatus.style.color = isError ? 'var(--danger)' : '';
-    }
-    function displayError(message) {
-        errorMessageEl.textContent = message;
-        errorMessageEl.classList.remove('hidden');
-        retryButton.classList.remove('hidden');
-        updateWaitingStatus('فشل الاتصال', true);
-    }
-    function hideError() {
-        errorMessageEl.classList.add('hidden');
-        retryButton.classList.add('hidden');
-    }
-    function formatName(uid) {
-        if (uid === doctorId) return 'الطبيب';
-        if (uid === patientId) return 'المريض';
-        return uid;
-    }
-
-    // ✅ دوال Agora الأساسية
-    async function initAgoraAndJoin() {
+    async function start() {
         try {
-            agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-            log('✅ تم إنشاء عميل Agora');
+            // الانضمام باستخدام App ID فقط (بدون Token لأن المشروع أصفر)
+            await client.join(APP_ID, channelName, null, null);
 
-            setupAgoraEventListeners();
+            // فتح المايك والكاميرا
+            localTracks.audio = await AgoraRTC.createMicrophoneAudioTrack();
+            localTracks.video = await AgoraRTC.createCameraVideoTrack();
 
-            // ⚠️ في الإنتاج يجب توليد الرمز من خادم
-            const token = null; // استخدم null إذا كانت شهادة المصادقة معطلة للتطوير
+            // عرض فيديو المستخدم الحالي
+            localTracks.video.play('local-player');
 
-            // التحقق من صحة اسم القناة
-            if (!channelName || channelName.length > 64) {
-                throw new Error('اسم القناة غير صالح (يجب أن يكون أقل من 64 بايت)');
-            }
-            log(`🔑 محاولة الانضمام إلى القناة: ${channelName}`);
+            // نشر البث للطرف التاني
+            await client.publish([localTracks.audio, localTracks.video]);
 
-            await agoraClient.join(AGORA_APP_ID, channelName, token, localUid);
-            log(`✅ تم الانضمام إلى القناة: ${channelName}`);
-
-            await createAndPublishLocalTracks();
-
-            showCallInterface();
-            
-        } catch (error) {
-            log('❌ فشل بدء المكالمة', error);
-            displayError(`فشل بدء المكالمة: ${error.message || 'خطأ غير معروف'}`);
+            document.getElementById('info').innerText = "أنت متصل الآن بالقناة: " + channelName;
+        } catch (e) {
+            document.getElementById('info').innerText = "خطأ: تأكد من تشغيل HTTPS أو Localhost";
+            console.error(e);
         }
     }
 
-    function setupAgoraEventListeners() {
-        agoraClient.on('user-published', async (user, mediaType) => {
-            await agoraClient.subscribe(user, mediaType);
-            log(`📡 تم الاشتراك في مسار ${mediaType} من المستخدم ${user.uid}`);
-            
-            if (mediaType === 'video') {
-                const remoteVideoTrack = user.videoTrack;
-                remoteVideoTrack.play('remoteVideo');
-                videoContainer.classList.remove('hidden');
-                audioOnlyUI.classList.add('hidden');
-                callStatusText.textContent = 'متصل • فيديو';
-            } else if (mediaType === 'audio') {
-                const remoteAudioTrack = user.audioTrack;
-                remoteAudioTrack.play();
-            }
-            remoteUsers[user.uid] = user;
-            callStatusText.textContent = 'متصل';
-        });
+    // استقبال فيديو الطرف التاني
+    client.on("user-published", async (user, mediaType) => {
+        await client.subscribe(user, mediaType);
+        if (mediaType === "video") {
+            user.videoTrack.play("remote-player");
+        }
+        if (mediaType === "audio") {
+            user.audioTrack.play();
+        }
+    });
 
-        agoraClient.on('user-unpublished', (user, mediaType) => {
-            if (mediaType === 'video') {
-                videoContainer.classList.add('hidden');
-                audioOnlyUI.classList.remove('hidden');
-                callStatusText.textContent = 'متصل • الصوت فقط';
-            }
-        });
-        
-        agoraClient.on('user-left', (user) => {
-            delete remoteUsers[user.uid];
-            if (Object.keys(remoteUsers).length === 0) {
-                callStatusText.textContent = 'في انتظار الطرف الآخر...';
-                videoContainer.classList.add('hidden');
-                audioOnlyUI.classList.remove('hidden');
-            }
-        });
-
-        agoraClient.on('connection-state-change', (curState) => {
-            if (curState === 'DISCONNECTED') {
-                displayError('انقطع الاتصال بالخادم');
-            }
-        });
-    }
-
-    async function createAndPublishLocalTracks() {
-        localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-        
-        if (callType === 'video') {
-            localVideoTrack = await AgoraRTC.createCameraVideoTrack();
-            localVideoTrack.play('localVideo');
-            videoContainer.classList.remove('hidden');
-            audioOnlyUI.classList.add('hidden');
+    // وظائف الأزرار
+    async function toggleMic() {
+        if (!localTracks.audio.muted) {
+            await localTracks.audio.setMuted(true);
+            document.getElementById('mic-btn').classList.remove('active');
         } else {
-            videoContainer.classList.add('hidden');
-            audioOnlyUI.classList.remove('hidden');
+            await localTracks.audio.setMuted(false);
+            document.getElementById('mic-btn').classList.add('active');
         }
-
-        const tracks = [localAudioTrack];
-        if (localVideoTrack) tracks.push(localVideoTrack);
-        await agoraClient.publish(tracks);
-        log('✅ تم نشر المسارات المحلية');
     }
 
-    function showCallInterface() {
-        waitingScreen.classList.add('hidden');
-        callInterface.classList.remove('hidden');
-        callInterface.style.display = 'flex';
-    }
-
-    async function leaveCall() {
-        if (localAudioTrack) {
-            localAudioTrack.stop();
-            localAudioTrack.close();
-        }
-        if (localVideoTrack) {
-            localVideoTrack.stop();
-            localVideoTrack.close();
-        }
-        if (agoraClient) {
-            await agoraClient.leave();
-        }
-        if (callId) {
-            await update(ref(db, `calls/${callId}`), { status: 'ended' });
-        }
-        const returnUrl = role === 'caller' ? `doctor-conversation.html?patientId=${patientId}` : `conversation.html?doctorId=${doctorId}`;
-        window.location.href = returnUrl;
-    }
-
-    retryButton.addEventListener('click', () => window.location.reload());
-    toggleMicBtn.addEventListener('click', () => {
-        if (localAudioTrack) {
-            const enabled = !localAudioTrack.enabled;
-            localAudioTrack.setEnabled(enabled);
-            isAudioMuted = !enabled;
-            toggleMicBtn.classList.toggle('active', !enabled);
-            toggleMicBtn.innerHTML = !enabled ? '<i data-feather="mic-off" style="width:22px;height:22px"></i>' : '<i data-feather="mic" style="width:22px;height:22px"></i>';
-            feather.replace();
-        }
-    });
-    toggleVideoBtn.addEventListener('click', () => {
-        if (localVideoTrack) {
-            const enabled = !localVideoTrack.enabled;
-            localVideoTrack.setEnabled(enabled);
-            isVideoOff = !enabled;
-            toggleVideoBtn.classList.toggle('active', !enabled);
-            toggleVideoBtn.innerHTML = !enabled ? '<i data-feather="video-off" style="width:22px;height:22px"></i>' : '<i data-feather="video" style="width:22px;height:22px"></i>';
-            feather.replace();
-            if (!enabled) {
-                videoContainer.classList.add('hidden');
-                audioOnlyUI.classList.remove('hidden');
-            } else if (Object.keys(remoteUsers).length > 0) {
-                videoContainer.classList.remove('hidden');
-                audioOnlyUI.classList.add('hidden');
-            }
-        }
-    });
-    hangupBtn.addEventListener('click', leaveCall);
-
-    async function initPage() {
-        const user = auth.currentUser;
-        if (!user) {
-            window.location.href = 'index.html';
-            return;
-        }
-        localUid = user.uid;
-        remoteUid = role === 'caller' ? patientId : doctorId;
-        const remoteName = formatName(remoteUid);
-        remoteNameEl.textContent = remoteName;
-        remoteAvatar.textContent = remoteName.charAt(0);
-        waitingName.textContent = remoteName;
-        updateWaitingStatus('جاري التهيئة...');
-
-        // ✅ إنشاء اسم قناة صالح لـ Agora
-        channelName = generateValidChannelName(doctorId, patientId);
-        log(`🔑 تم إنشاء اسم القناة: ${channelName}`);
-
-        if (role === 'caller') {
-            callId = `${doctorId}_${patientId}_${Date.now()}`;
-            
-            await set(ref(db, `calls/${callId}`), {
-                caller: doctorId,
-                callee: patientId,
-                type: callType,
-                status: 'ringing',
-                channelName: channelName,
-                createdAt: Date.now()
-            });
-            
-            onValue(ref(db, `calls/${callId}/status`), (snap) => {
-                const status = snap.val();
-                if (status === 'rejected') {
-                    displayError('تم رفض المكالمة');
-                    setTimeout(leaveCall, 2000);
-                } else if (status === 'answered') {
-                    waitingStatus.textContent = 'تم الرد، جاري الاتصال...';
-                }
-            });
-            
-            await initAgoraAndJoin();
-            
+    async function toggleVid() {
+        if (!localTracks.video.muted) {
+            await localTracks.video.setMuted(true);
+            document.getElementById('local-player').style.display = 'none';
         } else {
-            if (callIdFromUrl) {
-                callId = callIdFromUrl;
-                const snap = await get(ref(db, `calls/${callId}`));
-                if (snap.exists()) {
-                    const callData = snap.val();
-                    callType = callData.type || 'audio';
-                    isVideoOff = (callType === 'audio');
-                    channelName = callData.channelName || generateValidChannelName(doctorId, patientId);
-                    log(`🔑 المستقبل (callee) يستخدم اسم القناة من Firebase: ${channelName}`);
-                    
-                    if (callData.status === 'ringing') {
-                        await update(ref(db, `calls/${callId}`), { status: 'answered' });
-                    }
-                    await initAgoraAndJoin();
-                } else {
-                    displayError('المكالمة غير موجودة');
-                }
-            } else {
-                displayError('معرف المكالمة مفقود');
-            }
+            await localTracks.video.setMuted(false);
+            document.getElementById('local-player').style.display = 'block';
         }
     }
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) initPage();
-        else window.location.href = 'index.html';
-    });
+    async function leave() {
+        localTracks.audio.stop(); localTracks.audio.close();
+        localTracks.video.stop(); localTracks.video.close();
+        await client.leave();
+        window.history.back();
+    }
 
-    window.addEventListener('beforeunload', () => {
-        if (agoraClient) agoraClient.leave();
-        if (callId) update(ref(db, `calls/${callId}`), { status: 'ended' });
-    });
+    window.onload = () => { start(); feather.replace(); };
 </script>
 </body>
 </html>
