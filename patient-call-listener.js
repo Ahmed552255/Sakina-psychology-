@@ -1,22 +1,14 @@
 // patient-call-listener.js - نسخة احترافية كاملة
 // تم تطويرها لتكون متناسقة مع تصميم سُكُون وتدعم جميع الميزات الحديثة
 
+// استيراد إعدادات Firebase من ملف خارجي (أكثر أماناً)
+import { firebaseConfig } from './firebase-config.js';
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
-// ==================== إعدادات Firebase (يُفضل استيرادها من ملف منفصل) ====================
-const firebaseConfig = {
-    apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
-    authDomain: "sakina-937c4.firebaseapp.com",
-    databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
-    projectId: "sakina-937c4",
-    storageBucket: "sakina-937c4.firebasestorage.app",
-    messagingSenderId: "25215790734",
-    appId: "1:25215790734:web:46c5d893d5818530b3a3df"
-};
-
-// تهيئة Firebase
+// تهيئة Firebase باستخدام الإعدادات المستوردة
 let app;
 try {
     app = initializeApp(firebaseConfig);
