@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* ========== نفس التصميم السابق بالكامل (لم يتغير) ========== */
+        /* ========== متغيرات التصميم ========== */
         :root {
             --bg-primary: #f6faf9;
             --surface: rgba(255, 255, 255, 0.85);
@@ -120,25 +120,83 @@
             color:var(--text-secondary); border:1px solid var(--primary-100); box-shadow:var(--shadow-xs);
         }
 
+        /* رسائل النظام (المكالمات) */
+        .system-message {
+            text-align: center;
+            margin: 12px 0;
+        }
+        .system-badge {
+            display: inline-block;
+            background: var(--surface);
+            backdrop-filter: blur(8px);
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: 1px solid var(--primary-100);
+            box-shadow: var(--shadow-xs);
+        }
+
         .message-row { display:flex; margin-bottom:2px; animation:messageAppear 0.2s ease-out; }
         @keyframes messageAppear { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .message-row.patient { justify-content:flex-start; }
         .message-row.doctor { justify-content:flex-end; }
         .message-bubble { max-width:82%; position:relative; }
+        /* فقاعة المريض: ملتصقة باليسار مع ذيل أعلى اليمين */
         .message-row.patient .message-bubble {
             background:var(--surface-solid); color:var(--text-primary);
-            border-radius:4px var(--radius-bubble) var(--radius-bubble) var(--radius-bubble);
+            border-radius: 4px var(--radius-bubble) var(--radius-bubble) var(--radius-bubble);
             box-shadow:var(--shadow-sm); border:1px solid var(--primary-100);
+            margin-right: auto;
+            margin-left: 0;
         }
+        /* فقاعة الطبيب: ملتصقة باليمين مع ذيل أعلى اليسار */
         .message-row.doctor .message-bubble {
             background:linear-gradient(145deg, var(--primary-600), var(--primary-500));
-            color:white; border-radius:var(--radius-bubble) 4px var(--radius-bubble) var(--radius-bubble);
+            color:white;
+            border-radius: var(--radius-bubble) 4px var(--radius-bubble) var(--radius-bubble);
             box-shadow:var(--shadow-md);
+            margin-left: auto;
+            margin-right: 0;
         }
         .message-content { padding:14px 18px; font-size:0.95rem; line-height:1.6; word-break:break-word; }
         .message-footer { display:flex; align-items:center; justify-content:flex-end; padding:0 16px 8px; font-size:0.7rem; }
         .message-row.patient .message-footer { color:var(--text-tertiary); }
         .message-row.doctor .message-footer { display:none; }
+
+        /* قائمة خيارات الرسالة (تعديل/حذف) */
+        .message-options-menu {
+            position: absolute;
+            background: var(--surface-solid);
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            padding: 6px;
+            z-index: 500;
+            display: none;
+            border: 1px solid var(--primary-100);
+        }
+        .message-options-menu.show {
+            display: block;
+        }
+        .msg-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .msg-option:hover {
+            background: var(--primary-50);
+        }
+        .msg-option.danger {
+            color: var(--danger);
+        }
 
         .loading-state, .empty-state {
             display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -234,56 +292,101 @@
     </button>
 </footer>
 
+<!-- قائمة تعديل/حذف الرسالة -->
+<div class="message-options-menu" id="messageOptionsMenu">
+    <div class="msg-option" id="editMessageOption">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"></path>
+        </svg>
+        <span>تعديل</span>
+    </div>
+    <div class="msg-option danger" id="deleteMessageOption">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        <span>حذف</span>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
-    // ==================== استيراد الإعدادات من ملف خارجي ====================
     import { firebaseConfig } from './firebase-config.js';
-    
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, set, update, get } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set, update, get, remove } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== إدارة التخزين المحلي باستخدام localStorage ====================
-    const STORAGE_KEYS = {
-        MESSAGES: (convId) => `sakoon_msgs_${convId}`,
-        DOCTOR: (docId) => `sakoon_doc_${docId}`
-    };
-
-    const localCache = {
-        // حفظ الرسائل
-        saveMessages(convId, messages) {
-            try {
-                localStorage.setItem(STORAGE_KEYS.MESSAGES(convId), JSON.stringify(messages));
-            } catch (e) {
-                // في حالة تجاوز السعة، نحذف القديم ونحفظ الجديد
-                console.warn('LocalStorage quota exceeded, clearing old messages.');
-                // حذف أقدم 20% من الرسائل (اختياري)
-                if (messages.length > 50) {
-                    const trimmed = messages.slice(Math.floor(messages.length * 0.2));
-                    localStorage.setItem(STORAGE_KEYS.MESSAGES(convId), JSON.stringify(trimmed));
-                }
-            }
-        },
-        // استرجاع الرسائل
-        getMessages(convId) {
-            const data = localStorage.getItem(STORAGE_KEYS.MESSAGES(convId));
-            return data ? JSON.parse(data) : [];
-        },
-        // حفظ بيانات طبيب
-        saveDoctor(doctor) {
-            localStorage.setItem(STORAGE_KEYS.DOCTOR(doctor.id), JSON.stringify(doctor));
-        },
-        // استرجاع بيانات طبيب
-        getDoctor(docId) {
-            const data = localStorage.getItem(STORAGE_KEYS.DOCTOR(docId));
-            return data ? JSON.parse(data) : null;
+    // ==================== IndexedDB قوي للتخزين المحلي ====================
+    class MessageCache {
+        constructor() {
+            this.db = null;
         }
-    };
+        async init() {
+            if (this.db) return;
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('SakoonMessagesDB', 1);
+                req.onerror = () => reject(req.error);
+                req.onsuccess = () => { this.db = req.result; resolve(); };
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('messages')) {
+                        db.createObjectStore('messages', { keyPath: 'convId' });
+                    }
+                    if (!db.objectStoreNames.contains('doctors')) {
+                        db.createObjectStore('doctors', { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+        async getMessages(convId) {
+            await this.init();
+            return new Promise((resolve) => {
+                const tx = this.db.transaction('messages', 'readonly');
+                const store = tx.objectStore('messages');
+                const req = store.get(convId);
+                req.onsuccess = () => resolve(req.result?.messages || []);
+                req.onerror = () => resolve([]);
+            });
+        }
+        async saveMessages(convId, messages) {
+            await this.init();
+            return new Promise((resolve) => {
+                const tx = this.db.transaction('messages', 'readwrite');
+                const store = tx.objectStore('messages');
+                store.put({ convId, messages });
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            });
+        }
+        async getDoctor(id) {
+            await this.init();
+            return new Promise((resolve) => {
+                const tx = this.db.transaction('doctors', 'readonly');
+                const store = tx.objectStore('doctors');
+                const req = store.get(id);
+                req.onsuccess = () => resolve(req.result || null);
+                req.onerror = () => resolve(null);
+            });
+        }
+        async saveDoctor(doctor) {
+            await this.init();
+            return new Promise((resolve) => {
+                const tx = this.db.transaction('doctors', 'readwrite');
+                const store = tx.objectStore('doctors');
+                store.put(doctor);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            });
+        }
+    }
+
+    const cache = new MessageCache();
 
     // ==================== دوال مساعدة ====================
     const toast = (msg, err = false) => {
@@ -316,7 +419,9 @@
     let conversationId = null;
     let allMessages = [];
     let isNearBottom = true;
-
+    let longPressTimer = null;
+    let currentSelectedMsg = null;
+    const menu = document.getElementById('messageOptionsMenu');
     const container = document.getElementById('messagesContainer');
     const input = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendButton');
@@ -334,13 +439,22 @@
         }
     };
 
-    // ==================== عرض الرسائل ====================
+    // ==================== عرض الرسائل (يدعم الرسائل النظامية) ====================
     const renderMessages = (msgs) => {
         const fragment = document.createDocumentFragment();
         let lastDate = '';
         const sorted = [...msgs].sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
         
         sorted.forEach(msg => {
+            // رسائل النظام (المكالمات)
+            if (msg.type === 'system') {
+                const sysDiv = document.createElement('div');
+                sysDiv.className = 'system-message';
+                sysDiv.innerHTML = `<div class="system-badge">${escapeHtml(msg.text)}</div>`;
+                fragment.appendChild(sysDiv);
+                return;
+            }
+            
             const dateLabel = formatDateLabel(msg.timestamp);
             if (dateLabel && dateLabel !== lastDate) {
                 lastDate = dateLabel;
@@ -354,6 +468,8 @@
             const row = document.createElement('div');
             row.className = `message-row ${isPatient ? 'patient' : 'doctor'}`;
             row.dataset.msgId = msg.id;
+            row.dataset.messageText = msg.text;
+            row.dataset.timestamp = msg.timestamp;
             
             row.innerHTML = `
                 <div class="message-bubble">
@@ -387,18 +503,16 @@
     // ==================== تحميل الطبيب ====================
     const loadDoctor = async () => {
         try {
-            // من localStorage أولاً
-            let doc = localCache.getDoctor(doctorId);
+            let doc = await cache.getDoctor(doctorId);
             if (doc) updateDoctorUI(doc);
-            
             const snap = await get(ref(database, `doctors/${doctorId}`));
             if (snap.exists()) {
                 const data = snap.val();
                 doc = { id: doctorId, name: data.name || 'أخصائي', photoURL: data.photoURL || '' };
-                localCache.saveDoctor(doc);
+                await cache.saveDoctor(doc);
                 updateDoctorUI(doc);
             }
-        } catch (e) { /* تجاهل */ }
+        } catch (e) {}
     };
     
     const updateDoctorUI = (doc) => {
@@ -440,13 +554,13 @@
         if (!conversationId) return;
         const msgsRef = ref(database, `conversations/${conversationId}/messages`);
         
-        // عرض المخزن محلياً أولاً
-        const cached = localCache.getMessages(conversationId);
-        if (cached.length) {
-            allMessages = cached;
-            renderMessages(allMessages);
-            scrollToBottom(true);
-        }
+        cache.getMessages(conversationId).then(cached => {
+            if (cached.length) {
+                allMessages = cached;
+                renderMessages(allMessages);
+                scrollToBottom(true);
+            }
+        });
         
         onValue(msgsRef, (snap) => {
             const fresh = [];
@@ -455,7 +569,7 @@
             }
             fresh.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
             allMessages = fresh;
-            localCache.saveMessages(conversationId, fresh);
+            cache.saveMessages(conversationId, fresh);
             renderMessages(allMessages);
             scrollToBottom();
         }, (err) => {
@@ -466,38 +580,88 @@
 
     // ==================== إرسال ====================
     let sending = false;
-    const sendMessage = async () => {
-        const text = input.value.trim();
+    const sendMessage = async (text) => {
         if (!text || !conversationId || sending) return;
         sending = true;
         sendBtn.classList.add('sending');
-        const msgText = text;
-        input.value = '';
-        input.style.height = 'auto';
-        input.focus();
         try {
             const msgRef = push(ref(database, `conversations/${conversationId}/messages`));
             await set(msgRef, {
-                text: msgText,
+                text: text,
                 senderId: currentUserId,
                 senderRole: 'patient',
                 timestamp: Date.now(),
                 read: false
             });
             await update(ref(database, `conversations/${conversationId}`), {
-                lastMessage: msgText,
+                lastMessage: text,
                 lastMessageTime: Date.now(),
                 unreadPatient: false
             });
         } catch (e) {
             toast('فشل الإرسال', true);
-            input.value = msgText;
+            input.value = text;
         } finally {
             sending = false;
             sendBtn.classList.remove('sending');
-            input.focus();
         }
     };
+
+    // ==================== تعديل وحذف الرسائل ====================
+    const showMessageOptions = (msgId, x, y) => {
+        currentSelectedMsg = msgId;
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+        menu.classList.add('show');
+    };
+    const hideMessageOptions = () => {
+        menu.classList.remove('show');
+        currentSelectedMsg = null;
+    };
+
+    const editMessage = async (msgId, newText) => {
+        try {
+            await update(ref(database, `conversations/${conversationId}/messages/${msgId}`), { text: newText });
+            toast('تم التعديل');
+        } catch (e) {
+            toast('فشل التعديل', true);
+        }
+    };
+
+    const deleteMessage = async (msgId) => {
+        try {
+            await remove(ref(database, `conversations/${conversationId}/messages/${msgId}`));
+            toast('تم الحذف');
+        } catch (e) {
+            toast('فشل الحذف', true);
+        }
+    };
+
+    // ==================== التعامل مع أحداث المكالمات ====================
+    const addCallLog = async (callData) => {
+        // callData: { type: 'audio'|'video', status: 'missed'|'answered', duration: seconds, timestamp }
+        const statusText = callData.status === 'answered' ? 'تم الرد' : 'لم يتم الرد';
+        const typeText = callData.type === 'video' ? 'مكالمة فيديو' : 'مكالمة صوتية';
+        const durationText = callData.duration ? ` (${Math.floor(callData.duration / 60)}:${String(callData.duration % 60).padStart(2,'0')})` : '';
+        const systemMsg = `📞 ${typeText} - ${statusText}${durationText}`;
+        
+        // حفظ الرسالة النظامية في Firebase
+        if (conversationId) {
+            const msgRef = push(ref(database, `conversations/${conversationId}/messages`));
+            await set(msgRef, {
+                type: 'system',
+                text: systemMsg,
+                timestamp: callData.timestamp || Date.now()
+            });
+        }
+    };
+
+    // مستمع لأحداث المكالمات من patient-call-listener.js
+    window.addEventListener('callEvent', (e) => {
+        if (e.detail && conversationId) {
+            addCallLog(e.detail);
+        }
+    });
 
     // ==================== الأحداث ====================
     input.addEventListener('input', () => {
@@ -507,13 +671,71 @@
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            sendMessage();
+            const txt = input.value.trim();
+            if (txt) {
+                sendMessage(txt);
+                input.value = '';
+                input.style.height = 'auto';
+            }
         }
     });
-    sendBtn.addEventListener('click', sendMessage);
+    sendBtn.addEventListener('click', () => {
+        const txt = input.value.trim();
+        if (txt) {
+            sendMessage(txt);
+            input.value = '';
+            input.style.height = 'auto';
+            input.focus();
+        }
+    });
     sendBtn.addEventListener('mousedown', (e) => e.preventDefault());
     document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = 'patient-chats.html';
+    });
+
+    // الضغط المطول على الرسالة
+    container.addEventListener('touchstart', (e) => {
+        const row = e.target.closest('.message-row.patient');
+        if (!row) return;
+        longPressTimer = setTimeout(() => {
+            const rect = row.getBoundingClientRect();
+            showMessageOptions(row.dataset.msgId, rect.left + window.scrollX, rect.bottom + window.scrollY);
+        }, 500);
+    });
+    container.addEventListener('touchend', () => clearTimeout(longPressTimer));
+    container.addEventListener('touchmove', () => clearTimeout(longPressTimer));
+    // للفأرة (للتطوير)
+    container.addEventListener('mousedown', (e) => {
+        const row = e.target.closest('.message-row.patient');
+        if (!row) return;
+        if (e.button !== 0) return;
+        longPressTimer = setTimeout(() => {
+            showMessageOptions(row.dataset.msgId, e.clientX, e.clientY);
+        }, 500);
+    });
+    container.addEventListener('mouseup', () => clearTimeout(longPressTimer));
+    container.addEventListener('mousemove', () => clearTimeout(longPressTimer));
+    
+    document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target)) hideMessageOptions();
+    });
+
+    document.getElementById('editMessageOption').addEventListener('click', () => {
+        if (!currentSelectedMsg) return;
+        const msg = allMessages.find(m => m.id === currentSelectedMsg);
+        if (!msg) return;
+        const newText = prompt('تعديل الرسالة:', msg.text);
+        if (newText && newText.trim() !== msg.text) {
+            editMessage(currentSelectedMsg, newText.trim());
+        }
+        hideMessageOptions();
+    });
+    document.getElementById('deleteMessageOption').addEventListener('click', () => {
+        if (!currentSelectedMsg) return;
+        if (confirm('حذف الرسالة؟')) {
+            deleteMessage(currentSelectedMsg);
+        }
+        hideMessageOptions();
     });
 
     // ==================== بدء ====================
