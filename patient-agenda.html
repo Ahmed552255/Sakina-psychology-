@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>سُكُون · أجندتي</title>
+    <title>سُكُون · أجندتي الذكية</title>
 
     <!-- تحميل الخط مع العرض الفوري -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -430,7 +430,7 @@
         <div class="modal-handle"></div>
         <h3 style="margin-bottom:20px; font-weight:800;" id="modalTitle">إضافة حدث</h3>
         <div class="type-toggle">
-            <button class="type-btn" id="modalTaskType">📋 مهمة</button>
+            <button class="type-btn active" id="modalTaskType">📋 مهمة</button>
             <button class="type-btn" id="modalApptType">🩺 موعد</button>
         </div>
         <div class="form-group">
@@ -465,12 +465,18 @@
     // استيراد إعدادات Firebase
     import { firebaseConfig } from './firebase-config.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+    import { 
+        getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, 
+        query, where, onSnapshot, enableIndexedDbPersistence 
+    } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+
+    // تفعيل التخزين المؤقت دون اتصال (Offline Persistence)
+    enableIndexedDbPersistence(db).catch(err => console.warn("Offline persistence failed:", err));
 
     // ==================== إدارة التخزين المحلي (IndexedDB) ====================
     class AgendaCache {
@@ -478,7 +484,7 @@
         async init() {
             if (this.db) return;
             return new Promise((resolve, reject) => {
-                const req = indexedDB.open('SakoonAgendaDB', 1);
+                const req = indexedDB.open('SakoonAgendaDB', 2);
                 req.onerror = () => reject(req.error);
                 req.onsuccess = () => { this.db = req.result; resolve(); };
                 req.onupgradeneeded = (e) => {
@@ -540,14 +546,17 @@
     let moods = {};
     let currentDate = new Date();
     let selectedDate = new Date().toISOString().split('T')[0];
-    let currentType = 'task';
+    let currentType = 'task'; // 'task' or 'appt'
     let currentPrio = 'med';
     let currentRecur = 'none';
+    let unsubscribeTasks = null;
+    let unsubscribeAppts = null;
+    let unsubscribeMoods = null;
 
     // ==================== دوال مساعدة ====================
     const setSyncStatus = (busy, msg) => {
         document.getElementById('syncDot').className = `sync-dot${busy ? ' syncing' : ''}`;
-        document.getElementById('syncText').textContent = msg || (busy ? 'مزامنة...' : 'محلي ✓');
+        document.getElementById('syncText').textContent = msg || (busy ? 'مزامنة...' : 'متصل ✓');
     };
 
     const isEventOnDate = (ev, dateStr) => {
@@ -580,18 +589,15 @@
         
         document.getElementById('calTitle').textContent = currentDate.toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' });
         
-        // أيام الأسبوع
         const weekdays = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
         document.getElementById('weekdays').innerHTML = weekdays.map(d => `<div>${d}</div>`).join('');
         
         grid.innerHTML = '';
-        // خلايا فارغة قبل بداية الشهر
         for (let i = 0; i < firstDay; i++) {
             const cell = document.createElement('div');
             cell.className = 'day-cell other-month';
             grid.appendChild(cell);
         }
-        // أيام الشهر
         for (let d = 1; d <= daysInMonth; d++) {
             const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const cell = document.createElement('div');
@@ -621,7 +627,6 @@
             grid.appendChild(cell);
         }
 
-        // ملخص الشهر
         const monthPrefix = `${year}-${String(month+1).padStart(2,'0')}`;
         const monthEvents = events.filter(e => e.date.startsWith(monthPrefix));
         const monthMoods = Object.keys(moods).filter(k => k.startsWith(monthPrefix)).length;
@@ -637,7 +642,6 @@
         document.getElementById('agendaCard').style.display = 'block';
         document.getElementById('agendaTitle').textContent = formatDateLabel(ds);
         
-        // المزاج
         const mood = moods[ds] || {};
         document.querySelectorAll('.mood-option').forEach(el => el.classList.remove('selected'));
         if (mood.emoji) {
@@ -645,7 +649,6 @@
         }
         document.getElementById('moodNote').value = mood.note || '';
         
-        // الأحداث
         const dayEvents = events.filter(e => isEventOnDate(e, ds)).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
         const list = document.getElementById('eventsList');
         if (dayEvents.length === 0) {
@@ -670,7 +673,7 @@
                             ${ev.prio === 'high' ? '🔴' : ev.prio === 'low' ? '🟢' : '🟡'} ${ev.title}
                         </div>
                         ${ev.desc ? `<div class="event-desc">${ev.desc}</div>` : ''}
-                        ${ev.recur && ev.recur !== 'none' ? `<div class="event-desc">🔄 ${ev.recur}</div>` : ''}
+                        ${ev.recur && ev.recur !== 'none' ? `<div class="event-desc">🔄 ${ev.recur === 'daily' ? 'يومي' : ev.recur === 'weekly' ? 'أسبوعي' : 'شهري'}</div>` : ''}
                     </div>
                     ${ev.time ? `<div class="event-time">${ev.time}</div>` : ''}
                     <button class="icon-btn" data-action="delete" data-id="${ev.id}">
@@ -722,13 +725,13 @@
         renderCalendar();
         showAgenda(selectedDate);
         if (currentUser && ev) {
-            const col = ev.type === 'appt' ? 'doctors_agenda' : 'tasks';
+            const col = ev.type === 'appt' ? 'appointments' : 'tasks';
             await deleteDoc(doc(db, col, id));
         }
     };
 
     // ==================== حفظ المزاج ====================
-    document.getElementById('saveMoodBtn').addEventListener('click', async () => {
+    const saveMood = async () => {
         const selected = document.querySelector('.mood-option.selected');
         if (!selected) return;
         const emoji = selected.dataset.emoji;
@@ -739,62 +742,235 @@
         showAgenda(selectedDate);
         if (currentUser) {
             const scoreMap = {'😁':5,'😊':4,'😐':3,'😌':3,'😔':2,'😢':2,'😰':1,'😠':1};
-            await setDoc(doc(db, 'mood_logs', `${currentUser.uid}_${selectedDate}`), {
+            await setDoc(doc(db, 'moods', `${currentUser.uid}_${selectedDate}`), {
                 patientId: currentUser.uid, date: selectedDate,
                 score: scoreMap[emoji] || 3, emoji, note, updatedAt: new Date()
             }, { merge: true });
         }
-    });
+    };
 
-    // ==================== المزامنة مع السحابة ====================
-    const syncFromCloud = async () => {
-        if (!currentUser) return;
-        setSyncStatus(true, 'جاري المزامنة...');
-        try {
-            const tasksSnap = await getDocs(query(collection(db, 'tasks'), where('patientId', '==', currentUser.uid)));
-            const apptsSnap = await getDocs(query(collection(db, 'doctors_agenda'), where('patientId', '==', currentUser.uid)));
-            const moodsSnap = await getDocs(query(collection(db, 'mood_logs'), where('patientId', '==', currentUser.uid)));
-            
-            const cloudEvents = [
-                ...tasksSnap.docs.map(d => ({ id: d.id, type: 'task', title: d.data().text || d.data().title, desc: d.data().desc || '', date: d.data().date, time: d.data().time, prio: d.data().prio || 'med', recur: d.data().recur || 'none', completed: d.data().done || false })),
-                ...apptsSnap.docs.map(d => ({ id: d.id, type: 'appt', title: d.data().title, desc: d.data().desc || '', date: d.data().date, time: d.data().time, prio: d.data().prio || 'med', recur: 'none', completed: false }))
+    // ==================== إعدادات المودال ====================
+    const setupModal = () => {
+        const modal = document.getElementById('eventModal');
+        const titleInput = document.getElementById('eventTitle');
+        const descInput = document.getElementById('eventDesc');
+        const dateInput = document.getElementById('eventDate');
+        const timeInput = document.getElementById('eventTime');
+        const taskTypeBtn = document.getElementById('modalTaskType');
+        const apptTypeBtn = document.getElementById('modalApptType');
+        const prioRow = document.getElementById('prioRow');
+        const recurRow = document.getElementById('recurRow');
+        
+        // إعداد أزرار الأولوية والتكرار
+        const renderPills = () => {
+            const prios = [
+                { val: 'low', label: 'منخفضة', emoji: '🟢' },
+                { val: 'med', label: 'متوسطة', emoji: '🟡' },
+                { val: 'high', label: 'عالية', emoji: '🔴' }
             ];
-            const cloudMoods = {};
-            moodsSnap.forEach(d => { const data = d.data(); cloudMoods[data.date] = { emoji: data.emoji, note: data.note }; });
+            prioRow.innerHTML = prios.map(p => 
+                `<button class="pill-btn ${currentPrio === p.val ? 'active' : ''}" data-prio="${p.val}">${p.emoji} ${p.label}</button>`
+            ).join('');
             
-            events = cloudEvents;
-            moods = cloudMoods;
+            const recs = [
+                { val: 'none', label: 'بدون' },
+                { val: 'daily', label: 'يومي' },
+                { val: 'weekly', label: 'أسبوعي' },
+                { val: 'monthly', label: 'شهري' }
+            ];
+            recurRow.innerHTML = recs.map(r => 
+                `<button class="pill-btn ${currentRecur === r.val ? 'active' : ''}" data-recur="${r.val}">${r.label}</button>`
+            ).join('');
+            
+            prioRow.querySelectorAll('[data-prio]').forEach(b => b.addEventListener('click', () => {
+                currentPrio = b.dataset.prio;
+                renderPills();
+            }));
+            recurRow.querySelectorAll('[data-recur]').forEach(b => b.addEventListener('click', () => {
+                currentRecur = b.dataset.recur;
+                renderPills();
+            }));
+        };
+        
+        const setType = (type) => {
+            currentType = type;
+            taskTypeBtn.classList.toggle('active', type === 'task');
+            apptTypeBtn.classList.toggle('active', type === 'appt');
+            document.getElementById('timeRow').style.display = type === 'appt' ? 'block' : 'none';
+            recurRow.style.display = type === 'task' ? 'flex' : 'none';
+        };
+        
+        taskTypeBtn.addEventListener('click', () => setType('task'));
+        apptTypeBtn.addEventListener('click', () => setType('appt'));
+        
+        const openModal = (type = 'task', presetDate = selectedDate) => {
+            setType(type);
+            currentPrio = 'med';
+            currentRecur = 'none';
+            titleInput.value = '';
+            descInput.value = '';
+            dateInput.value = presetDate;
+            timeInput.value = '';
+            renderPills();
+            modal.classList.add('open');
+        };
+        
+        document.getElementById('addTaskBtn').addEventListener('click', () => openModal('task'));
+        document.getElementById('addApptBtn').addEventListener('click', () => openModal('appt'));
+        document.getElementById('fabTask').addEventListener('click', () => { openModal('task'); document.getElementById('fabContainer').classList.remove('open'); });
+        document.getElementById('fabAppt').addEventListener('click', () => { openModal('appt'); document.getElementById('fabContainer').classList.remove('open'); });
+        document.getElementById('mainFab').addEventListener('click', () => {
+            document.getElementById('fabContainer').classList.toggle('open');
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('open');
+        });
+        
+        document.getElementById('saveEventBtn').addEventListener('click', async () => {
+            const title = titleInput.value.trim();
+            if (!title) { alert('العنوان مطلوب'); return; }
+            const date = dateInput.value;
+            if (!date) { alert('التاريخ مطلوب'); return; }
+            const time = timeInput.value || null;
+            
+            const eventData = {
+                id: `${currentType}_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+                type: currentType,
+                title,
+                desc: descInput.value.trim(),
+                date,
+                time,
+                prio: currentPrio,
+                recur: currentType === 'task' ? currentRecur : 'none',
+                completed: false,
+                patientId: currentUser.uid,
+                createdAt: new Date()
+            };
+            
+            // حفظ محلي
+            events.push(eventData);
             await cache.saveEvents(events);
+            renderCalendar();
+            showAgenda(selectedDate);
+            modal.classList.remove('open');
+            
+            // حفظ في Firestore
+            const col = currentType === 'appt' ? 'appointments' : 'tasks';
+            const { id, ...firestoreData } = eventData;
+            if (currentType === 'task') firestoreData.done = false;
+            await setDoc(doc(db, col, id), firestoreData);
+        });
+        
+        // إعداد رموز المزاج
+        const moodEmojis = document.getElementById('moodEmojis');
+        const emojis = ['😁', '😊', '😐', '😌', '😔', '😢', '😰', '😠'];
+        moodEmojis.innerHTML = emojis.map(e => `<span class="mood-option" data-emoji="${e}">${e}</span>`).join('');
+        moodEmojis.querySelectorAll('.mood-option').forEach(el => {
+            el.addEventListener('click', () => {
+                moodEmojis.querySelectorAll('.mood-option').forEach(e => e.classList.remove('selected'));
+                el.classList.add('selected');
+            });
+        });
+        document.getElementById('saveMoodBtn').addEventListener('click', saveMood);
+        
+        // التنقل بين الأشهر
+        document.getElementById('prevMonthBtn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+        document.getElementById('nextMonthBtn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+    };
+
+    // ==================== المزامنة مع السحابة (مستمعات حية) ====================
+    const startSync = (user) => {
+        if (unsubscribeTasks) unsubscribeTasks();
+        if (unsubscribeAppts) unsubscribeAppts();
+        if (unsubscribeMoods) unsubscribeMoods();
+        
+        setSyncStatus(true, 'جاري المزامنة...');
+        
+        // مهام
+        const tasksQuery = query(collection(db, 'tasks'), where('patientId', '==', user.uid));
+        unsubscribeTasks = onSnapshot(tasksQuery, async (snapshot) => {
+            const cloudTasks = snapshot.docs.map(d => ({
+                id: d.id,
+                type: 'task',
+                title: d.data().title,
+                desc: d.data().desc || '',
+                date: d.data().date,
+                time: d.data().time || null,
+                prio: d.data().prio || 'med',
+                recur: d.data().recur || 'none',
+                completed: d.data().done || false,
+                patientId: d.data().patientId
+            }));
+            // دمج مع المواعيد
+            const appts = events.filter(e => e.type === 'appt');
+            events = [...cloudTasks, ...appts];
+            await cache.saveEvents(events);
+            renderCalendar();
+            if (selectedDate) showAgenda(selectedDate);
+            setSyncStatus(false, 'متصل ✓');
+        }, (err) => {
+            console.warn('Tasks sync error:', err);
+            setSyncStatus(false, 'خطأ في المزامنة');
+        });
+        
+        // مواعيد
+        const apptsQuery = query(collection(db, 'appointments'), where('patientId', '==', user.uid));
+        unsubscribeAppts = onSnapshot(apptsQuery, async (snapshot) => {
+            const cloudAppts = snapshot.docs.map(d => ({
+                id: d.id,
+                type: 'appt',
+                title: d.data().title,
+                desc: d.data().desc || '',
+                date: d.data().date,
+                time: d.data().time || null,
+                prio: d.data().prio || 'med',
+                recur: 'none',
+                completed: false,
+                patientId: d.data().patientId
+            }));
+            const tasks = events.filter(e => e.type === 'task');
+            events = [...tasks, ...cloudAppts];
+            await cache.saveEvents(events);
+            renderCalendar();
+            if (selectedDate) showAgenda(selectedDate);
+        }, err => console.warn('Appointments sync error:', err));
+        
+        // مزاج
+        const moodsQuery = query(collection(db, 'moods'), where('patientId', '==', user.uid));
+        unsubscribeMoods = onSnapshot(moodsQuery, async (snapshot) => {
+            const cloudMoods = {};
+            snapshot.forEach(d => {
+                const data = d.data();
+                cloudMoods[data.date] = { emoji: data.emoji, note: data.note, updatedAt: data.updatedAt };
+            });
+            moods = cloudMoods;
             await cache.saveMoods(moods);
-            setSyncStatus(false, 'مزامنة ✓');
-        } catch (e) {
-            console.warn('Sync error:', e);
-            setSyncStatus(false, 'محلي فقط');
-        }
-        renderCalendar();
-        showAgenda(selectedDate);
+            renderCalendar();
+            if (selectedDate) showAgenda(selectedDate);
+        });
     };
 
     // ==================== تهيئة الصفحة ====================
     const init = async (user) => {
         currentUser = user;
-        // تحميل من الكاش
+        // تحميل من الكاش أولاً
         events = await cache.getAllEvents();
         moods = await cache.getAllMoods();
         renderCalendar();
         showAgenda(selectedDate);
-        setSyncStatus(false, 'محلي ✓');
         
-        // مزامنة مع السحابة
-        syncFromCloud();
-        
-        // إعداد المودال
+        // إعداد واجهة المستخدم
         setupModal();
-    };
-
-    // إعدادات المودال (مبسطة)
-    const setupModal = () => {
-        // ... (سيتم استكمالها بشكل مبسط)
+        
+        // بدء المزامنة الحية
+        startSync(user);
     };
 
     // بدء التطبيق
@@ -803,6 +979,5 @@
         else window.location.href = 'patient-login.html';
     });
 </script>
-<script type="module" src="patient-call-listener.js"></script>
 </body>
 </html>
