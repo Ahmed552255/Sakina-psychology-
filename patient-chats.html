@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>سُكُون · محادثاتي</title>
 
-    <!-- تحميل الخط مع استراتيجية العرض الفوري (font-display: swap) -->
+    <!-- تحميل الخط مع استراتيجية العرض الفوري -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,7 +13,6 @@
     <style>
         /* ==================== إعدادات متقدمة للأداء والجمال ==================== */
         :root {
-            /* لوحة ألوان نفسية مريحة */
             --bg-primary: #f6faf9;
             --bg-secondary: #eef5f4;
             --surface: rgba(255, 255, 255, 0.85);
@@ -49,11 +48,9 @@
             --radius-full: 9999px;
             
             --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-            
             color-scheme: light;
         }
 
-        /* الوضع الليلي التلقائي */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-primary: #0a1818;
@@ -95,7 +92,6 @@
             transition: background 0.2s ease;
         }
 
-        /* خلفية زخرفية ناعمة */
         body::before {
             content: '';
             position: fixed;
@@ -119,7 +115,6 @@
             z-index: 2;
         }
 
-        /* ==================== رأس الصفحة ==================== */
         .app-header {
             display: flex;
             align-items: center;
@@ -164,7 +159,6 @@
             box-shadow: var(--shadow-xs);
         }
 
-        /* ==================== شريط البحث ==================== */
         .search-wrapper {
             position: relative;
             margin-bottom: 24px;
@@ -209,7 +203,6 @@
             height: 20px;
         }
 
-        /* ==================== قائمة المحادثات ==================== */
         .chats-list {
             display: flex;
             flex-direction: column;
@@ -220,7 +213,6 @@
 
         .chat-wrapper {
             position: relative;
-            /* مهم: لا نضع overflow: hidden حتى لا نخفي القائمة */
         }
 
         .chat-card {
@@ -360,7 +352,6 @@
             color: var(--primary-600);
         }
 
-        /* قائمة الخيارات المنسدلة */
         .options-menu {
             position: absolute;
             top: calc(100% - 8px);
@@ -373,7 +364,7 @@
             box-shadow: var(--shadow-lg);
             padding: 8px;
             min-width: 200px;
-            z-index: 1000; /* تأكيد الظهور فوق كل شيء */
+            z-index: 1000;
             list-style: none;
             opacity: 0;
             visibility: hidden;
@@ -412,7 +403,6 @@
             background: rgba(217, 79, 79, 0.08);
         }
 
-        /* ==================== حالات التحميل والخطأ ==================== */
         .skeleton-card {
             display: flex;
             align-items: center;
@@ -464,7 +454,6 @@
             opacity: 0.7;
         }
 
-        /* ==================== شريط المزامنة ==================== */
         .sync-indicator {
             display: inline-flex;
             align-items: center;
@@ -504,7 +493,6 @@
             50% { opacity: 0.4; }
         }
 
-        /* ==================== مربع حوار التأكيد ==================== */
         .confirm-backdrop {
             position: fixed;
             inset: 0;
@@ -595,7 +583,6 @@
             background: var(--primary-600);
         }
 
-        /* ==================== Toast ==================== */
         .toast {
             position: fixed;
             bottom: 90px;
@@ -628,7 +615,6 @@
             background: var(--danger);
         }
 
-        /* ==================== شريط التنقل السفلي ==================== */
         .bottom-nav {
             position: fixed;
             bottom: 20px;
@@ -667,7 +653,6 @@
             background: var(--primary-50);
         }
 
-        /* أيقونات SVG */
         .icon {
             width: 22px;
             height: 22px;
@@ -683,7 +668,6 @@
             height: 18px;
         }
 
-        /* تجاوب */
         @media (max-width: 480px) {
             .app-container {
                 padding: 1.25rem 1rem;
@@ -697,7 +681,6 @@
 <body>
 
 <div class="app-container">
-    <!-- رأس الصفحة -->
     <header class="app-header">
         <div class="logo-area">
             <span class="logo-main">سُ</span>
@@ -712,7 +695,6 @@
         </div>
     </header>
 
-    <!-- البحث -->
     <div class="search-wrapper">
         <input type="text" id="searchInput" class="search-input" placeholder="ابحث باسم الأخصائي..." autocomplete="off">
         <span class="search-icon">
@@ -722,7 +704,6 @@
         </span>
     </div>
 
-    <!-- هيكل عظمي للتحميل -->
     <div id="skeletonContainer">
         <div class="skeleton-card">
             <div class="skeleton-avatar"></div>
@@ -740,24 +721,20 @@
         </div>
     </div>
 
-    <!-- قائمة المحادثات -->
     <div class="chats-list" id="chatsList"></div>
 
-    <!-- حالة فارغة -->
     <div class="empty-state" id="emptyState">
         <div class="empty-icon">🍃</div>
         <h3 style="margin-bottom: 8px;">مساحتك هادئة الآن</h3>
         <p>ابدأ محادثة مع أحد الأخصائيين عندما تشعر بالاستعداد.</p>
     </div>
 
-    <!-- مؤشر المزامنة -->
     <div class="sync-indicator" id="syncIndicator">
         <span class="sync-dot" id="syncDot"></span>
         <span id="syncMessage">تحميل البيانات...</span>
     </div>
 </div>
 
-<!-- شريط التنقل السفلي -->
 <nav class="bottom-nav">
     <a href="patient-home.html" class="nav-link">
         <svg class="icon" viewBox="0 0 24 24">
@@ -788,7 +765,6 @@
     </a>
 </nav>
 
-<!-- مربع حوار التأكيد -->
 <div class="confirm-backdrop" id="confirmBackdrop">
     <div class="confirm-dialog">
         <span class="confirm-icon" id="confirmIcon">🗑️</span>
@@ -801,114 +777,51 @@
     </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script type="module">
-    // ==================== استيراد Firebase ====================
+    // ==================== استيراد الإعدادات من ملف خارجي ====================
+    import { firebaseConfig } from './firebase-config.js';
+    
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
     import { getDatabase, ref, onValue, get, remove } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
-        authDomain: "sakina-937c4.firebaseapp.com",
-        databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
-        projectId: "sakina-937c4",
-        storageBucket: "sakina-937c4.firebasestorage.app",
-        messagingSenderId: "25215790734",
-        appId: "1:25215790734:web:46c5d893d5818530b3a3df"
-    };
-    
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== إدارة التخزين المحلي (IndexedDB) ====================
-    class LocalCache {
-        constructor() {
-            this.db = null;
-        }
-        
-        async init() {
-            if (this.db) return;
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open('SakoonChatsCache', 1);
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => {
-                    this.db = request.result;
-                    resolve();
-                };
-                request.onupgradeneeded = (event) => {
-                    const db = event.target.result;
-                    if (!db.objectStoreNames.contains('conversations')) {
-                        db.createObjectStore('conversations', { keyPath: 'id' });
-                    }
-                    if (!db.objectStoreNames.contains('doctors')) {
-                        db.createObjectStore('doctors', { keyPath: 'id' });
-                    }
-                };
-            });
-        }
-        
-        async getAllConversations() {
-            await this.init();
-            return new Promise((resolve) => {
-                const tx = this.db.transaction('conversations', 'readonly');
-                const store = tx.objectStore('conversations');
-                const request = store.getAll();
-                request.onsuccess = () => resolve(request.result || []);
-                request.onerror = () => resolve([]);
-            });
-        }
-        
-        async saveConversations(conversations) {
-            await this.init();
-            return new Promise((resolve) => {
-                const tx = this.db.transaction('conversations', 'readwrite');
-                const store = tx.objectStore('conversations');
-                store.clear();
-                conversations.forEach(c => store.put(c));
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => resolve();
-            });
-        }
-        
-        async removeConversation(id) {
-            await this.init();
-            return new Promise((resolve) => {
-                const tx = this.db.transaction('conversations', 'readwrite');
-                const store = tx.objectStore('conversations');
-                store.delete(id);
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => resolve();
-            });
-        }
-        
-        async getDoctor(id) {
-            await this.init();
-            return new Promise((resolve) => {
-                const tx = this.db.transaction('doctors', 'readonly');
-                const store = tx.objectStore('doctors');
-                const request = store.get(id);
-                request.onsuccess = () => resolve(request.result || null);
-                request.onerror = () => resolve(null);
-            });
-        }
-        
-        async saveDoctor(doctor) {
-            await this.init();
-            return new Promise((resolve) => {
-                const tx = this.db.transaction('doctors', 'readwrite');
-                const store = tx.objectStore('doctors');
-                store.put(doctor);
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => resolve();
-            });
-        }
-    }
+    // ==================== إدارة التخزين المحلي باستخدام localStorage ====================
+    const STORAGE_KEYS = {
+        CONVERSATIONS: (userId) => `sakoon_convos_${userId}`,
+        DOCTOR: (docId) => `sakoon_doc_${docId}`
+    };
 
-    const cache = new LocalCache();
+    const localCache = {
+        saveConversations(userId, conversations) {
+            try {
+                localStorage.setItem(STORAGE_KEYS.CONVERSATIONS(userId), JSON.stringify(conversations));
+            } catch (e) {
+                console.warn('LocalStorage quota exceeded, trimming old data.');
+                // حذف أقدم 30% من المحادثات في حالة امتلاء التخزين
+                if (conversations.length > 20) {
+                    const trimmed = conversations.slice(Math.floor(conversations.length * 0.3));
+                    localStorage.setItem(STORAGE_KEYS.CONVERSATIONS(userId), JSON.stringify(trimmed));
+                }
+            }
+        },
+        getConversations(userId) {
+            const data = localStorage.getItem(STORAGE_KEYS.CONVERSATIONS(userId));
+            return data ? JSON.parse(data) : [];
+        },
+        saveDoctor(doctor) {
+            localStorage.setItem(STORAGE_KEYS.DOCTOR(doctor.id), JSON.stringify(doctor));
+        },
+        getDoctor(docId) {
+            const data = localStorage.getItem(STORAGE_KEYS.DOCTOR(docId));
+            return data ? JSON.parse(data) : null;
+        }
+    };
 
     // ==================== دوال مساعدة ====================
     const toast = (message, type = '') => {
@@ -936,7 +849,6 @@
     };
     const escapeAttr = (str) => String(str).replace(/"/g, '&quot;');
 
-    // إظهار/إخفاء مؤشر المزامنة
     const setSyncStatus = (status, message) => {
         const dot = document.getElementById('syncDot');
         const msg = document.getElementById('syncMessage');
@@ -946,7 +858,6 @@
         msg.textContent = message;
     };
 
-    // مربع حوار التأكيد
     const showConfirm = ({ icon, title, message, confirmClass, onConfirm }) => {
         document.getElementById('confirmIcon').textContent = icon || '⚠️';
         document.getElementById('confirmTitle').textContent = title || '';
@@ -969,15 +880,13 @@
     let currentUserId = null;
     let conversations = [];
     let searchQuery = '';
-    const mutedSet = new Set(); // مجموعة المحادثات المكتومة مؤقتاً
+    const mutedSet = new Set();
 
-    // إخفاء الهيكل العظمي
     const removeSkeleton = () => {
         const skel = document.getElementById('skeletonContainer');
         if (skel) skel.remove();
     };
 
-    // عرض القائمة
     const renderChats = () => {
         removeSkeleton();
         const listEl = document.getElementById('chatsList');
@@ -1058,13 +967,10 @@
         listEl.appendChild(fragment);
     };
 
-    // جلب بيانات الطبيب (من الكاش أولاً ثم Firebase)
     const fetchDoctorData = async (doctorId) => {
-        // من الكاش
-        let doc = await cache.getDoctor(doctorId);
+        let doc = localCache.getDoctor(doctorId);
         if (doc) return doc;
         
-        // من Firebase
         try {
             const snap = await get(ref(database, `doctors/${doctorId}`));
             if (snap.exists()) {
@@ -1075,7 +981,7 @@
                     specialty: data.specialty || '',
                     photoURL: data.photoURL || ''
                 };
-                await cache.saveDoctor(doc);
+                localCache.saveDoctor(doc);
                 return doc;
             }
         } catch (e) {
@@ -1084,7 +990,6 @@
         return { id: doctorId, name: '', specialty: '', photoURL: '' };
     };
 
-    // ==================== المزامنة مع Firebase ====================
     const startRealtimeSync = () => {
         const convsRef = ref(database, 'conversations');
         
@@ -1097,15 +1002,12 @@
                 
                 for (const convId in data) {
                     const conv = data[convId];
-                    // فلترة للمريض الحالي فقط
                     if (conv.patientId !== currentUserId) continue;
                     
                     const muted = mutedSet.has(convId);
-                    
-                    // جلب بيانات الطبيب
                     const doctor = await fetchDoctorData(conv.doctorId);
                     
-                    const enriched = {
+                    freshConversations.push({
                         id: convId,
                         doctorId: conv.doctorId,
                         doctorName: doctor.name,
@@ -1114,15 +1016,12 @@
                         lastMessageTime: conv.lastMessageTime || conv.createdAt || Date.now(),
                         unread: conv.unreadPatient || false,
                         muted
-                    };
-                    
-                    freshConversations.push(enriched);
+                    });
                 }
             }
             
-            // تحديث الحالة والكاش
             conversations = freshConversations;
-            await cache.saveConversations(freshConversations);
+            localCache.saveConversations(currentUserId, freshConversations);
             
             renderChats();
             setSyncStatus('online', 'المحادثات محدثة ✓');
@@ -1132,32 +1031,26 @@
         });
     };
 
-    // ==================== معالجة الأحداث ====================
     const setupEventListeners = () => {
         const list = document.getElementById('chatsList');
         const searchInput = document.getElementById('searchInput');
         
-        // البحث
         searchInput.addEventListener('input', (e) => {
             searchQuery = e.target.value;
             renderChats();
         });
         
-        // النقر على البطاقات والأزرار
         list.addEventListener('click', (e) => {
-            // زر الخيارات
             const optionsBtn = e.target.closest('.options-btn');
             if (optionsBtn) {
                 e.stopPropagation();
                 const wrapper = optionsBtn.closest('.chat-wrapper');
                 const menu = wrapper.querySelector('.options-menu');
-                // إغلاق أي قائمة مفتوحة أخرى
                 document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
                 menu.classList.add('show');
                 return;
             }
             
-            // عنصر في القائمة
             const menuItem = e.target.closest('.menu-item');
             if (menuItem) {
                 e.stopPropagation();
@@ -1174,8 +1067,7 @@
                     conv.muted = newMuted;
                     if (newMuted) mutedSet.add(convId);
                     else mutedSet.delete(convId);
-                    // تحديث الكاش
-                    cache.saveConversations(conversations);
+                    localCache.saveConversations(currentUserId, conversations);
                     renderChats();
                     toast(newMuted ? '🔕 تم كتم الإشعارات' : '🔔 تم إلغاء الكتم', 'success');
                 }
@@ -1191,9 +1083,8 @@
                             } catch (err) {
                                 console.warn('فشل حذف المحادثة من Firebase:', err);
                             }
-                            // حذف من الحالة والكاش
                             conversations = conversations.filter(c => c.id !== convId);
-                            await cache.removeConversation(convId);
+                            localCache.saveConversations(currentUserId, conversations);
                             renderChats();
                             toast('تم حذف المحادثة', 'success');
                         }
@@ -1202,39 +1093,31 @@
                 return;
             }
             
-            // إغلاق القوائم المفتوحة عند النقر خارجها
             document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
             
-            // النقر على بطاقة المحادثة للانتقال
             const card = e.target.closest('.chat-card');
             if (card) {
                 const convId = card.dataset.convId;
                 const conv = conversations.find(c => c.id === convId);
                 if (conv) {
-                    // ✅ تحسين تجربة المستخدم: إخفاء علامة "غير مقروء" فوراً
                     if (conv.unread) {
                         conv.unread = false;
-                        // تحديث العرض المحلي فوراً
                         renderChats();
                     }
-                    // الانتقال إلى صفحة المحادثة
                     window.location.href = `conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
                 }
             }
         });
         
-        // إغلاق القوائم عند النقر خارجها
         document.addEventListener('click', () => {
             document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
         });
     };
 
-    // ==================== بدء التشغيل ====================
     const init = async (user) => {
         currentUserId = user.uid;
         
-        // تحميل الكاش أولاً للعرض الفوري
-        const cached = await cache.getAllConversations();
+        const cached = localCache.getConversations(currentUserId);
         if (cached.length) {
             conversations = cached;
             cached.forEach(c => { if (c.muted) mutedSet.add(c.id); });
@@ -1246,7 +1129,6 @@
         startRealtimeSync();
     };
 
-    // التحقق من حالة المستخدم
     onAuthStateChanged(auth, (user) => {
         if (user) {
             init(user);
@@ -1255,12 +1137,10 @@
         }
     });
 
-    // دعم الأجهزة التي لا تدعم backdrop-filter
     if (!CSS.supports('backdrop-filter', 'blur(10px)')) {
         document.documentElement.style.setProperty('--surface', 'rgba(255, 255, 255, 0.98)');
     }
 </script>
-<!-- ملف المكالمات (اختياري) -->
 <script type="module" src="patient-call-listener.js"></script>
 </body>
 </html>
