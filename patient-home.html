@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* ==================== نفس التصميم السابق بالكامل (لم يتغير) ==================== */
+        /* ==================== نفس التصميم السابق (بدون تغيير) ==================== */
         :root {
             --bg-primary: #f6faf9;
             --bg-secondary: #eef5f4;
@@ -605,24 +605,7 @@
     </div>
 
     <div class="cards-grid" id="cardsGrid">
-        <div class="skeleton-card">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-lines">
-                <div class="skeleton-line" style="width: 60%"></div>
-                <div class="skeleton-line" style="width: 40%"></div>
-                <div class="skeleton-line" style="width: 90%"></div>
-                <div class="skeleton-line" style="width: 70%"></div>
-            </div>
-        </div>
-        <div class="skeleton-card">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-lines">
-                <div class="skeleton-line" style="width: 50%"></div>
-                <div class="skeleton-line" style="width: 35%"></div>
-                <div class="skeleton-line" style="width: 85%"></div>
-                <div class="skeleton-line" style="width: 65%"></div>
-            </div>
-        </div>
+        <!-- Skeletons will be replaced by real content -->
     </div>
 
     <div class="empty-state" id="emptyState">
@@ -675,38 +658,54 @@
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
+    // تهيئة Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== إدارة التخزين المحلي باستخدام localStorage ====================
-    const STORAGE_KEYS = {
-        DOCTORS: 'sakoon_doctors_cache',
-        LAST_SYNC: 'sakoon_doctors_last_sync'
-    };
-
-    const localCache = {
-        saveDoctors(doctors) {
+    // ==================== إدارة التخزين المحلي عالي الأداء ====================
+    const STORAGE_KEY = 'sakoon_doctors_cache_v1';
+    const LAST_SYNC_KEY = 'sakoon_last_sync';
+    
+    const cache = {
+        save(doctors) {
             try {
-                localStorage.setItem(STORAGE_KEYS.DOCTORS, JSON.stringify(doctors));
+                // نخزن فقط الحقول الضرورية لتقليل الحجم
+                const compact = doctors.map(d => ({
+                    i: d.id,
+                    u: d.authUid || d.id,
+                    n: d.name || '',
+                    s: d.specialty || '',
+                    b: (d.quickBlurb || '').substring(0, 100),
+                    p: d.photoURL || ''
+                }));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
+                localStorage.setItem(LAST_SYNC_KEY, Date.now());
             } catch (e) {
-                console.warn('LocalStorage quota exceeded, trimming doctors list.');
-                // في حالة تجاوز السعة، نحذف أقدم 30% من الأطباء
-                if (doctors.length > 20) {
-                    const trimmed = doctors.slice(Math.floor(doctors.length * 0.3));
-                    localStorage.setItem(STORAGE_KEYS.DOCTORS, JSON.stringify(trimmed));
-                }
+                // في حال تجاوز السعة، نحذف البيانات القديمة
+                localStorage.removeItem(STORAGE_KEY);
             }
         },
-        getDoctors() {
-            const data = localStorage.getItem(STORAGE_KEYS.DOCTORS);
-            return data ? JSON.parse(data) : [];
-        },
-        saveLastSync(time) {
-            localStorage.setItem(STORAGE_KEYS.LAST_SYNC, time);
+        load() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return [];
+                const compact = JSON.parse(raw);
+                // إعادة بناء الكائنات بالشكل المتوقع
+                return compact.map(d => ({
+                    id: d.i,
+                    authUid: d.u,
+                    name: d.n,
+                    specialty: d.s,
+                    quickBlurb: d.b,
+                    photoURL: d.p
+                }));
+            } catch {
+                return [];
+            }
         },
         getLastSync() {
-            return parseInt(localStorage.getItem(STORAGE_KEYS.LAST_SYNC) || '0');
+            return parseInt(localStorage.getItem(LAST_SYNC_KEY) || '0');
         }
     };
 
@@ -720,7 +719,6 @@
         'cbt': 'معالج سلوكي معرفي',
         'trauma_therapist': 'معالج صدمات'
     };
-    
     const getSpecialtyName = (key) => specialtyLabels[key] || key || 'معالج';
 
     // عناصر DOM
@@ -738,16 +736,27 @@
     let searchQuery = '';
     let currentUser = null;
 
-    // تحديث واجهة المزامنة
-    function setSyncStatus(status, message) {
+    // ضبط مؤشر المزامنة
+    function setSyncStatus(status, msg) {
         syncDot.className = 'sync-dot';
         if (status === 'syncing') syncDot.classList.add('syncing');
         else if (status === 'online') syncDot.classList.add('online');
-        syncMessage.textContent = message;
+        syncMessage.textContent = msg;
     }
 
-    // عرض البطاقات
-    function renderCards() {
+    // خنق (throttle) للبحث
+    let renderScheduled = false;
+    function scheduleRender() {
+        if (renderScheduled) return;
+        renderScheduled = true;
+        requestAnimationFrame(() => {
+            performRender();
+            renderScheduled = false;
+        });
+    }
+
+    // تنفيذ عرض البطاقات
+    function performRender() {
         const query = searchQuery.toLowerCase().trim();
         const filtered = allDoctors.filter(doc => {
             if (filterSpecialty !== 'all' && doc.specialty !== filterSpecialty) return false;
@@ -765,46 +774,48 @@
 
         const fragment = document.createDocumentFragment();
         filtered.forEach(doc => {
-            const card = document.createElement('div');
-            card.className = 'doctor-card';
-            
-            const avatarContent = doc.photoURL 
-                ? `<img src="${escapeAttr(doc.photoURL)}" alt="${escapeAttr(doc.name)}" class="avatar-img" loading="lazy">`
-                : (doc.name || 'د').charAt(0).toUpperCase();
-            
-            const avatarHtml = doc.photoURL 
-                ? `<div class="avatar-wrapper">${avatarContent}</div>`
-                : `<div class="avatar-wrapper">${avatarContent}</div>`;
-            
-            const specLabel = getSpecialtyName(doc.specialty);
-            const bio = (doc.quickBlurb || '').substring(0, 120);
-            
-            card.innerHTML = `
-                <div class="card-header">
-                    ${avatarHtml}
-                    <div class="doctor-info">
-                        <div class="doctor-name">${escapeHtml(doc.name || '—')}</div>
-                        <div class="specialty-badge">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <circle cx="12" cy="8" r="4"></circle><path d="M5 20v-2a7 7 0 0 1 14 0v2"></path>
-                            </svg>
-                            ${escapeHtml(specLabel)}
-                        </div>
-                        <div class="doctor-bio">${escapeHtml(bio)}${bio.length > 100 ? '...' : ''}</div>
-                    </div>
-                </div>
-                <button class="action-button" data-doctor-id="${escapeAttr(doc.authUid || doc.id)}" data-patient-id="${escapeAttr(currentUser?.uid || '')}">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                    </svg>
-                    راسل الآن
-                </button>
-            `;
+            const card = createDoctorCard(doc);
             fragment.appendChild(card);
         });
         
         grid.innerHTML = '';
         grid.appendChild(fragment);
+    }
+
+    // إنشاء بطاقة طبيب (لتقليل تكرار الكود)
+    function createDoctorCard(doc) {
+        const card = document.createElement('div');
+        card.className = 'doctor-card';
+        
+        const avatarHtml = doc.photoURL
+            ? `<div class="avatar-wrapper"><img src="${escapeAttr(doc.photoURL)}" alt="${escapeAttr(doc.name)}" class="avatar-img" loading="lazy"></div>`
+            : `<div class="avatar-wrapper">${(doc.name || 'د').charAt(0).toUpperCase()}</div>`;
+        
+        const specLabel = getSpecialtyName(doc.specialty);
+        const bio = (doc.quickBlurb || '').substring(0, 120);
+        
+        card.innerHTML = `
+            <div class="card-header">
+                ${avatarHtml}
+                <div class="doctor-info">
+                    <div class="doctor-name">${escapeHtml(doc.name || '—')}</div>
+                    <div class="specialty-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="8" r="4"></circle><path d="M5 20v-2a7 7 0 0 1 14 0v2"></path>
+                        </svg>
+                        ${escapeHtml(specLabel)}
+                    </div>
+                    <div class="doctor-bio">${escapeHtml(bio)}${bio.length > 100 ? '...' : ''}</div>
+                </div>
+            </div>
+            <button class="action-button" data-doctor-id="${escapeAttr(doc.authUid || doc.id)}" data-patient-id="${escapeAttr(currentUser?.uid || '')}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                </svg>
+                راسل الآن
+            </button>
+        `;
+        return card;
     }
 
     function escapeHtml(text) {
@@ -815,6 +826,7 @@
         return String(text).replace(/"/g, '&quot;');
     }
 
+    // بناء قائمة التخصصات
     function buildFilterDropdown() {
         const specs = [...new Set(allDoctors.map(d => d.specialty).filter(Boolean))];
         const items = ['all', ...specs];
@@ -836,18 +848,18 @@
         });
     }
 
-    // ==================== المزامنة الفورية مع Firebase ====================
+    // ==================== المزامنة مع Firebase ====================
     function startRealtimeSync() {
         const doctorsRef = ref(database, 'doctors');
         
-        onValue(doctorsRef, async (snapshot) => {
+        onValue(doctorsRef, (snapshot) => {
             setSyncStatus('syncing', 'جاري تحديث البيانات...');
             
-            const freshDoctors = [];
+            const fresh = [];
             snapshot.forEach(child => {
                 const data = child.val();
                 if (data.status !== 'blocked') {
-                    freshDoctors.push({
+                    fresh.push({
                         id: child.key,
                         authUid: data.authUid || child.key,
                         name: data.name || '',
@@ -861,14 +873,12 @@
                 }
             });
             
-            // تحديث الكاش المحلي
-            localCache.saveDoctors(freshDoctors);
-            localCache.saveLastSync(Date.now());
+            // تحديث الكاش والذاكرة
+            cache.save(fresh);
+            allDoctors = fresh;
             
-            // تحديث الواجهة
-            allDoctors = freshDoctors;
             buildFilterDropdown();
-            renderCards();
+            scheduleRender();
             setSyncStatus('online', 'بيانات محدثة ✓');
         }, (error) => {
             console.warn('خطأ في المزامنة:', error);
@@ -876,26 +886,28 @@
         });
     }
 
-    // ==================== تهيئة التطبيق ====================
-    async function initializeAppData() {
-        const cachedDoctors = localCache.getDoctors();
-        if (cachedDoctors.length > 0) {
-            allDoctors = cachedDoctors;
+    // ==================== التهيئة ====================
+    async function initialize() {
+        // تحميل البيانات المخزنة فوراً
+        const cached = cache.load();
+        if (cached.length) {
+            allDoctors = cached;
             buildFilterDropdown();
-            renderCards();
+            scheduleRender();
             setSyncStatus('online', 'تم التحميل من الذاكرة المحلية');
         } else {
+            // عرض skeletons (موجودة مبدئياً في HTML)
             setSyncStatus('syncing', 'تحميل أول مرة...');
         }
         
         startRealtimeSync();
     }
 
-    // ==================== إعداد مستمعي الأحداث ====================
+    // ==================== إعداد الأحداث ====================
     function setupListeners() {
         searchInput.addEventListener('input', (e) => {
             searchQuery = e.target.value;
-            renderCards();
+            scheduleRender();
         });
         
         filterBtn.addEventListener('click', (e) => {
@@ -915,7 +927,7 @@
             filterSpecialty = option.dataset.spec;
             filterLabel.textContent = filterSpecialty === 'all' ? 'كل التخصصات' : getSpecialtyName(filterSpecialty);
             buildFilterDropdown();
-            renderCards();
+            scheduleRender();
             filterDropdown.classList.remove('show');
             filterBtn.classList.remove('active');
         });
@@ -929,21 +941,23 @@
         });
     }
 
-    // ==================== التحقق من المستخدم ====================
+    // ==================== بدء التشغيل ====================
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
             setupListeners();
-            initializeAppData();
+            initialize();
         } else {
             window.location.href = 'patient-login.html';
         }
     });
 
+    // دعم الأجهزة القديمة
     if (!CSS.supports('backdrop-filter', 'blur(10px)')) {
         document.documentElement.style.setProperty('--surface', 'rgba(255, 255, 255, 0.98)');
     }
 </script>
+<!-- ملف المكالمات (اختياري) -->
 <script type="module" src="patient-call-listener.js"></script>
 </body>
 </html>
