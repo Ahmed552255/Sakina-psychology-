@@ -172,25 +172,15 @@
 </div>
 
 <script type="module">
-    // استيراد Firebase مع المفتاح الصحيح
+    // 1. استيراد إعدادات Firebase من ملف خارجي (أكثر أماناً)
+    import { firebaseConfig } from './firebase-config.js';
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-analytics.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
     import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
-    // تكوين Firebase - تم تحديث apiKey بالمفتاح الصحيح الذي أرسلته
-    const firebaseConfig = {
-        apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
-        authDomain: "sakina-937c4.firebaseapp.com",
-        databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
-        projectId: "sakina-937c4",
-        storageBucket: "sakina-937c4.firebasestorage.app",
-        messagingSenderId: "25215790734",
-        appId: "1:25215790734:web:46c5d893d5818530b3a3df",
-        measurementId: "G-K40TE1DCVV"
-    };
-
-    // تهيئة Firebase
+    // تهيئة Firebase باستخدام الإعدادات المستوردة
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const auth = getAuth(app);
@@ -281,10 +271,11 @@
         }, 1000);
     }
 
+    // 2. تعديل مسار التوجيه ليكون إلى patient-home.html بدلاً من home.html
     function redirectToHome(uid, recoveryKey = null) {
         sessionStorage.setItem('sakina_uid', uid);
         if (recoveryKey) sessionStorage.setItem('sakina_recovery_key', recoveryKey);
-        window.location.href = 'home.html';
+        window.location.href = 'patient-home.html';
     }
 
     function showSignupError(message) {
