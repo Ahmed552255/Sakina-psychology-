@@ -778,69 +778,120 @@
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== تخزين محلي مضغوط ====================
-    const STORAGE = {
-        CONVERSATIONS: (uid) => `sc_c_${uid}`,
-        DOCTOR: (docId) => `sc_d_${docId}`
-    };
-
-    const cache = {
-        saveConversations(uid, convos) {
-            try {
-                const compact = convos.map(c => ({
-                    i: c.id,           // id
-                    d: c.doctorId,     // doctorId
-                    n: c.doctorName,   // doctorName
-                    a: c.doctorAvatar, // doctorAvatar
-                    m: c.lastMessage,  // lastMessage
-                    t: c.lastMessageTime,
-                    u: c.unread ? 1 : 0,
-                    k: c.muted ? 1 : 0
-                }));
-                localStorage.setItem(STORAGE.CONVERSATIONS(uid), JSON.stringify(compact));
-            } catch (e) {
-                // إذا فشل التخزين، نحذف القديم
-                localStorage.removeItem(STORAGE.CONVERSATIONS(uid));
-            }
-        },
-        loadConversations(uid) {
-            const raw = localStorage.getItem(STORAGE.CONVERSATIONS(uid));
-            if (!raw) return [];
-            try {
-                const compact = JSON.parse(raw);
-                return compact.map(c => ({
-                    id: c.i,
-                    doctorId: c.d,
-                    doctorName: c.n || '',
-                    doctorAvatar: c.a || '',
-                    lastMessage: c.m || '',
-                    lastMessageTime: c.t || Date.now(),
-                    unread: c.u === 1,
-                    muted: c.k === 1
-                }));
-            } catch {
-                return [];
-            }
-        },
-        saveDoctor(doc) {
-            try {
-                localStorage.setItem(STORAGE.DOCTOR(doc.id), JSON.stringify({
+    // ==================== تخزين محلي باستخدام IndexedDB ====================
+    class ChatCache {
+        constructor() {
+            this.db = null;
+        }
+        async init() {
+            if (this.db) return;
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('SakoonChatsDB', 1);
+                req.onerror = () => reject(req.error);
+                req.onsuccess = () => { this.db = req.result; resolve(); };
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('conversations')) {
+                        db.createObjectStore('conversations', { keyPath: 'i' });
+                    }
+                    if (!db.objectStoreNames.contains('doctors')) {
+                        db.createObjectStore('doctors', { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+        async saveConversations(uid, convos) {
+            await this.init();
+            const compact = convos.map(c => ({
+                i: c.id,
+                d: c.doctorId,
+                n: c.doctorName || '',
+                a: c.doctorAvatar || '',
+                m: c.lastMessage || '',
+                t: c.lastMessageTime || Date.now(),
+                u: c.unread ? 1 : 0,
+                k: c.muted ? 1 : 0,
+                uid: uid
+            }));
+            return new Promise((resolve, reject) => {
+                const tx = this.db.transaction('conversations', 'readwrite');
+                const store = tx.objectStore('conversations');
+                // حذف القديم الخاص بهذا المستخدم فقط (اختياري لتفادي تراكم البيانات)
+                const index = store.index('uid');
+                const range = IDBKeyRange.only(uid);
+                index.openCursor(range).onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        cursor.delete();
+                        cursor.continue();
+                    }
+                };
+                // إضافة الجديد
+                compact.forEach(c => store.put(c));
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+        async loadConversations(uid) {
+            await this.init();
+            return new Promise((resolve, reject) => {
+                const tx = this.db.transaction('conversations', 'readonly');
+                const store = tx.objectStore('conversations');
+                const index = store.index('uid');
+                const range = IDBKeyRange.only(uid);
+                const req = index.getAll(range);
+                req.onsuccess = () => {
+                    const compact = req.result || [];
+                    const convos = compact.map(c => ({
+                        id: c.i,
+                        doctorId: c.d,
+                        doctorName: c.n,
+                        doctorAvatar: c.a,
+                        lastMessage: c.m,
+                        lastMessageTime: c.t,
+                        unread: c.u === 1,
+                        muted: c.k === 1
+                    }));
+                    resolve(convos);
+                };
+                req.onerror = () => reject(req.error);
+            });
+        }
+        async saveDoctor(doc) {
+            await this.init();
+            return new Promise((resolve, reject) => {
+                const tx = this.db.transaction('doctors', 'readwrite');
+                const store = tx.objectStore('doctors');
+                const compact = {
+                    id: doc.id,
                     n: doc.name || '',
                     p: doc.photoURL || ''
-                }));
-            } catch (e) {}
-        },
-        getDoctor(docId) {
-            const raw = localStorage.getItem(STORAGE.DOCTOR(docId));
-            if (!raw) return null;
-            try {
-                const d = JSON.parse(raw);
-                return { id: docId, name: d.n, photoURL: d.p };
-            } catch {
-                return null;
-            }
+                };
+                store.put(compact);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
         }
-    };
+        async getDoctor(docId) {
+            await this.init();
+            return new Promise((resolve, reject) => {
+                const tx = this.db.transaction('doctors', 'readonly');
+                const store = tx.objectStore('doctors');
+                const req = store.get(docId);
+                req.onsuccess = () => {
+                    const d = req.result;
+                    if (d) {
+                        resolve({ id: d.id, name: d.n, photoURL: d.p });
+                    } else {
+                        resolve(null);
+                    }
+                };
+                req.onerror = () => reject(req.error);
+            });
+        }
+    }
+
+    const cache = new ChatCache();
 
     // ==================== أدوات مساعدة ====================
     const toast = (msg, type = '') => {
@@ -987,14 +1038,14 @@
 
     // ==================== جلب بيانات الطبيب ====================
     const fetchDoctor = async (docId) => {
-        let doc = cache.getDoctor(docId);
+        let doc = await cache.getDoctor(docId);
         if (doc) return doc;
         try {
             const snap = await get(ref(database, `doctors/${docId}`));
             if (snap.exists()) {
                 const d = snap.val();
                 doc = { id: docId, name: d.name || '', photoURL: d.photoURL || '' };
-                cache.saveDoctor(doc);
+                await cache.saveDoctor(doc);
                 return doc;
             }
         } catch (e) {}
@@ -1026,7 +1077,7 @@
                 }
             }
             conversations = fresh;
-            cache.saveConversations(uid, fresh);
+            await cache.saveConversations(uid, fresh);
             scheduleRender();
             setSyncStatus('online', 'محدّثة ✓');
         }, (err) => {
@@ -1078,7 +1129,7 @@
                         onConfirm: async () => {
                             try { await remove(ref(database, `conversations/${convId}`)); } catch {}
                             conversations = conversations.filter(c => c.id !== convId);
-                            cache.saveConversations(uid, conversations);
+                            await cache.saveConversations(uid, conversations);
                             scheduleRender();
                             toast('تم الحذف', 'success');
                         }
@@ -1113,7 +1164,7 @@
         uid = user.uid;
         
         // عرض المخزن محلياً فوراً
-        const cached = cache.loadConversations(uid);
+        const cached = await cache.loadConversations(uid);
         if (cached.length) {
             conversations = cached;
             cached.forEach(c => { if (c.muted) mutedSet.add(c.id); });
