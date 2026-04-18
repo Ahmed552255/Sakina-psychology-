@@ -663,51 +663,90 @@
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== إدارة التخزين المحلي عالي الأداء ====================
-    const STORAGE_KEY = 'sakoon_doctors_cache_v1';
-    const LAST_SYNC_KEY = 'sakoon_last_sync';
-    
-    const cache = {
-        save(doctors) {
-            try {
-                // نخزن فقط الحقول الضرورية لتقليل الحجم
-                const compact = doctors.map(d => ({
-                    i: d.id,
-                    u: d.authUid || d.id,
-                    n: d.name || '',
-                    s: d.specialty || '',
-                    b: (d.quickBlurb || '').substring(0, 100),
-                    p: d.photoURL || ''
-                }));
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
-                localStorage.setItem(LAST_SYNC_KEY, Date.now());
-            } catch (e) {
-                // في حال تجاوز السعة، نحذف البيانات القديمة
-                localStorage.removeItem(STORAGE_KEY);
-            }
-        },
-        load() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return [];
-                const compact = JSON.parse(raw);
-                // إعادة بناء الكائنات بالشكل المتوقع
-                return compact.map(d => ({
-                    id: d.i,
-                    authUid: d.u,
-                    name: d.n,
-                    specialty: d.s,
-                    quickBlurb: d.b,
-                    photoURL: d.p
-                }));
-            } catch {
-                return [];
-            }
-        },
-        getLastSync() {
-            return parseInt(localStorage.getItem(LAST_SYNC_KEY) || '0');
+    // ==================== إدارة التخزين المحلي باستخدام IndexedDB ====================
+    class DoctorCache {
+        constructor() {
+            this.db = null;
         }
-    };
+        async init() {
+            if (this.db) return;
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('SakoonDoctorCache', 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    this.db = request.result;
+                    resolve();
+                };
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('doctors')) {
+                        db.createObjectStore('doctors', { keyPath: 'i' });
+                    }
+                    if (!db.objectStoreNames.contains('metadata')) {
+                        db.createObjectStore('metadata', { keyPath: 'key' });
+                    }
+                };
+            });
+        }
+        async save(doctors) {
+            await this.init();
+            // ضغط البيانات لتقليل الحجم
+            const compact = doctors.map(d => ({
+                i: d.id,
+                u: d.authUid || d.id,
+                n: d.name || '',
+                s: d.specialty || '',
+                b: (d.quickBlurb || '').substring(0, 100),
+                p: d.photoURL || ''
+            }));
+            return new Promise((resolve, reject) => {
+                const tx = this.db.transaction(['doctors', 'metadata'], 'readwrite');
+                const doctorStore = tx.objectStore('doctors');
+                const metaStore = tx.objectStore('metadata');
+                
+                // مسح القديم وإضافة الجديد
+                doctorStore.clear();
+                compact.forEach(doc => doctorStore.put(doc));
+                metaStore.put({ key: 'lastSync', value: Date.now() });
+                
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+        async load() {
+            await this.init();
+            return new Promise((resolve, reject) => {
+                const tx = this.db.transaction('doctors', 'readonly');
+                const store = tx.objectStore('doctors');
+                const request = store.getAll();
+                request.onsuccess = () => {
+                    const compact = request.result || [];
+                    const doctors = compact.map(d => ({
+                        id: d.i,
+                        authUid: d.u,
+                        name: d.n,
+                        specialty: d.s,
+                        quickBlurb: d.b,
+                        photoURL: d.p
+                    }));
+                    resolve(doctors);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+        async getLastSync() {
+            await this.init();
+            return new Promise((resolve, reject) => {
+                const tx = this.db.transaction('metadata', 'readonly');
+                const store = tx.objectStore('metadata');
+                const request = store.get('lastSync');
+                request.onsuccess = () => resolve(request.result?.value || 0);
+                request.onerror = () => reject(request.error);
+            });
+        }
+    }
+
+    const cache = new DoctorCache();
 
     // ==================== الدوال المساعدة ====================
     const specialtyLabels = {
@@ -889,7 +928,7 @@
     // ==================== التهيئة ====================
     async function initialize() {
         // تحميل البيانات المخزنة فوراً
-        const cached = cache.load();
+        const cached = await cache.load();
         if (cached.length) {
             allDoctors = cached;
             buildFilterDropdown();
