@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>سُكُون · محادثاتي</title>
 
-    <!-- تحميل الخط مع العرض الفوري -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* ==================== إعدادات التصميم (كما هي دون تغيير) ==================== */
         :root {
             --bg-primary: #f6faf9;
             --bg-secondary: #eef5f4;
@@ -33,18 +31,19 @@
             --text-tertiary: #6b8a8a;
             --text-on-primary: #ffffff;
             
-            --danger: #d94f4f;
+            --danger: #e74c3c;
+            --danger-light: rgba(231, 76, 60, 0.08);
             --success: #2ecc71;
-            --warning: #f4b740;
+            --warning: #f39c12;
             
             --shadow-xs: 0 2px 4px rgba(22, 86, 86, 0.04);
             --shadow-sm: 0 6px 16px rgba(22, 86, 86, 0.06);
             --shadow-md: 0 12px 28px rgba(22, 86, 86, 0.08);
             --shadow-lg: 0 20px 40px rgba(22, 86, 86, 0.12);
-            --shadow-focus: 0 0 0 3px rgba(42, 136, 136, 0.15);
+            --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.15);
             
-            --radius-card: 28px;
-            --radius-element: 18px;
+            --radius-card: 24px;
+            --radius-element: 16px;
             --radius-full: 9999px;
             
             --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
@@ -64,6 +63,7 @@
                 --shadow-sm: 0 6px 16px rgba(0, 0, 0, 0.25);
                 --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.3);
                 --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+                --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.5);
                 color-scheme: dark;
             }
         }
@@ -150,24 +150,78 @@
             background: var(--surface);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            padding: 6px 16px;
+            padding: 8px 18px;
             border-radius: 40px;
             font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            border: 1.5px solid var(--primary-100);
+            box-shadow: var(--shadow-xs);
+            transition: var(--transition);
+        }
+
+        .page-badge:hover {
+            border-color: var(--primary-300);
+            background: var(--surface-solid);
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .stat-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1.5px solid var(--primary-100);
+            border-radius: var(--radius-element);
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-secondary);
-            border: 1px solid var(--primary-100);
             box-shadow: var(--shadow-xs);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .stat-chip:hover {
+            border-color: var(--primary-300);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-chip.active {
+            background: var(--primary-50);
+            border-color: var(--primary-400);
+            color: var(--primary-700);
+        }
+
+        .stat-number {
+            background: var(--primary-500);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            min-width: 28px;
+            text-align: center;
         }
 
         .search-wrapper {
             position: relative;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .search-input {
             width: 100%;
             height: 56px;
-            padding: 0 48px 0 20px;
+            padding: 0 52px 0 20px;
             background: var(--surface);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -199,71 +253,134 @@
             transform: translateY(-50%);
             color: var(--text-tertiary);
             pointer-events: none;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
+        }
+
+        .clear-search {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--primary-100);
+            border: none;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .clear-search.show {
+            display: flex;
+        }
+
+        .clear-search:hover {
+            background: var(--primary-200);
         }
 
         .chats-list {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            content-visibility: auto;
-            contain-intrinsic-size: auto 100px;
+            gap: 12px;
         }
 
         .chat-wrapper {
             position: relative;
+            animation: cardSlideIn 0.4s cubic-bezier(0.2, 0, 0, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes cardSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .chat-card {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             padding: 1rem 1.2rem;
             background: var(--surface);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1.5px solid rgba(255, 255, 255, 0.5);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
             border-radius: var(--radius-card);
             box-shadow: var(--shadow-sm);
             text-decoration: none;
             color: inherit;
-            transition: transform 0.15s, box-shadow 0.2s;
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
             cursor: pointer;
-            animation: cardFadeIn 0.3s ease forwards;
-            opacity: 0;
+            position: relative;
+            overflow: hidden;
         }
 
-        @keyframes cardFadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+        .chat-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary-400);
+            border-radius: 0 4px 4px 0;
+            transform: scaleY(0);
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .chat-card.unread::before {
+            transform: scaleY(1);
+        }
+
+        .chat-card:hover {
+            transform: translateX(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-200);
         }
 
         .chat-card:active {
-            transform: scale(0.985);
-            box-shadow: var(--shadow-md);
-        }
-
-        .chat-card.unread {
-            border-right: 4px solid var(--primary-400);
+            transform: scale(0.98);
+            transition: transform 0.1s;
         }
 
         .avatar-wrapper {
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             flex-shrink: 0;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
             box-shadow: var(--shadow-sm);
-            border: 2.5px solid var(--surface-solid);
+            border: 3px solid var(--surface-solid);
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: white;
             text-transform: uppercase;
+            position: relative;
+        }
+
+        .online-indicator {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--success);
+            border: 3px solid var(--surface-solid);
         }
 
         .avatar-img {
@@ -271,7 +388,6 @@
             height: 100%;
             object-fit: cover;
             display: block;
-            loading: lazy;
         }
 
         .chat-content {
@@ -283,7 +399,7 @@
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .doctor-name {
@@ -293,19 +409,42 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 60%;
+            max-width: 65%;
+        }
+
+        .chat-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .chat-time {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--text-tertiary);
             white-space: nowrap;
+        }
+
+        .unread-badge {
+            background: var(--primary-500);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            min-width: 22px;
+            text-align: center;
+            display: none;
+        }
+
+        .chat-card.unread .unread-badge {
+            display: inline-block;
         }
 
         .chat-preview {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
         }
 
         .last-message {
@@ -317,26 +456,16 @@
             flex: 1;
         }
 
-        .unread-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: var(--primary-400);
-            box-shadow: 0 0 8px var(--primary-300);
-            margin-right: 8px;
-            flex-shrink: 0;
-            visibility: hidden;
-        }
-
-        .chat-card.unread .unread-dot {
-            visibility: visible;
+        .mute-icon {
+            font-size: 0.75rem;
+            opacity: 0.6;
         }
 
         .options-btn {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            border: none;
+            border: 1.5px solid transparent;
             background: transparent;
             display: flex;
             align-items: center;
@@ -344,55 +473,107 @@
             cursor: pointer;
             color: var(--text-tertiary);
             flex-shrink: 0;
-            transition: background 0.15s, color 0.15s;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 10;
         }
 
         .options-btn:hover {
             background: var(--primary-50);
+            border-color: var(--primary-200);
             color: var(--primary-600);
         }
 
-        .options-menu {
-            position: absolute;
-            top: calc(100% - 8px);
-            left: 16px;
-            background: var(--surface-solid);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--primary-100);
-            border-radius: 24px;
-            box-shadow: var(--shadow-lg);
-            padding: 8px;
-            min-width: 200px;
-            z-index: 1000;
-            list-style: none;
+        .options-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* قائمة الخيارات المحسنة */
+        .options-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 999;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(-8px) scale(0.96);
-            transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+            transition: all 0.25s;
+        }
+
+        .options-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .options-menu {
+            position: fixed;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%) scale(0.9);
+            background: var(--surface-solid);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1.5px solid var(--primary-100);
+            border-radius: 28px;
+            box-shadow: var(--shadow-xl);
+            padding: 12px;
+            min-width: 300px;
+            max-width: 90vw;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
         }
 
         .options-menu.show {
             opacity: 1;
             visibility: visible;
-            transform: translateY(0) scale(1);
+            transform: translate(-50%, 50%) scale(1);
+        }
+
+        .menu-header {
+            padding: 12px 16px 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--primary-100);
+            margin-bottom: 8px;
+        }
+
+        .menu-doctor-name {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .menu-doctor-specialty {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
         }
 
         .menu-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
+            gap: 14px;
+            padding: 14px 18px;
             border-radius: 16px;
             font-weight: 600;
+            font-size: 0.95rem;
             color: var(--text-secondary);
             cursor: pointer;
-            transition: background 0.15s;
+            transition: all 0.2s;
+            border: 1.5px solid transparent;
         }
 
         .menu-item:hover {
             background: var(--primary-50);
+            border-color: var(--primary-100);
             color: var(--primary-700);
+            transform: translateX(-4px);
+        }
+
+        .menu-item:active {
+            transform: scale(0.97);
         }
 
         .menu-item.danger {
@@ -400,26 +581,56 @@
         }
 
         .menu-item.danger:hover {
-            background: rgba(217, 79, 79, 0.08);
+            background: var(--danger-light);
+            border-color: rgba(231, 76, 60, 0.2);
+            color: var(--danger);
+        }
+
+        .menu-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .menu-cancel {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-top: 8px;
+            background: var(--primary-50);
+            border: 1.5px solid var(--primary-100);
+            border-radius: 16px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .menu-cancel:hover {
+            background: var(--primary-100);
+            border-color: var(--primary-200);
         }
 
         .skeleton-card {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             padding: 1rem 1.2rem;
             background: var(--surface);
             border-radius: var(--radius-card);
             border: 1.5px solid var(--primary-100);
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         .skeleton-avatar {
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: var(--primary-100);
-            animation: pulse 1.5s infinite ease-in-out;
+            background: linear-gradient(90deg, var(--primary-100) 25%, var(--primary-50) 50%, var(--primary-100) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
         }
 
         .skeleton-lines {
@@ -431,27 +642,77 @@
 
         .skeleton-line {
             height: 14px;
-            background: var(--primary-100);
+            background: linear-gradient(90deg, var(--primary-100) 25%, var(--primary-50) 50%, var(--primary-100) 75%);
+            background-size: 200% 100%;
             border-radius: 20px;
-            animation: pulse 1.5s infinite ease-in-out;
+            animation: shimmer 1.5s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 0.9; }
+        .skeleton-line.short {
+            width: 60%;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .empty-state {
             text-align: center;
-            padding: 4rem 1rem;
+            padding: 5rem 1.5rem;
             color: var(--text-tertiary);
             display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .empty-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            opacity: 0.7;
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .empty-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .empty-subtitle {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .start-chat-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 1.5rem;
+            padding: 12px 28px;
+            background: var(--primary-500);
+            color: white;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .start-chat-btn:hover {
+            background: var(--primary-600);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .sync-indicator {
@@ -459,54 +720,56 @@
             align-items: center;
             gap: 10px;
             margin-top: 24px;
-            padding: 8px 16px;
+            padding: 10px 20px;
             background: var(--surface);
             border-radius: 40px;
             font-size: 0.8rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-secondary);
-            border: 1px solid var(--primary-100);
+            border: 1.5px solid var(--primary-100);
             box-shadow: var(--shadow-xs);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
+            transition: var(--transition);
         }
 
         .sync-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: var(--primary-400);
-            transition: background 0.2s;
+            transition: all 0.3s;
         }
 
         .sync-dot.syncing {
             background: var(--warning);
-            animation: blink 1.2s infinite;
+            animation: pulse 1.2s infinite;
         }
 
         .sync-dot.online {
             background: var(--success);
+            box-shadow: 0 0 8px rgba(46, 204, 113, 0.5);
         }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
         }
 
         .confirm-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(10, 30, 30, 0.6);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
+            background: rgba(10, 30, 30, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 2000;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            padding: 1.5rem;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.25s;
+            transition: all 0.3s;
         }
 
         .confirm-backdrop.show {
@@ -518,37 +781,37 @@
             background: var(--surface-solid);
             border-radius: var(--radius-card);
             border: 1.5px solid var(--primary-100);
-            box-shadow: var(--shadow-lg);
-            padding: 2rem 1.75rem;
+            box-shadow: var(--shadow-xl);
+            padding: 2.5rem 2rem;
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             text-align: center;
-            transform: scale(0.92);
-            transition: transform 0.3s cubic-bezier(0.32, 1, 0.5, 1);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
         }
 
         .confirm-backdrop.show .confirm-dialog {
-            transform: scale(1);
+            transform: scale(1) translateY(0);
         }
 
         .confirm-icon {
-            font-size: 2.5rem;
+            font-size: 3rem;
             margin-bottom: 1rem;
             display: block;
         }
 
         .confirm-title {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .confirm-message {
             font-size: 0.9rem;
             color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 1.75rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
         }
 
         .confirm-actions {
@@ -558,14 +821,18 @@
 
         .confirm-btn {
             flex: 1;
-            padding: 12px;
-            border-radius: 18px;
+            padding: 14px;
+            border-radius: 16px;
             border: none;
             font-family: 'Cairo', sans-serif;
             font-weight: 700;
             font-size: 0.95rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.2s;
+        }
+
+        .confirm-btn:active {
+            transform: scale(0.95);
         }
 
         .confirm-btn.cancel {
@@ -574,32 +841,39 @@
             border: 1.5px solid var(--primary-100);
         }
 
+        .confirm-btn.cancel:hover {
+            background: var(--primary-100);
+        }
+
         .confirm-btn.confirm {
             background: var(--danger);
             color: white;
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
         }
 
-        .confirm-btn.confirm.mute-action {
-            background: var(--primary-600);
+        .confirm-btn.confirm:hover {
+            background: #c0392b;
         }
 
         .toast {
             position: fixed;
-            bottom: 90px;
+            bottom: 100px;
             left: 50%;
-            transform: translateX(-50%) translateY(10px);
+            transform: translateX(-50%) translateY(20px);
             background: var(--primary-800);
             color: white;
-            padding: 10px 24px;
+            padding: 12px 28px;
             border-radius: 40px;
             font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 700;
             z-index: 9999;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.25s, transform 0.25s;
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
             white-space: nowrap;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
         .toast.show {
@@ -609,10 +883,12 @@
 
         .toast.success {
             background: var(--success);
+            box-shadow: 0 8px 24px rgba(46, 204, 113, 0.4);
         }
 
         .toast.error {
             background: var(--danger);
+            box-shadow: 0 8px 24px rgba(231, 76, 60, 0.4);
         }
 
         .bottom-nav {
@@ -643,7 +919,7 @@
             padding: 8px 18px;
             border-radius: 30px;
             color: var(--text-tertiary);
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.7rem;
             transition: var(--transition);
         }
@@ -651,6 +927,22 @@
         .nav-link.active {
             color: var(--primary-600);
             background: var(--primary-50);
+        }
+
+        .nav-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .icon {
@@ -675,6 +967,16 @@
             .chat-card {
                 padding: 0.9rem 1rem;
             }
+            .avatar-wrapper {
+                width: 52px;
+                height: 52px;
+            }
+            .doctor-name {
+                font-size: 0.95rem;
+            }
+            .options-menu {
+                min-width: 280px;
+            }
         }
     </style>
 </head>
@@ -695,6 +997,22 @@
         </div>
     </header>
 
+    <!-- شريط الإحصائيات -->
+    <div class="stats-bar">
+        <div class="stat-chip active" data-filter="all">
+            <span>الكل</span>
+            <span class="stat-number" id="totalCount">0</span>
+        </div>
+        <div class="stat-chip" data-filter="unread">
+            <span>غير مقروء</span>
+            <span class="stat-number" id="unreadCount">0</span>
+        </div>
+        <div class="stat-chip" data-filter="muted">
+            <span>مكتوم</span>
+            <span class="stat-number" id="mutedCount">0</span>
+        </div>
+    </div>
+
     <div class="search-wrapper">
         <input type="text" id="searchInput" class="search-input" placeholder="ابحث باسم الأخصائي..." autocomplete="off">
         <span class="search-icon">
@@ -702,18 +1020,43 @@
                 <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
         </span>
+        <button class="clear-search" id="clearSearch">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
     </div>
 
     <div id="skeletonContainer">
-        <!-- سيتم إخفاؤه تلقائياً عند ظهور المحتوى -->
+        <!-- Skeletons مؤقتة -->
+        <div class="skeleton-card">
+            <div class="skeleton-avatar"></div>
+            <div class="skeleton-lines">
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line"></div>
+            </div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton-avatar"></div>
+            <div class="skeleton-lines">
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line"></div>
+            </div>
+        </div>
     </div>
 
     <div class="chats-list" id="chatsList"></div>
 
     <div class="empty-state" id="emptyState">
-        <div class="empty-icon">🍃</div>
-        <h3 style="margin-bottom: 8px;">مساحتك هادئة الآن</h3>
-        <p>ابدأ محادثة مع أحد الأخصائيين عندما تشعر بالاستعداد.</p>
+        <div class="empty-icon">💬</div>
+        <div class="empty-title">مساحتك الهادئة</div>
+        <div class="empty-subtitle">لا توجد محادثات حتى الآن.<br>ابدأ رحلتك مع أحد أخصائيينا.</div>
+        <a href="patient-home.html" class="start-chat-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 5v14M5 12h14"></path>
+            </svg>
+            تصفح الأخصائيين
+        </a>
     </div>
 
     <div class="sync-indicator" id="syncIndicator">
@@ -730,11 +1073,12 @@
         </svg>
         <span>الرئيسية</span>
     </a>
-    <a href="patient-chats.html" class="nav-link active">
+    <a href="patient-chats.html" class="nav-link active" style="position: relative;">
         <svg class="icon" viewBox="0 0 24 24">
             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
         </svg>
         <span>محادثاتي</span>
+        <span class="nav-badge" id="navBadge" style="display: none;">0</span>
     </a>
     <a href="patient-agenda.html" class="nav-link">
         <svg class="icon" viewBox="0 0 24 24">
@@ -752,6 +1096,41 @@
     </a>
 </nav>
 
+<!-- خلفية القائمة المنبثقة -->
+<div class="options-overlay" id="optionsOverlay"></div>
+
+<!-- قائمة الخيارات المنبثقة -->
+<div class="options-menu" id="optionsMenu">
+    <div class="menu-header">
+        <div class="menu-doctor-name" id="menuDoctorName"></div>
+        <div class="menu-doctor-specialty" id="menuDoctorSpecialty"></div>
+    </div>
+    <div class="menu-item" data-action="mute" id="menuMuteItem">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span id="menuMuteText">كتم الإشعارات</span>
+    </div>
+    <div class="menu-item" data-action="archive">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="21 8 21 21 3 21 3 8"></polyline>
+            <rect x="1" y="3" width="22" height="5"></rect>
+            <line x1="10" y1="12" x2="14" y2="12"></line>
+        </svg>
+        <span>أرشفة المحادثة</span>
+    </div>
+    <div class="menu-item danger" data-action="delete">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        <span>حذف المحادثة</span>
+    </div>
+    <button class="menu-cancel" id="menuCancel">إلغاء</button>
+</div>
+
+<!-- حوار التأكيد -->
 <div class="confirm-backdrop" id="confirmBackdrop">
     <div class="confirm-dialog">
         <span class="confirm-icon" id="confirmIcon">🗑️</span>
@@ -764,379 +1143,573 @@
     </div>
 </div>
 
+<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script type="module">
-    // ==================== استيراد الإعدادات من ملف خارجي ====================
     import { firebaseConfig } from './firebase-config.js';
     
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get, remove } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, get, remove, update } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== تخزين محلي مضغوط ====================
-    const STORAGE = {
-        CONVERSATIONS: (uid) => `sc_c_${uid}`,
-        DOCTOR: (docId) => `sc_d_${docId}`
+    // ==================== نظام التخزين المحلي ====================
+    const STORAGE_KEYS = {
+        CONVERSATIONS: (uid) => `sakoon_conv_${uid}`,
+        DOCTORS: (docId) => `sakoon_doc_${docId}`,
+        MUTED: (uid) => `sakoon_muted_${uid}`
     };
 
-    const cache = {
-        saveConversations(uid, convos) {
+    class LocalCache {
+        static saveConversations(uid, conversations) {
             try {
-                const compact = convos.map(c => ({
-                    i: c.id,           // id
-                    d: c.doctorId,     // doctorId
-                    n: c.doctorName,   // doctorName
-                    a: c.doctorAvatar, // doctorAvatar
-                    m: c.lastMessage,  // lastMessage
-                    t: c.lastMessageTime,
-                    u: c.unread ? 1 : 0,
-                    k: c.muted ? 1 : 0
+                const data = conversations.map(c => ({
+                    id: c.id,
+                    doctorId: c.doctorId,
+                    doctorName: c.doctorName,
+                    doctorAvatar: c.doctorAvatar,
+                    lastMessage: c.lastMessage?.substring(0, 100) || '',
+                    timestamp: c.lastMessageTime,
+                    unread: c.unread || false,
+                    muted: c.muted || false,
+                    specialty: c.specialty || ''
                 }));
-                localStorage.setItem(STORAGE.CONVERSATIONS(uid), JSON.stringify(compact));
+                localStorage.setItem(STORAGE_KEYS.CONVERSATIONS(uid), JSON.stringify(data));
             } catch (e) {
-                // إذا فشل التخزين، نحذف القديم
-                localStorage.removeItem(STORAGE.CONVERSATIONS(uid));
+                localStorage.removeItem(STORAGE_KEYS.CONVERSATIONS(uid));
             }
-        },
-        loadConversations(uid) {
-            const raw = localStorage.getItem(STORAGE.CONVERSATIONS(uid));
-            if (!raw) return [];
+        }
+
+        static loadConversations(uid) {
             try {
-                const compact = JSON.parse(raw);
-                return compact.map(c => ({
-                    id: c.i,
-                    doctorId: c.d,
-                    doctorName: c.n || '',
-                    doctorAvatar: c.a || '',
-                    lastMessage: c.m || '',
-                    lastMessageTime: c.t || Date.now(),
-                    unread: c.u === 1,
-                    muted: c.k === 1
-                }));
+                const raw = localStorage.getItem(STORAGE_KEYS.CONVERSATIONS(uid));
+                return raw ? JSON.parse(raw) : [];
             } catch {
                 return [];
             }
-        },
-        saveDoctor(doc) {
+        }
+
+        static saveDoctor(docId, data) {
             try {
-                localStorage.setItem(STORAGE.DOCTOR(doc.id), JSON.stringify({
-                    n: doc.name || '',
-                    p: doc.photoURL || ''
+                localStorage.setItem(STORAGE_KEYS.DOCTORS(docId), JSON.stringify({
+                    name: data.name || '',
+                    photoURL: data.photoURL || '',
+                    specialty: data.specialty || ''
                 }));
-            } catch (e) {}
-        },
-        getDoctor(docId) {
-            const raw = localStorage.getItem(STORAGE.DOCTOR(docId));
-            if (!raw) return null;
+            } catch {}
+        }
+
+        static getDoctor(docId) {
             try {
-                const d = JSON.parse(raw);
-                return { id: docId, name: d.n, photoURL: d.p };
+                const raw = localStorage.getItem(STORAGE_KEYS.DOCTORS(docId));
+                return raw ? JSON.parse(raw) : null;
             } catch {
                 return null;
             }
         }
-    };
 
-    // ==================== أدوات مساعدة ====================
-    const toast = (msg, type = '') => {
-        const el = document.getElementById('toast');
-        el.textContent = msg;
+        static saveMuted(uid, mutedIds) {
+            try {
+                localStorage.setItem(STORAGE_KEYS.MUTED(uid), JSON.stringify([...mutedIds]));
+            } catch {}
+        }
+
+        static loadMuted(uid) {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEYS.MUTED(uid));
+                return raw ? new Set(JSON.parse(raw)) : new Set();
+            } catch {
+                return new Set();
+            }
+        }
+    }
+
+    // ==================== الأدوات المساعدة ====================
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+
+    const toast = (message, type = '') => {
+        const el = $('#toast');
+        el.textContent = message;
         el.className = `toast show ${type}`;
-        setTimeout(() => el.classList.remove('show'), 3000);
+        clearTimeout(el._timeout);
+        el._timeout = setTimeout(() => el.classList.remove('show'), 3000);
     };
 
-    const formatTime = (ts) => {
-        if (!ts) return '';
-        const d = new Date(ts);
+    const formatTime = (timestamp) => {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
         const now = new Date();
-        const diff = Math.floor((now - d) / 1000);
+        const diff = Math.floor((now - date) / 1000);
+        
         if (diff < 60) return 'الآن';
         if (diff < 3600) return `${Math.floor(diff / 60)} د`;
-        if (diff < 86400) return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        if (diff < 86400) return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
         if (diff < 172800) return 'أمس';
-        return d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
+        return date.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
     };
 
-    const escapeHtml = (s) => s ? String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])) : '';
-    const escapeAttr = (s) => String(s).replace(/"/g, '&quot;');
-
-    const setSyncStatus = (status, msg) => {
-        const dot = document.getElementById('syncDot');
-        const text = document.getElementById('syncMessage');
-        dot.className = 'sync-dot';
-        if (status === 'syncing') dot.classList.add('syncing');
-        else if (status === 'online') dot.classList.add('online');
-        text.textContent = msg;
+    const escapeHtml = (str) => {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[char]));
     };
 
-    const showConfirm = ({ icon, title, message, confirmClass, onConfirm }) => {
-        document.getElementById('confirmIcon').textContent = icon || '⚠️';
-        document.getElementById('confirmTitle').textContent = title || '';
-        document.getElementById('confirmMsg').textContent = message || '';
-        const ok = document.getElementById('confirmOk');
-        ok.className = `confirm-btn confirm ${confirmClass || ''}`;
-        const backdrop = document.getElementById('confirmBackdrop');
+    const setSyncStatus = (status, message) => {
+        const dot = $('#syncDot');
+        const text = $('#syncMessage');
+        dot.className = `sync-dot ${status}`;
+        text.textContent = message;
+    };
+
+    const showConfirm = ({ icon, title, message, confirmClass = '', onConfirm }) => {
+        const backdrop = $('#confirmBackdrop');
+        $('#confirmIcon').textContent = icon || '⚠️';
+        $('#confirmTitle').textContent = title || '';
+        $('#confirmMsg').textContent = message || '';
+        
+        const okBtn = $('#confirmOk');
+        okBtn.className = `confirm-btn confirm ${confirmClass}`;
+        
         backdrop.classList.add('show');
+        
         const close = () => backdrop.classList.remove('show');
-        document.getElementById('confirmCancel').onclick = close;
-        ok.onclick = () => { close(); onConfirm && onConfirm(); };
-        backdrop.onclick = e => { if (e.target === backdrop) close(); };
+        
+        $('#confirmCancel').onclick = close;
+        okBtn.onclick = () => {
+            close();
+            onConfirm?.();
+        };
+        
+        backdrop.onclick = (e) => {
+            if (e.target === backdrop) close();
+        };
     };
 
-    // ==================== الحالة ====================
-    let uid = null;
+    // ==================== الحالة العامة ====================
+    let currentUser = null;
     let conversations = [];
-    let searchTerm = '';
-    const mutedSet = new Set();
-    let renderPending = false;
+    let activeFilter = 'all';
+    let searchQuery = '';
+    let currentMenuConvId = null;
+    let mutedSet = new Set();
 
-    const removeSkeleton = () => {
-        const skel = document.getElementById('skeletonContainer');
-        if (skel) skel.innerHTML = '';
+    // ==================== عرض القائمة المنبثقة ====================
+    const showOptionsMenu = (convId) => {
+        const conv = conversations.find(c => c.id === convId);
+        if (!conv) return;
+        
+        currentMenuConvId = convId;
+        
+        $('#menuDoctorName').textContent = conv.doctorName || 'أخصائي';
+        $('#menuDoctorSpecialty').textContent = conv.specialty || 'معالج نفسي';
+        
+        if (conv.muted) {
+            $('#menuMuteText').textContent = 'إلغاء الكتم';
+            $('#menuMuteItem').querySelector('svg').innerHTML = `
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+            `;
+        } else {
+            $('#menuMuteText').textContent = 'كتم الإشعارات';
+            $('#menuMuteItem').querySelector('svg').innerHTML = `
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            `;
+        }
+        
+        $('#optionsOverlay').classList.add('show');
+        $('#optionsMenu').classList.add('show');
+    };
+
+    const hideOptionsMenu = () => {
+        $('#optionsOverlay').classList.remove('show');
+        $('#optionsMenu').classList.remove('show');
+        currentMenuConvId = null;
+    };
+
+    // ==================== إجراءات المحادثة ====================
+    const toggleMute = async (convId) => {
+        const conv = conversations.find(c => c.id === convId);
+        if (!conv) return;
+        
+        conv.muted = !conv.muted;
+        
+        if (conv.muted) {
+            mutedSet.add(convId);
+        } else {
+            mutedSet.delete(convId);
+        }
+        
+        LocalCache.saveMuted(currentUser.uid, mutedSet);
+        LocalCache.saveConversations(currentUser.uid, conversations);
+        
+        toast(conv.muted ? '🔕 تم كتم الإشعارات' : '🔔 تم إلغاء الكتم', 'success');
+        performRender();
+        hideOptionsMenu();
+    };
+
+    const archiveConversation = async (convId) => {
+        try {
+            await update(ref(database, `conversations/${convId}`), {
+                archived: true,
+                archivedAt: Date.now()
+            });
+            
+            conversations = conversations.filter(c => c.id !== convId);
+            LocalCache.saveConversations(currentUser.uid, conversations);
+            
+            toast('📦 تمت الأرشفة', 'success');
+            performRender();
+            hideOptionsMenu();
+        } catch (error) {
+            toast('حدث خطأ في الأرشفة', 'error');
+        }
+    };
+
+    const deleteConversation = async (convId) => {
+        const conv = conversations.find(c => c.id === convId);
+        if (!conv) return;
+        
+        showConfirm({
+            icon: '🗑️',
+            title: 'حذف المحادثة',
+            message: `هل أنت متأكد من حذف المحادثة مع ${conv.doctorName || 'الأخصائي'}؟\nلا يمكن التراجع عن هذا الإجراء.`,
+            confirmClass: '',
+            onConfirm: async () => {
+                try {
+                    await remove(ref(database, `conversations/${convId}`));
+                    conversations = conversations.filter(c => c.id !== convId);
+                    LocalCache.saveConversations(currentUser.uid, conversations);
+                    toast('تم حذف المحادثة', 'success');
+                    performRender();
+                } catch (error) {
+                    toast('فشل في حذف المحادثة', 'error');
+                }
+            }
+        });
+        
+        hideOptionsMenu();
+    };
+
+    // ==================== جلب بيانات الطبيب ====================
+    const fetchDoctorData = async (doctorId) => {
+        let cached = LocalCache.getDoctor(doctorId);
+        if (cached) return cached;
+        
+        try {
+            const snapshot = await get(ref(database, `doctors/${doctorId}`));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const doctor = {
+                    name: data.name || 'أخصائي',
+                    photoURL: data.photoURL || '',
+                    specialty: data.specialty || ''
+                };
+                LocalCache.saveDoctor(doctorId, doctor);
+                return doctor;
+            }
+        } catch (error) {
+            console.warn('فشل جلب بيانات الطبيب:', error);
+        }
+        
+        return { name: 'أخصائي', photoURL: '', specialty: '' };
+    };
+
+    // ==================== عرض المحادثات ====================
+    const getFilteredConversations = () => {
+        let filtered = [...conversations];
+        
+        // تطبيق الفلتر
+        if (activeFilter === 'unread') {
+            filtered = filtered.filter(c => c.unread);
+        } else if (activeFilter === 'muted') {
+            filtered = filtered.filter(c => c.muted);
+        }
+        
+        // تطبيق البحث
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(c => 
+                (c.doctorName || '').toLowerCase().includes(query) ||
+                (c.lastMessage || '').toLowerCase().includes(query) ||
+                (c.specialty || '').toLowerCase().includes(query)
+            );
+        }
+        
+        return filtered;
+    };
+
+    const updateStats = () => {
+        const total = conversations.length;
+        const unread = conversations.filter(c => c.unread).length;
+        const muted = conversations.filter(c => c.muted).length;
+        
+        $('#totalCount').textContent = total;
+        $('#unreadCount').textContent = unread;
+        $('#mutedCount').textContent = muted;
+        
+        // تحديث شارة التنقل
+        const badge = $('#navBadge');
+        if (unread > 0) {
+            badge.style.display = 'flex';
+            badge.textContent = unread > 99 ? '99+' : unread;
+        } else {
+            badge.style.display = 'none';
+        }
     };
 
     const performRender = () => {
-        const list = document.getElementById('chatsList');
-        const empty = document.getElementById('emptyState');
-        const query = searchTerm.toLowerCase().trim();
+        const filtered = getFilteredConversations();
+        const list = $('#chatsList');
+        const empty = $('#emptyState');
         
-        const filtered = conversations.filter(c => 
-            !query || (c.doctorName || '').toLowerCase().includes(query)
-        );
-
         if (filtered.length === 0) {
             list.innerHTML = '';
             empty.style.display = 'block';
+            updateStats();
             return;
         }
+        
         empty.style.display = 'none';
-
-        const frag = document.createDocumentFragment();
-        filtered.forEach((c, idx) => {
-            const wrap = document.createElement('div');
-            wrap.className = 'chat-wrapper';
+        
+        const fragment = document.createDocumentFragment();
+        
+        filtered.forEach((conv, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'chat-wrapper';
+            wrapper.style.animationDelay = `${index * 0.05}s`;
             
             const card = document.createElement('div');
-            card.className = 'chat-card' + (c.unread ? ' unread' : '');
-            card.style.animationDelay = `${idx * 0.03}s`;
-            card.dataset.convId = c.id;
+            card.className = `chat-card${conv.unread ? ' unread' : ''}`;
+            card.dataset.convId = conv.id;
             
-            const av = c.doctorAvatar
-                ? `<img src="${escapeAttr(c.doctorAvatar)}" alt="" class="avatar-img" loading="lazy">`
-                : (c.doctorName || 'د').charAt(0).toUpperCase();
+            const avatarContent = conv.doctorAvatar 
+                ? `<img src="${escapeHtml(conv.doctorAvatar)}" alt="" class="avatar-img" loading="lazy">`
+                : (conv.doctorName || 'د').charAt(0).toUpperCase();
             
             card.innerHTML = `
-                <div class="avatar-wrapper">${av}</div>
+                <div class="avatar-wrapper">
+                    ${avatarContent}
+                </div>
                 <div class="chat-content">
                     <div class="chat-header">
-                        <span class="doctor-name">${escapeHtml(c.doctorName || 'أخصائي')}</span>
-                        <span class="chat-time">${formatTime(c.lastMessageTime)}</span>
+                        <span class="doctor-name">${escapeHtml(conv.doctorName || 'أخصائي')}</span>
+                        <div class="chat-meta">
+                            <span class="chat-time">${formatTime(conv.lastMessageTime)}</span>
+                            <span class="unread-badge">${conv.unreadCount || 1}</span>
+                        </div>
                     </div>
                     <div class="chat-preview">
-                        <span class="last-message">${c.muted ? '🔕 ' : ''}${escapeHtml(c.lastMessage || 'ابدأ المحادثة...')}</span>
-                        <span class="unread-dot"></span>
+                        <span class="last-message">
+                            ${conv.muted ? '<span class="mute-icon">🔕</span> ' : ''}
+                            ${escapeHtml(conv.lastMessage || 'ابدأ المحادثة...')}
+                        </span>
                     </div>
                 </div>
-                <button class="options-btn" data-conv-id="${c.id}">
+                <button class="options-btn" data-conv-id="${conv.id}" aria-label="خيارات">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+                        <circle cx="12" cy="5" r="1.5"/>
+                        <circle cx="12" cy="12" r="1.5"/>
+                        <circle cx="12" cy="19" r="1.5"/>
                     </svg>
                 </button>
             `;
             
-            const menu = document.createElement('ul');
-            menu.className = 'options-menu';
-            menu.innerHTML = `
-                <li class="menu-item" data-action="mute" data-conv-id="${c.id}">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        ${c.muted 
-                            ? '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>'
-                            : '<path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path>'}
-                    </svg>
-                    <span>${c.muted ? 'إلغاء الكتم' : 'كتم الإشعارات'}</span>
-                </li>
-                <li class="menu-item danger" data-action="delete" data-conv-id="${c.id}">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                    <span>حذف المحادثة</span>
-                </li>
-            `;
+            // النقر على البطاقة
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.options-btn')) return;
+                
+                if (conv.unread) {
+                    conv.unread = false;
+                    LocalCache.saveConversations(currentUser.uid, conversations);
+                }
+                
+                window.location.href = `conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}&convId=${encodeURIComponent(conv.id)}`;
+            });
             
-            wrap.appendChild(card);
-            wrap.appendChild(menu);
-            frag.appendChild(wrap);
+            // زر الخيارات
+            const optionsBtn = card.querySelector('.options-btn');
+            optionsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showOptionsMenu(conv.id);
+            });
+            
+            wrapper.appendChild(card);
+            fragment.appendChild(wrapper);
         });
         
         list.innerHTML = '';
-        list.appendChild(frag);
-        renderPending = false;
-    };
-
-    const scheduleRender = () => {
-        if (renderPending) return;
-        renderPending = true;
-        requestAnimationFrame(performRender);
-    };
-
-    // ==================== جلب بيانات الطبيب ====================
-    const fetchDoctor = async (docId) => {
-        let doc = cache.getDoctor(docId);
-        if (doc) return doc;
-        try {
-            const snap = await get(ref(database, `doctors/${docId}`));
-            if (snap.exists()) {
-                const d = snap.val();
-                doc = { id: docId, name: d.name || '', photoURL: d.photoURL || '' };
-                cache.saveDoctor(doc);
-                return doc;
-            }
-        } catch (e) {}
-        return { id: docId, name: '', photoURL: '' };
+        list.appendChild(fragment);
+        updateStats();
     };
 
     // ==================== المزامنة الحية ====================
-    const startSync = () => {
-        const convRef = ref(database, 'conversations');
-        onValue(convRef, async (snap) => {
-            setSyncStatus('syncing', 'تحديث...');
-            const fresh = [];
-            if (snap.exists()) {
-                const data = snap.val();
-                for (const id in data) {
-                    const c = data[id];
-                    if (c.patientId !== uid) continue;
-                    const doc = await fetchDoctor(c.doctorId);
-                    fresh.push({
-                        id,
-                        doctorId: c.doctorId,
-                        doctorName: doc.name,
-                        doctorAvatar: doc.photoURL,
-                        lastMessage: c.lastMessage || '',
-                        lastMessageTime: c.lastMessageTime || c.createdAt || Date.now(),
-                        unread: c.unreadPatient || false,
-                        muted: mutedSet.has(id)
+    const startRealtimeSync = () => {
+        if (!currentUser) return;
+        
+        const conversationsRef = ref(database, 'conversations');
+        
+        onValue(conversationsRef, async (snapshot) => {
+            setSyncStatus('syncing', 'جاري التحديث...');
+            
+            const freshConversations = [];
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                for (const convId in data) {
+                    const conv = data[convId];
+                    
+                    // التحقق من أن المحادثة تخص المستخدم الحالي
+                    if (conv.patientId !== currentUser.uid) continue;
+                    
+                    // تجاهل المحادثات المؤرشفة
+                    if (conv.archived) continue;
+                    
+                    const doctor = await fetchDoctorData(conv.doctorId);
+                    
+                    freshConversations.push({
+                        id: convId,
+                        doctorId: conv.doctorId,
+                        doctorName: doctor.name,
+                        doctorAvatar: doctor.photoURL,
+                        specialty: doctor.specialty,
+                        lastMessage: conv.lastMessage || '',
+                        lastMessageTime: conv.lastMessageTime || conv.createdAt || Date.now(),
+                        unread: conv.unreadPatient || false,
+                        unreadCount: conv.unreadCount || 1,
+                        muted: mutedSet.has(convId)
                     });
                 }
             }
-            conversations = fresh;
-            cache.saveConversations(uid, fresh);
-            scheduleRender();
-            setSyncStatus('online', 'محدّثة ✓');
-        }, (err) => {
-            console.warn('مزامنة:', err);
+            
+            // ترتيب حسب الأحدث
+            freshConversations.sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+            
+            conversations = freshConversations;
+            LocalCache.saveConversations(currentUser.uid, conversations);
+            
+            performRender();
+            setSyncStatus('online', 'محدثة ✅');
+        }, (error) => {
+            console.warn('خطأ في المزامنة:', error);
             setSyncStatus('syncing', 'غير متصل');
+            
+            // تحميل من الذاكرة المحلية
+            const cached = LocalCache.loadConversations(currentUser.uid);
+            if (cached.length > 0) {
+                conversations = cached;
+                performRender();
+            }
         });
     };
 
-    // ==================== الأحداث ====================
-    const setupEvents = () => {
-        const list = document.getElementById('chatsList');
-        const search = document.getElementById('searchInput');
+    // ==================== إعداد الأحداث ====================
+    const setupEventListeners = () => {
+        // البحث
+        const searchInput = $('#searchInput');
+        const clearSearch = $('#clearSearch');
         
-        search.addEventListener('input', e => {
-            searchTerm = e.target.value;
-            scheduleRender();
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            clearSearch.classList.toggle('show', searchQuery.length > 0);
+            performRender();
         });
         
-        list.addEventListener('click', e => {
-            const optsBtn = e.target.closest('.options-btn');
-            if (optsBtn) {
-                e.stopPropagation();
-                const menu = optsBtn.closest('.chat-wrapper').querySelector('.options-menu');
-                document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
-                menu.classList.add('show');
-                return;
-            }
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            searchQuery = '';
+            clearSearch.classList.remove('show');
+            performRender();
+        });
+        
+        // فلترة الإحصائيات
+        $$('.stat-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                $$('.stat-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                activeFilter = chip.dataset.filter;
+                performRender();
+            });
+        });
+        
+        // قائمة الخيارات
+        $('#optionsOverlay').addEventListener('click', hideOptionsMenu);
+        $('#menuCancel').addEventListener('click', hideOptionsMenu);
+        
+        // أزرار القائمة
+        $('#optionsMenu').addEventListener('click', (e) => {
+            const menuItem = e.target.closest('.menu-item');
+            if (!menuItem) return;
             
-            const item = e.target.closest('.menu-item');
-            if (item) {
-                e.stopPropagation();
-                const convId = item.dataset.convId;
-                const action = item.dataset.action;
-                item.closest('.options-menu').classList.remove('show');
-                const conv = conversations.find(c => c.id === convId);
-                if (!conv) return;
-                
-                if (action === 'mute') {
-                    conv.muted = !conv.muted;
-                    conv.muted ? mutedSet.add(convId) : mutedSet.delete(convId);
-                    cache.saveConversations(uid, conversations);
-                    scheduleRender();
-                    toast(conv.muted ? '🔕 كتم الإشعارات' : '🔔 إلغاء الكتم', 'success');
-                } else if (action === 'delete') {
-                    showConfirm({
-                        icon: '🗑️',
-                        title: 'حذف المحادثة',
-                        message: `سيتم حذف المحادثة مع ${conv.doctorName || 'الأخصائي'} نهائياً.`,
-                        onConfirm: async () => {
-                            try { await remove(ref(database, `conversations/${convId}`)); } catch {}
-                            conversations = conversations.filter(c => c.id !== convId);
-                            cache.saveConversations(uid, conversations);
-                            scheduleRender();
-                            toast('تم الحذف', 'success');
-                        }
-                    });
-                }
-                return;
-            }
+            const action = menuItem.dataset.action;
             
-            document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
-            
-            const card = e.target.closest('.chat-card');
-            if (card) {
-                const convId = card.dataset.convId;
-                const conv = conversations.find(c => c.id === convId);
-                if (conv) {
-                    if (conv.unread) {
-                        conv.unread = false;
-                        scheduleRender();
-                    }
-                    window.location.href = `conversation.html?doctorId=${encodeURIComponent(conv.doctorId)}`;
-                }
+            switch(action) {
+                case 'mute':
+                    toggleMute(currentMenuConvId);
+                    break;
+                case 'archive':
+                    archiveConversation(currentMenuConvId);
+                    break;
+                case 'delete':
+                    deleteConversation(currentMenuConvId);
+                    break;
             }
         });
         
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.options-menu.show').forEach(m => m.classList.remove('show'));
+        // إغلاق القائمة بمفتاح Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideOptionsMenu();
         });
     };
 
     // ==================== بدء التطبيق ====================
-    const init = async (user) => {
-        uid = user.uid;
+    const initializeApp = (user) => {
+        currentUser = user;
         
-        // عرض المخزن محلياً فوراً
-        const cached = cache.loadConversations(uid);
-        if (cached.length) {
+        // تحميل الإعدادات المحفوظة
+        mutedSet = LocalCache.loadMuted(user.uid);
+        
+        // تحميل المحادثات المخزنة محلياً
+        const cached = LocalCache.loadConversations(user.uid);
+        if (cached.length > 0) {
             conversations = cached;
-            cached.forEach(c => { if (c.muted) mutedSet.add(c.id); });
-            scheduleRender();
+            conversations.forEach(c => {
+                if (mutedSet.has(c.id)) c.muted = true;
+            });
+            performRender();
             setSyncStatus('online', 'من الذاكرة المحلية');
         }
         
-        removeSkeleton();
-        setupEvents();
-        startSync();
+        // إخفاء skeletons
+        $('#skeletonContainer').style.display = 'none';
+        
+        // بدء المزامنة
+        setupEventListeners();
+        startRealtimeSync();
     };
 
-    onAuthStateChanged(auth, user => {
-        if (user) init(user);
-        else window.location.href = 'patient-login.html';
+    // ==================== المصادقة ====================
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            initializeApp(user);
+        } else {
+            window.location.href = 'patient-login.html';
+        }
     });
 
+    // دعم المتصفحات القديمة
     if (!CSS.supports('backdrop-filter', 'blur(10px)')) {
         document.documentElement.style.setProperty('--surface', 'rgba(255, 255, 255, 0.98)');
     }
 </script>
+
 <script type="module" src="patient-call-listener.js"></script>
 </body>
 </html>
-
-خد ده اعمله برضوا بى IndexedDB
