@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* ==================== نفس التصميم السابق (بدون تغيير) ==================== */
+        /* ==================== نفس التصميم السابق مع إضافات ==================== */
         :root {
             --bg-primary: #f6faf9;
             --bg-secondary: #eef5f4;
@@ -27,6 +27,8 @@
             --primary-700: #165656;
             --primary-800: #0d3d3d;
             --primary-900: #062424;
+            --heart-color: #e74c3c;
+            --star-color: #f39c12;
             
             --text-primary: #1a2e2e;
             --text-secondary: #3d5a5a;
@@ -283,8 +285,6 @@
             display: flex;
             flex-direction: column;
             gap: 18px;
-            content-visibility: auto;
-            contain-intrinsic-size: auto 200px;
         }
 
         .doctor-card {
@@ -299,7 +299,6 @@
             flex-direction: column;
             gap: 1.2rem;
             transition: transform 0.15s, box-shadow 0.2s;
-            will-change: transform;
         }
 
         @media (prefers-reduced-motion: no-preference) {
@@ -338,7 +337,6 @@
             height: 100%;
             object-fit: cover;
             display: block;
-            loading: lazy;
         }
 
         .doctor-info {
@@ -376,6 +374,270 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+
+        /* ========== نظام التفاعلات الجديد ========== */
+        .interactions-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 0;
+            border-top: 1px solid var(--primary-100);
+            border-bottom: 1px solid var(--primary-100);
+        }
+
+        .heart-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 2px solid var(--primary-100);
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .heart-btn:hover {
+            border-color: var(--heart-color);
+            background: rgba(231, 76, 60, 0.05);
+        }
+
+        .heart-btn.liked {
+            border-color: var(--heart-color);
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--heart-color);
+        }
+
+        .heart-icon {
+            width: 22px;
+            height: 22px;
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .heart-btn.liked .heart-icon {
+            fill: var(--heart-color);
+            stroke: var(--heart-color);
+            animation: heartPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes heartPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .likes-count {
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* النجوم والتقييم */
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stars-container {
+            display: flex;
+            gap: 2px;
+        }
+
+        .star {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .star:hover {
+            transform: scale(1.2);
+        }
+
+        .star.filled {
+            fill: var(--star-color);
+            stroke: var(--star-color);
+        }
+
+        .star.empty {
+            fill: none;
+            stroke: var(--text-tertiary);
+        }
+
+        .rating-number {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .rating-count {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+
+        /* التعليقات كتقييمات */
+        .reviews-section {
+            margin-top: 8px;
+        }
+
+        .reviews-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .reviews-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .add-review-btn {
+            padding: 6px 14px;
+            background: var(--primary-50);
+            border: 1px solid var(--primary-200);
+            border-radius: 20px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--primary-700);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .add-review-btn:hover {
+            background: var(--primary-100);
+        }
+
+        .reviews-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .review-item {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 12px;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .reviewer-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .reviewer-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .review-date {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-right: auto;
+        }
+
+        .review-rating {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 4px;
+        }
+
+        .review-star {
+            width: 14px;
+            height: 14px;
+        }
+
+        .review-star.filled {
+            fill: var(--star-color);
+            stroke: var(--star-color);
+        }
+
+        .review-star.empty {
+            fill: none;
+            stroke: var(--text-tertiary);
+        }
+
+        .review-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .review-form {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--surface-solid);
+            border-radius: 16px;
+            border: 1px solid var(--primary-100);
+        }
+
+        .review-form.show {
+            display: block;
+        }
+
+        .review-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--primary-100);
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            resize: vertical;
+            margin-bottom: 8px;
+        }
+
+        .review-submit {
+            padding: 8px 20px;
+            background: var(--primary-500);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .star-rating-input {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .star-rating-input .star {
+            width: 28px;
+            height: 28px;
         }
 
         .action-button {
@@ -560,6 +822,9 @@
             .doctor-name {
                 font-size: 1.1rem;
             }
+            .interactions-bar {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
@@ -655,7 +920,20 @@
     import { firebaseConfig } from './firebase-config.js';
     
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+    import { 
+        getDatabase, 
+        ref, 
+        onValue, 
+        set, 
+        update, 
+        remove, 
+        get,
+        push,
+        query,
+        orderByChild,
+        limitToLast,
+        runTransaction
+    } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
     // تهيئة Firebase
@@ -690,7 +968,6 @@
         }
         async save(doctors) {
             await this.init();
-            // ضغط البيانات لتقليل الحجم
             const compact = doctors.map(d => ({
                 i: d.id,
                 u: d.authUid || d.id,
@@ -704,7 +981,6 @@
                 const doctorStore = tx.objectStore('doctors');
                 const metaStore = tx.objectStore('metadata');
                 
-                // مسح القديم وإضافة الجديد
                 doctorStore.clear();
                 compact.forEach(doc => doctorStore.put(doc));
                 metaStore.put({ key: 'lastSync', value: Date.now() });
@@ -774,6 +1050,8 @@
     let filterSpecialty = 'all';
     let searchQuery = '';
     let currentUser = null;
+    let userLikes = new Set(); // تخزين إعجابات المستخدم الحالي
+    let userRatings = {}; // تخزين تقييمات المستخدم الحالي
 
     // ضبط مؤشر المزامنة
     function setSyncStatus(status, msg) {
@@ -783,19 +1061,278 @@
         syncMessage.textContent = msg;
     }
 
+    // ==================== نظام الإعجابات ====================
+    async function toggleLike(doctorId) {
+        if (!currentUser) return;
+        
+        const likeRef = ref(database, `likes/${doctorId}/${currentUser.uid}`);
+        const likeCountRef = ref(database, `likeCounts/${doctorId}`);
+        
+        try {
+            const snapshot = await get(likeRef);
+            
+            if (snapshot.exists()) {
+                // إلغاء الإعجاب
+                await remove(likeRef);
+                await runTransaction(likeCountRef, (count) => (count || 1) - 1);
+                userLikes.delete(doctorId);
+            } else {
+                // إضافة إعجاب
+                await set(likeRef, {
+                    userId: currentUser.uid,
+                    timestamp: Date.now()
+                });
+                await runTransaction(likeCountRef, (count) => (count || 0) + 1);
+                userLikes.add(doctorId);
+            }
+            
+            // تحديث واجهة المستخدم
+            updateDoctorCardUI(doctorId);
+        } catch (error) {
+            console.error('خطأ في تحديث الإعجاب:', error);
+        }
+    }
+
+    async function loadLikesData(doctorId) {
+        if (!currentUser) return { liked: false, count: 0 };
+        
+        const likeRef = ref(database, `likes/${doctorId}/${currentUser.uid}`);
+        const likeCountRef = ref(database, `likeCounts/${doctorId}`);
+        
+        try {
+            const [likeSnapshot, countSnapshot] = await Promise.all([
+                get(likeRef),
+                get(likeCountRef)
+            ]);
+            
+            const liked = likeSnapshot.exists();
+            const count = countSnapshot.val() || 0;
+            
+            if (liked) userLikes.add(doctorId);
+            
+            return { liked, count };
+        } catch (error) {
+            console.error('خطأ في تحميل الإعجابات:', error);
+            return { liked: false, count: 0 };
+        }
+    }
+
+    // ==================== نظام التقييمات والمراجعات ====================
+    async function submitRating(doctorId, rating, reviewText = '') {
+        if (!currentUser) return;
+        
+        const ratingRef = ref(database, `ratings/${doctorId}/${currentUser.uid}`);
+        
+        try {
+            await set(ratingRef, {
+                userId: currentUser.uid,
+                userName: currentUser.displayName || 'مستخدم',
+                rating: rating,
+                review: reviewText,
+                timestamp: Date.now()
+            });
+            
+            userRatings[doctorId] = { rating, review: reviewText };
+            await updateDoctorAverageRating(doctorId);
+            updateDoctorCardUI(doctorId);
+            
+            return true;
+        } catch (error) {
+            console.error('خطأ في إرسال التقييم:', error);
+            return false;
+        }
+    }
+
+    async function updateDoctorAverageRating(doctorId) {
+        const ratingsRef = ref(database, `ratings/${doctorId}`);
+        const avgRef = ref(database, `doctorStats/${doctorId}/averageRating`);
+        
+        try {
+            const snapshot = await get(ratingsRef);
+            if (!snapshot.exists()) {
+                await set(avgRef, 0);
+                return;
+            }
+            
+            const ratings = [];
+            snapshot.forEach(child => {
+                ratings.push(child.val().rating);
+            });
+            
+            const average = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+            await set(avgRef, Math.round(average * 10) / 10);
+        } catch (error) {
+            console.error('خطأ في تحديث متوسط التقييم:', error);
+        }
+    }
+
+    async function loadRatingsData(doctorId) {
+        const ratingsRef = ref(database, `ratings/${doctorId}`);
+        const avgRef = ref(database, `doctorStats/${doctorId}/averageRating`);
+        
+        try {
+            const [ratingsSnapshot, avgSnapshot] = await Promise.all([
+                get(ratingsRef),
+                get(avgRef)
+            ]);
+            
+            const reviews = [];
+            if (ratingsSnapshot.exists()) {
+                ratingsSnapshot.forEach(child => {
+                    reviews.push({
+                        id: child.key,
+                        ...child.val()
+                    });
+                });
+            }
+            
+            const averageRating = avgSnapshot.val() || 0;
+            const totalRatings = reviews.length;
+            
+            // تحقق من تقييم المستخدم الحالي
+            if (currentUser) {
+                const userRating = reviews.find(r => r.userId === currentUser.uid);
+                if (userRating) {
+                    userRatings[doctorId] = {
+                        rating: userRating.rating,
+                        review: userRating.review
+                    };
+                }
+            }
+            
+            return {
+                averageRating,
+                totalRatings,
+                reviews: reviews.sort((a, b) => b.timestamp - a.timestamp).slice(0, 5) // آخر 5 تقييمات
+            };
+        } catch (error) {
+            console.error('خطأ في تحميل التقييمات:', error);
+            return { averageRating: 0, totalRatings: 0, reviews: [] };
+        }
+    }
+
+    // ==================== تحديث واجهة المستخدم ====================
+    async function updateDoctorCardUI(doctorId) {
+        const card = document.querySelector(`[data-doctor-id="${doctorId}"]`);
+        if (!card) return;
+        
+        const [likesData, ratingsData] = await Promise.all([
+            loadLikesData(doctorId),
+            loadRatingsData(doctorId)
+        ]);
+        
+        // تحديث زر القلب
+        const heartBtn = card.querySelector('.heart-btn');
+        const likesCount = card.querySelector('.likes-count');
+        
+        if (heartBtn && likesCount) {
+            if (likesData.liked) {
+                heartBtn.classList.add('liked');
+            } else {
+                heartBtn.classList.remove('liked');
+            }
+            likesCount.textContent = likesData.count;
+        }
+        
+        // تحديث النجوم
+        const starsContainer = card.querySelector('.stars-container');
+        const ratingNumber = card.querySelector('.rating-number');
+        const ratingCount = card.querySelector('.rating-count');
+        
+        if (starsContainer && ratingNumber && ratingCount) {
+            updateStarsDisplay(starsContainer, ratingsData.averageRating);
+            ratingNumber.textContent = ratingsData.averageRating.toFixed(1);
+            ratingCount.textContent = `(${ratingsData.totalRatings})`;
+        }
+        
+        // تحديث المراجعات
+        const reviewsList = card.querySelector('.reviews-list');
+        if (reviewsList) {
+            updateReviewsDisplay(reviewsList, ratingsData.reviews);
+        }
+    }
+
+    function updateStarsDisplay(container, rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating - fullStars >= 0.5;
+        
+        container.innerHTML = '';
+        
+        for (let i = 0; i < 5; i++) {
+            const star = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            star.setAttribute("viewBox", "0 0 24 24");
+            star.classList.add("star");
+            
+            const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            polygon.setAttribute("points", "12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2");
+            
+            if (i < fullStars) {
+                polygon.classList.add("filled");
+                star.classList.add("filled");
+            } else if (i === fullStars && hasHalfStar) {
+                polygon.setAttribute("fill", "url(#halfGradient)");
+                star.classList.add("filled");
+            } else {
+                polygon.classList.add("empty");
+                star.classList.add("empty");
+            }
+            
+            star.appendChild(polygon);
+            container.appendChild(star);
+        }
+    }
+
+    function updateReviewsDisplay(container, reviews) {
+        if (reviews.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-tertiary); font-size: 0.85rem;">لا توجد تقييمات بعد</p>';
+            return;
+        }
+        
+        container.innerHTML = reviews.map(review => `
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="reviewer-avatar">${(review.userName || 'م').charAt(0)}</div>
+                    <span class="reviewer-name">${review.userName || 'مستخدم'}</span>
+                    <span class="review-date">${formatDate(review.timestamp)}</span>
+                </div>
+                <div class="review-rating">
+                    ${Array.from({length: 5}, (_, i) => `
+                        <svg class="review-star ${i < review.rating ? 'filled' : 'empty'}" viewBox="0 0 24 24">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    `).join('')}
+                </div>
+                ${review.review ? `<p class="review-text">${review.review}</p>` : ''}
+            </div>
+        `).join('');
+    }
+
+    function formatDate(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) return 'الآن';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)} دقيقة`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)} ساعة`;
+        if (diff < 604800000) return `${Math.floor(diff / 86400000)} يوم`;
+        
+        return date.toLocaleDateString('ar-SA');
+    }
+
     // خنق (throttle) للبحث
     let renderScheduled = false;
     function scheduleRender() {
         if (renderScheduled) return;
         renderScheduled = true;
-        requestAnimationFrame(() => {
-            performRender();
+        requestAnimationFrame(async () => {
+            await performRender();
             renderScheduled = false;
         });
     }
 
     // تنفيذ عرض البطاقات
-    function performRender() {
+    async function performRender() {
         const query = searchQuery.toLowerCase().trim();
         const filtered = allDoctors.filter(doc => {
             if (filterSpecialty !== 'all' && doc.specialty !== filterSpecialty) return false;
@@ -811,20 +1348,25 @@
         }
         emptyState.style.display = 'none';
 
-        const fragment = document.createDocumentFragment();
-        filtered.forEach(doc => {
-            const card = createDoctorCard(doc);
-            fragment.appendChild(card);
-        });
-        
         grid.innerHTML = '';
-        grid.appendChild(fragment);
+        
+        // إنشاء البطاقات بشكل متزامن أولاً
+        for (const doc of filtered) {
+            const card = createDoctorCard(doc);
+            grid.appendChild(card);
+        }
+        
+        // تحميل بيانات التفاعلات بشكل غير متزامن
+        for (const doc of filtered) {
+            updateDoctorCardUI(doc.id);
+        }
     }
 
-    // إنشاء بطاقة طبيب (لتقليل تكرار الكود)
+    // إنشاء بطاقة طبيب
     function createDoctorCard(doc) {
         const card = document.createElement('div');
         card.className = 'doctor-card';
+        card.dataset.doctorId = doc.id;
         
         const avatarHtml = doc.photoURL
             ? `<div class="avatar-wrapper"><img src="${escapeAttr(doc.photoURL)}" alt="${escapeAttr(doc.name)}" class="avatar-img" loading="lazy"></div>`
@@ -847,13 +1389,62 @@
                     <div class="doctor-bio">${escapeHtml(bio)}${bio.length > 100 ? '...' : ''}</div>
                 </div>
             </div>
-            <button class="action-button" data-doctor-id="${escapeAttr(doc.authUid || doc.id)}" data-patient-id="${escapeAttr(currentUser?.uid || '')}">
+            
+            <!-- شريط التفاعلات -->
+            <div class="interactions-bar">
+                <button class="heart-btn" data-action="like" data-doctor-id="${escapeAttr(doc.id)}">
+                    <svg class="heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    <span class="likes-count">0</span>
+                </button>
+                
+                <div class="rating-display">
+                    <div class="stars-container">
+                        ${Array.from({length: 5}, () => `
+                            <svg class="star empty" viewBox="0 0 24 24">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        `).join('')}
+                    </div>
+                    <span class="rating-number">0.0</span>
+                    <span class="rating-count">(0)</span>
+                </div>
+            </div>
+            
+            <!-- قسم التقييمات -->
+            <div class="reviews-section">
+                <div class="reviews-header">
+                    <span class="reviews-title">تقييمات المرضى</span>
+                    <button class="add-review-btn" data-action="add-review" data-doctor-id="${escapeAttr(doc.id)}">أضف تقييمك</button>
+                </div>
+                
+                <!-- نموذج إضافة تقييم -->
+                <div class="review-form" id="reviewForm-${escapeAttr(doc.id)}">
+                    <div class="star-rating-input" data-doctor-id="${escapeAttr(doc.id)}">
+                        ${Array.from({length: 5}, (_, i) => `
+                            <svg class="star empty" viewBox="0 0 24 24" data-rating="${i + 1}">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        `).join('')}
+                    </div>
+                    <textarea class="review-textarea" placeholder="اكتب تقييمك (اختياري)..."></textarea>
+                    <button class="review-submit" data-action="submit-review" data-doctor-id="${escapeAttr(doc.id)}">إرسال التقييم</button>
+                </div>
+                
+                <div class="reviews-list">
+                    <p style="color: var(--text-tertiary); font-size: 0.85rem;">جاري تحميل التقييمات...</p>
+                </div>
+            </div>
+            
+            <button class="action-button" data-action="chat" data-doctor-id="${escapeAttr(doc.authUid || doc.id)}" data-patient-id="${escapeAttr(currentUser?.uid || '')}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                 </svg>
                 راسل الآن
             </button>
         `;
+        
         return card;
     }
 
@@ -891,7 +1482,7 @@
     function startRealtimeSync() {
         const doctorsRef = ref(database, 'doctors');
         
-        onValue(doctorsRef, (snapshot) => {
+        onValue(doctorsRef, async (snapshot) => {
             setSyncStatus('syncing', 'جاري تحديث البيانات...');
             
             const fresh = [];
@@ -917,7 +1508,7 @@
             allDoctors = fresh;
             
             buildFilterDropdown();
-            scheduleRender();
+            await performRender();
             setSyncStatus('online', 'بيانات محدثة ✓');
         }, (error) => {
             console.warn('خطأ في المزامنة:', error);
@@ -932,10 +1523,9 @@
         if (cached.length) {
             allDoctors = cached;
             buildFilterDropdown();
-            scheduleRender();
+            await performRender();
             setSyncStatus('online', 'تم التحميل من الذاكرة المحلية');
         } else {
-            // عرض skeletons (موجودة مبدئياً في HTML)
             setSyncStatus('syncing', 'تحميل أول مرة...');
         }
         
@@ -971,12 +1561,92 @@
             filterBtn.classList.remove('active');
         });
         
-        grid.addEventListener('click', (e) => {
-            const btn = e.target.closest('.action-button');
-            if (!btn) return;
-            const doctorId = btn.dataset.doctorId;
-            const patientId = btn.dataset.patientId;
-            window.location.href = `conversation.html?doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(patientId)}`;
+        // التعامل مع جميع الأحداث في grid
+        grid.addEventListener('click', async (e) => {
+            // زر الإعجاب
+            const heartBtn = e.target.closest('[data-action="like"]');
+            if (heartBtn) {
+                const doctorId = heartBtn.dataset.doctorId;
+                await toggleLike(doctorId);
+                return;
+            }
+            
+            // زر المحادثة
+            const chatBtn = e.target.closest('[data-action="chat"]');
+            if (chatBtn) {
+                const doctorId = chatBtn.dataset.doctorId;
+                const patientId = chatBtn.dataset.patientId;
+                window.location.href = `conversation.html?doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(patientId)}`;
+                return;
+            }
+            
+            // زر إضافة تقييم
+            const addReviewBtn = e.target.closest('[data-action="add-review"]');
+            if (addReviewBtn) {
+                const doctorId = addReviewBtn.dataset.doctorId;
+                const form = document.getElementById(`reviewForm-${doctorId}`);
+                if (form) {
+                    form.classList.toggle('show');
+                }
+                return;
+            }
+            
+            // نجوم التقييم
+            const star = e.target.closest('.star-rating-input .star');
+            if (star) {
+                const rating = parseInt(star.dataset.rating);
+                const container = star.closest('.star-rating-input');
+                const doctorId = container.dataset.doctorId;
+                
+                // تحديث عرض النجوم
+                const stars = container.querySelectorAll('.star');
+                stars.forEach((s, index) => {
+                    if (index < rating) {
+                        s.classList.add('filled');
+                        s.classList.remove('empty');
+                    } else {
+                        s.classList.remove('filled');
+                        s.classList.add('empty');
+                    }
+                });
+                
+                // تخزين التقييم المختار
+                container.dataset.selectedRating = rating;
+                return;
+            }
+            
+            // زر إرسال التقييم
+            const submitBtn = e.target.closest('[data-action="submit-review"]');
+            if (submitBtn) {
+                const doctorId = submitBtn.dataset.doctorId;
+                const form = document.getElementById(`reviewForm-${doctorId}`);
+                const starContainer = form.querySelector('.star-rating-input');
+                const textarea = form.querySelector('.review-textarea');
+                
+                const selectedRating = parseInt(starContainer.dataset.selectedRating || '0');
+                
+                if (selectedRating === 0) {
+                    alert('الرجاء اختيار تقييم بالنجوم');
+                    return;
+                }
+                
+                const reviewText = textarea.value.trim();
+                const success = await submitRating(doctorId, selectedRating, reviewText);
+                
+                if (success) {
+                    form.classList.remove('show');
+                    textarea.value = '';
+                    starContainer.dataset.selectedRating = '0';
+                    
+                    // إعادة تعيين النجوم
+                    const stars = starContainer.querySelectorAll('.star');
+                    stars.forEach(s => {
+                        s.classList.remove('filled');
+                        s.classList.add('empty');
+                    });
+                }
+                return;
+            }
         });
     }
 
