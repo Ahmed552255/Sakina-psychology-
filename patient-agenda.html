@@ -185,7 +185,6 @@
             z-index: 2;
         }
 
-        /* رأس الصفحة */
         .app-header {
             display: flex;
             align-items: center;
@@ -253,7 +252,6 @@
             }
         }
 
-        /* بطاقة التقويم الزجاجية */
         .calendar-card {
             background: var(--surface);
             backdrop-filter: blur(20px);
@@ -426,7 +424,6 @@
             background: var(--success);
         }
 
-        /* بطاقة تفاصيل اليوم */
         .agenda-card {
             background: var(--surface);
             backdrop-filter: blur(20px);
@@ -469,7 +466,6 @@
             border-radius: 20px;
         }
 
-        /* قسم المزاج */
         .mood-section {
             background: var(--bg-secondary);
             border-radius: 24px;
@@ -545,8 +541,40 @@
         .save-mood-btn:active {
             transform: scale(0.96);
         }
+        .save-mood-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
-        /* أزرار الإضافة السريعة */
+        .mood-history {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--primary-100);
+        }
+        .mood-history-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+        }
+        .mood-history-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+        .mood-history-item:last-child {
+            border-bottom: none;
+        }
+        .mood-history-time {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-right: auto;
+        }
+
         .quick-add {
             display: flex;
             gap: 12px;
@@ -585,7 +613,6 @@
             box-shadow: 0 4px 12px rgba(240, 165, 140, 0.2);
         }
 
-        /* قائمة الأحداث */
         .events-list {
             display: flex;
             flex-direction: column;
@@ -667,7 +694,6 @@
             color: var(--danger);
         }
 
-        /* مودال الإضافة */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -797,8 +823,11 @@
         .save-btn:active {
             transform: scale(0.96);
         }
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
-        /* FAB */
         .fab-container {
             position: fixed;
             bottom: 85px;
@@ -863,7 +892,32 @@
             box-shadow: var(--shadow-card-hover);
         }
 
-        /* شريط التنقل */
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: var(--primary-800);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            white-space: nowrap;
+            box-shadow: var(--shadow-elevated);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success {
+            background: var(--success);
+        }
+
         .bottom-nav {
             position: fixed;
             bottom: 20px;
@@ -949,11 +1003,10 @@
             </div>
             <div class="sync-badge" id="syncBadge">
                 <span class="sync-dot" id="syncDot"></span>
-                <span id="syncText">محلي</span>
+                <span id="syncText">متصل ✓</span>
             </div>
         </header>
 
-        <!-- بطاقة التقويم -->
         <div class="calendar-card">
             <div class="cal-header">
                 <button class="cal-nav-btn" id="prevMonthBtn">
@@ -973,14 +1026,12 @@
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
 
-        <!-- بطاقة تفاصيل اليوم -->
         <div class="agenda-card" id="agendaCard">
             <div class="agenda-header">
                 <h3 class="agenda-title" id="agendaTitle"></h3>
                 <span class="streak-badge" id="streakBadge"></span>
             </div>
 
-            <!-- قسم المزاج -->
             <div class="mood-section">
                 <div class="section-label">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -990,7 +1041,7 @@
                     <span>كيف تشعر اليوم؟</span>
                 </div>
                 <div class="mood-emojis" id="moodEmojis"></div>
-                <textarea class="mood-note" id="moodNote" placeholder="ملاحظة (اختياري)..."></textarea>
+                <textarea class="mood-note" id="moodNote" placeholder="ملاحظة عن مشاعرك (اختياري)..."></textarea>
                 <button class="save-mood-btn" id="saveMoodBtn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" style="margin-left:6px;">
                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -998,9 +1049,12 @@
                     </svg>
                     حفظ الحالة
                 </button>
+                <div class="mood-history" id="moodHistory" style="display:none;">
+                    <div class="mood-history-title">📋 سجل الحالات المزاجية لهذا اليوم</div>
+                    <div id="moodHistoryList"></div>
+                </div>
             </div>
 
-            <!-- أزرار الإضافة السريعة -->
             <div class="quick-add">
                 <button class="quick-btn task" id="addTaskBtn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -1020,12 +1074,10 @@
                 </button>
             </div>
 
-            <!-- قائمة الأحداث -->
             <div class="events-list" id="eventsList"></div>
         </div>
     </div>
 
-    <!-- FAB -->
     <div class="fab-container" id="fabContainer">
         <div class="fab-options">
             <button class="fab-option" id="fabTask" style="color:var(--task-color);">
@@ -1047,7 +1099,6 @@
         </button>
     </div>
 
-    <!-- شريط التنقل -->
     <nav class="bottom-nav">
         <a href="patient-home.html" class="nav-link">
             <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -1067,7 +1118,6 @@
         </a>
     </nav>
 
-    <!-- مودال الإضافة -->
     <div class="modal-backdrop" id="eventModal">
         <div class="modal-sheet">
             <div class="modal-handle"></div>
@@ -1082,7 +1132,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">الوصف</label>
-                <textarea id="eventDesc" class="form-textarea" rows="2"></textarea>
+                <textarea id="eventDesc" class="form-textarea" rows="2" placeholder="تفاصيل إضافية..."></textarea>
             </div>
             <div class="form-group">
                 <label class="form-label">التاريخ</label>
@@ -1104,86 +1154,25 @@
         </div>
     </div>
 
+    <div class="toast" id="toast"></div>
+
     <script type="module">
         import { firebaseConfig } from './firebase-config.js';
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import {
-            getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
-            query, where, onSnapshot, enableIndexedDbPersistence
-        } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+            getFirestore, collection, doc, setDoc, getDocs, updateDoc, deleteDoc,
+            query, where, orderBy, onSnapshot, addDoc, serverTimestamp, limit
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        enableIndexedDbPersistence(db).catch(err => console.warn("Offline persistence failed:", err));
-
-        class AgendaCache {
-            constructor() { this.db = null; }
-            async init() {
-                if (this.db) return;
-                return new Promise((resolve, reject) => {
-                    const req = indexedDB.open('SakoonAgendaDB', 2);
-                    req.onerror = () => reject(req.error);
-                    req.onsuccess = () => { this.db = req.result;
-                        resolve(); };
-                    req.onupgradeneeded = (e) => {
-                        const db = e.target.result;
-                        if (!db.objectStoreNames.contains('events')) db.createObjectStore('events', { keyPath: 'id' });
-                        if (!db.objectStoreNames.contains('moods')) db.createObjectStore('moods', { keyPath: 'date' });
-                    };
-                });
-            }
-            async getAllEvents() {
-                await this.init();
-                return new Promise(resolve => {
-                    const tx = this.db.transaction('events', 'readonly');
-                    const req = tx.objectStore('events').getAll();
-                    req.onsuccess = () => resolve(req.result || []);
-                    req.onerror = () => resolve([]);
-                });
-            }
-            async saveEvents(events) {
-                await this.init();
-                return new Promise(resolve => {
-                    const tx = this.db.transaction('events', 'readwrite');
-                    const store = tx.objectStore('events');
-                    store.clear();
-                    events.forEach(e => store.put(e));
-                    tx.oncomplete = () => resolve();
-                });
-            }
-            async getAllMoods() {
-                await this.init();
-                return new Promise(resolve => {
-                    const tx = this.db.transaction('moods', 'readonly');
-                    const req = tx.objectStore('moods').getAll();
-                    req.onsuccess = () => {
-                        const moods = {};
-                        (req.result || []).forEach(m => { moods[m.date] = m; });
-                        resolve(moods);
-                    };
-                    req.onerror = () => resolve({});
-                });
-            }
-            async saveMoods(moods) {
-                await this.init();
-                const list = Object.entries(moods).map(([date, data]) => ({ date, ...data }));
-                return new Promise(resolve => {
-                    const tx = this.db.transaction('moods', 'readwrite');
-                    const store = tx.objectStore('moods');
-                    store.clear();
-                    list.forEach(m => store.put(m));
-                    tx.oncomplete = () => resolve();
-                });
-            }
-        }
-        const cache = new AgendaCache();
-
         let currentUser = null;
         let events = [];
         let moods = {};
+        let moodHistory = {};
         let currentDate = new Date();
         let selectedDate = new Date().toISOString().split('T')[0];
         let currentType = 'task';
@@ -1192,10 +1181,33 @@
         let unsubscribeTasks = null;
         let unsubscribeAppts = null;
         let unsubscribeMoods = null;
+        let isSaving = false;
+
+        const toast = (msg, type = '') => {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = `toast show ${type}`;
+            setTimeout(() => el.classList.remove('show'), 2500);
+        };
 
         const setSyncStatus = (busy, msg) => {
             document.getElementById('syncDot').className = `sync-dot${busy ? ' syncing' : ''}`;
             document.getElementById('syncText').textContent = msg || (busy ? 'مزامنة...' : 'متصل ✓');
+        };
+
+        const formatTimeDisplay = (ts) => {
+            if (!ts) return '';
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            const hours = d.getHours();
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        };
+
+        const formatDateLabel = (ds) => {
+            const d = new Date(ds + 'T00:00:00');
+            const today = new Date().toISOString().split('T')[0];
+            if (ds === today) return 'اليوم';
+            return d.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
         };
 
         const isEventOnDate = (ev, dateStr) => {
@@ -1208,13 +1220,6 @@
             if (ev.recur === 'weekly') return evDate.getDay() === curDate.getDay();
             if (ev.recur === 'monthly') return evDate.getDate() === curDate.getDate();
             return false;
-        };
-
-        const formatDateLabel = (ds) => {
-            const d = new Date(ds + 'T00:00:00');
-            const today = new Date().toISOString().split('T')[0];
-            if (ds === today) return 'اليوم';
-            return d.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
         };
 
         const renderCalendar = () => {
@@ -1238,43 +1243,44 @@
                 grid.appendChild(cell);
             }
             for (let d = 1; d <= daysInMonth; d++) {
-                const ds =
-                    `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 const cell = document.createElement('div');
                 cell.className = 'day-cell';
                 if (ds === todayStr) cell.classList.add('today');
                 if (ds === selectedDate) cell.classList.add('selected');
 
                 const dayEvents = events.filter(e => isEventOnDate(e, ds));
-                const mood = moods[ds];
+                const moodEntries = moodHistory[ds] || [];
+                const latestMood = moodEntries.length > 0 ? moodEntries[moodEntries.length - 1] : null;
 
                 cell.innerHTML = `<span>${d}</span>`;
-                if (mood) {
+                if (latestMood) {
                     const moodSpan = document.createElement('span');
                     moodSpan.className = 'mood-emoji';
-                    moodSpan.textContent = mood.emoji;
+                    moodSpan.textContent = latestMood.emoji;
                     cell.appendChild(moodSpan);
                 }
                 if (dayEvents.length) {
                     const dots = document.createElement('div');
                     dots.className = 'event-dots';
-                    if (dayEvents.some(e => e.type === 'appt')) dots.innerHTML +=
-                    '<span class="dot appt"></span>';
+                    if (dayEvents.some(e => e.type === 'appt')) dots.innerHTML += '<span class="dot appt"></span>';
                     if (dayEvents.some(e => e.type === 'task' && !e.completed)) dots.innerHTML +=
                         '<span class="dot task"></span>';
                     if (dayEvents.some(e => e.type === 'task' && e.completed)) dots.innerHTML +=
                         '<span class="dot completed"></span>';
                     cell.appendChild(dots);
                 }
-                cell.addEventListener('click', () => { selectedDate = ds;
+                cell.addEventListener('click', () => {
+                    selectedDate = ds;
                     renderCalendar();
-                    showAgenda(ds); });
+                    showAgenda(ds);
+                });
                 grid.appendChild(cell);
             }
 
             const monthPrefix = `${year}-${String(month+1).padStart(2,'0')}`;
-            const monthEvents = events.filter(e => e.date.startsWith(monthPrefix));
-            const monthMoods = Object.keys(moods).filter(k => k.startsWith(monthPrefix)).length;
+            const monthEvents = events.filter(e => e.date && e.date.startsWith(monthPrefix));
+            const monthMoods = Object.keys(moodHistory).filter(k => k.startsWith(monthPrefix)).length;
             document.getElementById('monthSummary').innerHTML = `
             <div class="summary-pill"><span>📅 ${monthEvents.filter(e=>e.type==='appt').length} موعد</span></div>
             <div class="summary-pill"><span>✅ ${monthEvents.filter(e=>e.type==='task').length} مهمة</span></div>
@@ -1286,19 +1292,37 @@
             document.getElementById('agendaCard').style.display = 'block';
             document.getElementById('agendaTitle').textContent = formatDateLabel(ds);
 
-            const mood = moods[ds] || {};
+            const entries = moodHistory[ds] || [];
+            const latestMood = entries.length > 0 ? entries[entries.length - 1] : null;
+
             document.querySelectorAll('.mood-option').forEach(el => el.classList.remove('selected'));
-            if (mood.emoji) {
-                document.querySelectorAll(`.mood-option[data-emoji="${mood.emoji}"]`).forEach(el => el.classList.add(
+            if (latestMood) {
+                document.querySelectorAll(`.mood-option[data-emoji="${latestMood.emoji}"]`).forEach(el => el.classList.add(
                     'selected'));
             }
-            document.getElementById('moodNote').value = mood.note || '';
+            document.getElementById('moodNote').value = '';
+
+            const moodHistoryDiv = document.getElementById('moodHistory');
+            const moodHistoryList = document.getElementById('moodHistoryList');
+            if (entries.length > 0) {
+                moodHistoryDiv.style.display = 'block';
+                moodHistoryList.innerHTML = entries.slice().reverse().map(entry => `
+                    <div class="mood-history-item">
+                        <span>${entry.emoji}</span>
+                        <span>${entry.note || 'بدون ملاحظة'}</span>
+                        <span class="mood-history-time">${formatTimeDisplay(entry.timestamp)}</span>
+                    </div>
+                `).join('');
+            } else {
+                moodHistoryDiv.style.display = 'none';
+            }
 
             const dayEvents = events.filter(e => isEventOnDate(e, ds)).sort((a, b) => (a.time || '99:99').localeCompare(b
                 .time || '99:99'));
             const list = document.getElementById('eventsList');
             if (dayEvents.length === 0) {
-                list.innerHTML = `<div class="empty-events" style="text-align:center; padding:30px; color:var(--text-tertiary);">✨ لا توجد أحداث لهذا اليوم</div>`;
+                list.innerHTML =
+                    `<div style="text-align:center; padding:30px; color:var(--text-tertiary);">✨ لا توجد أحداث لهذا اليوم</div>`;
             } else {
                 list.innerHTML = dayEvents.map(ev => `
                 <div class="event-item ${ev.type} ${ev.completed ? 'completed' : ''}">
@@ -1341,7 +1365,7 @@
                 });
             }
 
-            const sortedDates = Object.keys(moods).sort((a, b) => b.localeCompare(a));
+            const sortedDates = Object.keys(moodHistory).sort((a, b) => b.localeCompare(a));
             let streak = 0;
             const today = new Date().toISOString().split('T')[0];
             for (let i = 0; i < sortedDates.length; i++) {
@@ -1354,48 +1378,75 @@
 
         const toggleTask = async (id) => {
             const ev = events.find(e => e.id === id);
-            if (!ev) return;
+            if (!ev || !currentUser) return;
             ev.completed = !ev.completed;
-            await cache.saveEvents(events);
             renderCalendar();
             showAgenda(selectedDate);
-            if (currentUser) {
+            try {
                 await updateDoc(doc(db, 'tasks', id), { done: ev.completed });
+            } catch (e) {
+                toast('فشل تحديث المهمة', 'error');
             }
         };
 
         const deleteEvent = async (id) => {
             if (!confirm('حذف هذا الحدث؟')) return;
             const ev = events.find(e => e.id === id);
+            if (!ev || !currentUser) return;
             events = events.filter(e => e.id !== id);
-            await cache.saveEvents(events);
             renderCalendar();
             showAgenda(selectedDate);
-            if (currentUser && ev) {
+            try {
                 const col = ev.type === 'appt' ? 'appointments' : 'tasks';
                 await deleteDoc(doc(db, col, id));
+                toast('تم الحذف بنجاح', 'success');
+            } catch (e) {
+                toast('فشل الحذف', 'error');
             }
         };
 
         const saveMood = async () => {
+            if (isSaving || !currentUser) return;
             const selected = document.querySelector('.mood-option.selected');
-            if (!selected) return;
+            if (!selected) {
+                toast('الرجاء اختيار حالة مزاجية', 'error');
+                return;
+            }
             const emoji = selected.dataset.emoji;
             const note = document.getElementById('moodNote').value.trim();
-            moods[selectedDate] = { emoji, note, updatedAt: new Date().toISOString() };
-            await cache.saveMoods(moods);
-            renderCalendar();
-            showAgenda(selectedDate);
-            if (currentUser) {
+
+            isSaving = true;
+            const saveBtn = document.getElementById('saveMoodBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'جاري الحفظ...';
+
+            try {
                 const scoreMap = { '😁': 5, '😊': 4, '😐': 3, '😌': 3, '😔': 2, '😢': 2, '😰': 1, '😠': 1 };
-                await setDoc(doc(db, 'moods', `${currentUser.uid}_${selectedDate}`), {
+                const moodData = {
                     patientId: currentUser.uid,
                     date: selectedDate,
                     score: scoreMap[emoji] || 3,
                     emoji,
                     note,
-                    updatedAt: new Date()
-                }, { merge: true });
+                    timestamp: serverTimestamp()
+                };
+
+                await addDoc(collection(db, 'moods'), moodData);
+                document.getElementById('moodNote').value = '';
+                toast('تم حفظ حالتك المزاجية ✨', 'success');
+            } catch (e) {
+                console.error('Save mood error:', e);
+                toast('فشل حفظ الحالة المزاجية', 'error');
+            } finally {
+                isSaving = false;
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" style="margin-left:6px;">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    حفظ الحالة
+                `;
             }
         };
 
@@ -1461,6 +1512,7 @@
                 timeInput.value = '';
                 renderPills();
                 modal.classList.add('open');
+                setTimeout(() => titleInput.focus(), 400);
             };
 
             document.getElementById('addTaskBtn').addEventListener('click', () => openModal('task'));
@@ -1479,35 +1531,39 @@
 
             document.getElementById('saveEventBtn').addEventListener('click', async () => {
                 const title = titleInput.value.trim();
-                if (!title) { alert('العنوان مطلوب'); return; }
+                if (!title) { toast('العنوان مطلوب', 'error'); return; }
                 const date = dateInput.value;
-                if (!date) { alert('التاريخ مطلوب'); return; }
+                if (!date) { toast('التاريخ مطلوب', 'error'); return; }
                 const time = timeInput.value || null;
+                const saveBtn = document.getElementById('saveEventBtn');
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'جاري الحفظ...';
 
-                const eventData = {
-                    id: `${currentType}_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
-                    type: currentType,
-                    title,
-                    desc: descInput.value.trim(),
-                    date,
-                    time,
-                    prio: currentPrio,
-                    recur: currentType === 'task' ? currentRecur : 'none',
-                    completed: false,
-                    patientId: currentUser.uid,
-                    createdAt: new Date()
-                };
-
-                events.push(eventData);
-                await cache.saveEvents(events);
-                renderCalendar();
-                showAgenda(selectedDate);
-                modal.classList.remove('open');
-
-                const col = currentType === 'appt' ? 'appointments' : 'tasks';
-                const { id, ...firestoreData } = eventData;
-                if (currentType === 'task') firestoreData.done = false;
-                await setDoc(doc(db, col, id), firestoreData);
+                try {
+                    const col = currentType === 'appt' ? 'appointments' : 'tasks';
+                    const docRef = doc(collection(db, col));
+                    const eventData = {
+                        patientId: currentUser.uid,
+                        type: currentType,
+                        title,
+                        desc: descInput.value.trim(),
+                        date,
+                        time,
+                        prio: currentPrio,
+                        recur: currentType === 'task' ? currentRecur : 'none',
+                        done: false,
+                        createdAt: serverTimestamp()
+                    };
+                    await setDoc(docRef, eventData);
+                    modal.classList.remove('open');
+                    toast('تم إضافة الحدث بنجاح ✅', 'success');
+                } catch (e) {
+                    console.error('Save event error:', e);
+                    toast('فشل حفظ الحدث', 'error');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'حفظ';
+                }
             });
 
             const moodEmojis = document.getElementById('moodEmojis');
@@ -1530,6 +1586,13 @@
                 currentDate.setMonth(currentDate.getMonth() + 1);
                 renderCalendar();
             });
+
+            document.addEventListener('click', (e) => {
+                const fab = document.getElementById('fabContainer');
+                if (fab.classList.contains('open') && !fab.contains(e.target)) {
+                    fab.classList.remove('open');
+                }
+            });
         };
 
         const startSync = (user) => {
@@ -1540,7 +1603,7 @@
             setSyncStatus(true, 'جاري المزامنة...');
 
             const tasksQuery = query(collection(db, 'tasks'), where('patientId', '==', user.uid));
-            unsubscribeTasks = onSnapshot(tasksQuery, async (snapshot) => {
+            unsubscribeTasks = onSnapshot(tasksQuery, (snapshot) => {
                 const cloudTasks = snapshot.docs.map(d => ({
                     id: d.id,
                     type: 'task',
@@ -1555,7 +1618,6 @@
                 }));
                 const appts = events.filter(e => e.type === 'appt');
                 events = [...cloudTasks, ...appts];
-                await cache.saveEvents(events);
                 renderCalendar();
                 if (selectedDate) showAgenda(selectedDate);
                 setSyncStatus(false, 'متصل ✓');
@@ -1565,7 +1627,7 @@
             });
 
             const apptsQuery = query(collection(db, 'appointments'), where('patientId', '==', user.uid));
-            unsubscribeAppts = onSnapshot(apptsQuery, async (snapshot) => {
+            unsubscribeAppts = onSnapshot(apptsQuery, (snapshot) => {
                 const cloudAppts = snapshot.docs.map(d => ({
                     id: d.id,
                     type: 'appt',
@@ -1580,30 +1642,32 @@
                 }));
                 const tasks = events.filter(e => e.type === 'task');
                 events = [...tasks, ...cloudAppts];
-                await cache.saveEvents(events);
                 renderCalendar();
                 if (selectedDate) showAgenda(selectedDate);
             }, err => console.warn('Appointments sync error:', err));
 
-            const moodsQuery = query(collection(db, 'moods'), where('patientId', '==', user.uid));
-            unsubscribeMoods = onSnapshot(moodsQuery, async (snapshot) => {
+            const moodsQuery = query(collection(db, 'moods'), where('patientId', '==', user.uid), orderBy('timestamp',
+                'asc'));
+            unsubscribeMoods = onSnapshot(moodsQuery, (snapshot) => {
                 const cloudMoods = {};
                 snapshot.forEach(d => {
                     const data = d.data();
-                    cloudMoods[data.date] = { emoji: data.emoji, note: data.note, updatedAt: data
-                            .updatedAt };
+                    const date = data.date;
+                    if (!cloudMoods[date]) cloudMoods[date] = [];
+                    cloudMoods[date].push({
+                        emoji: data.emoji,
+                        note: data.note || '',
+                        timestamp: data.timestamp
+                    });
                 });
-                moods = cloudMoods;
-                await cache.saveMoods(moods);
+                moodHistory = cloudMoods;
                 renderCalendar();
                 if (selectedDate) showAgenda(selectedDate);
-            });
+            }, err => console.warn('Moods sync error:', err));
         };
 
         const init = async (user) => {
             currentUser = user;
-            events = await cache.getAllEvents();
-            moods = await cache.getAllMoods();
             renderCalendar();
             showAgenda(selectedDate);
             setupModal();
