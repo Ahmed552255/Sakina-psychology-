@@ -124,7 +124,6 @@
             overflow-x: hidden;
         }
 
-        /* ============ أجرام خلفية زجاجية ناعمة ============ */
         body::before {
             content: '';
             position: fixed;
@@ -429,7 +428,7 @@
             transition: all 0.35s cubic-bezier(0.25, 0, 0.1, 1);
             position: relative;
             overflow: hidden;
-            cursor: default;
+            cursor: pointer;
         }
         .doctor-card::before {
             content: '';
@@ -464,6 +463,25 @@
                 transform: scale(0.985);
                 transition: transform 0.12s ease;
             }
+        }
+
+        .card-click-hint {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            background: rgba(47, 148, 148, 0.08);
+            border: 1px solid rgba(47, 148, 148, 0.15);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--primary-600);
+            pointer-events: none;
+            opacity: 0.8;
         }
 
         /* ============ رأس البطاقة ============ */
@@ -667,195 +685,6 @@
             opacity: 0.8;
         }
 
-        /* ============ قسم التقييمات ============ */
-        .reviews-section {
-            margin-top: 6px;
-        }
-        .reviews-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .reviews-title {
-            font-weight: 700;
-            font-size: 0.92rem;
-            color: var(--text-primary);
-            letter-spacing: -0.2px;
-        }
-        .add-review-btn {
-            padding: 7px 15px;
-            background: var(--primary-50);
-            border: 1px solid var(--primary-200);
-            border-radius: 22px;
-            font-family: 'Cairo', sans-serif;
-            font-weight: 600;
-            font-size: 0.78rem;
-            color: var(--primary-700);
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-        }
-        .add-review-btn:hover {
-            background: var(--primary-100);
-            border-color: var(--primary-300);
-            box-shadow: 0 2px 8px rgba(47, 148, 148, 0.12);
-        }
-        .reviews-list {
-            display: flex;
-            flex-direction: column;
-            gap: 9px;
-            max-height: 200px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary-200) transparent;
-        }
-        .reviews-list::-webkit-scrollbar {
-            width: 4px;
-        }
-        .reviews-list::-webkit-scrollbar-thumb {
-            background: var(--primary-200);
-            border-radius: 10px;
-        }
-        .review-item {
-            background: var(--bg-secondary);
-            border-radius: var(--radius-sm);
-            padding: 11px 13px;
-            transition: var(--transition-fast);
-            border: 1px solid transparent;
-        }
-        .review-item:hover {
-            border-color: var(--primary-100);
-            background: var(--surface-hover);
-        }
-        .review-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 5px;
-        }
-        .reviewer-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 0.75rem;
-            box-shadow: 0 2px 6px rgba(47, 148, 148, 0.2);
-        }
-        .reviewer-name {
-            font-weight: 600;
-            font-size: 0.82rem;
-            color: var(--text-primary);
-        }
-        .review-date {
-            font-size: 0.7rem;
-            color: var(--text-tertiary);
-            margin-right: auto;
-            opacity: 0.7;
-        }
-        .review-rating {
-            display: flex;
-            gap: 1px;
-            margin-bottom: 3px;
-        }
-        .review-star {
-            width: 13px;
-            height: 13px;
-        }
-        .review-star.filled {
-            fill: var(--star-color);
-            stroke: var(--star-color);
-        }
-        .review-star.empty {
-            fill: none;
-            stroke: var(--text-tertiary);
-            opacity: 0.4;
-        }
-        .review-text {
-            font-size: 0.83rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        /* ============ نموذج التقييم ============ */
-        .review-form {
-            display: none;
-            margin-top: 10px;
-            padding: 14px;
-            background: var(--surface-solid);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow-soft);
-            animation: formSlideIn 0.3s ease;
-        }
-        @keyframes formSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .review-form.show {
-            display: block;
-        }
-        .review-textarea {
-            width: 100%;
-            min-height: 75px;
-            padding: 11px;
-            background: var(--bg-secondary);
-            border: 1.5px solid var(--primary-100);
-            border-radius: var(--radius-xs);
-            font-family: 'Cairo', sans-serif;
-            font-size: 0.88rem;
-            color: var(--text-primary);
-            resize: vertical;
-            margin-bottom: 8px;
-            transition: var(--transition-smooth);
-        }
-        .review-textarea:focus {
-            outline: none;
-            border-color: var(--primary-400);
-            box-shadow: var(--shadow-focus);
-        }
-        .review-submit {
-            padding: 9px 22px;
-            background: linear-gradient(145deg, var(--primary-600), var(--primary-500));
-            color: white;
-            border: none;
-            border-radius: var(--radius-xs);
-            font-family: 'Cairo', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            box-shadow: var(--shadow-btn);
-            letter-spacing: -0.2px;
-        }
-        .review-submit:hover {
-            box-shadow: 0 6px 20px rgba(47, 148, 148, 0.32);
-            transform: translateY(-1px);
-        }
-        .review-submit:active {
-            transform: scale(0.96);
-        }
-        .star-rating-input {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 8px;
-        }
-        .star-rating-input .star {
-            width: 27px;
-            height: 27px;
-        }
-
         /* ============ زر المحادثة ============ */
         .action-button {
             display: flex;
@@ -905,45 +734,373 @@
             transition: transform 0.12s ease;
         }
 
-        /* ============ الهيكل العظمي ============ */
-        .skeleton-card {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
+        /* ============ مودال الملف الشخصي ============ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 30, 30, 0.5);
+            z-index: 1000;
             display: flex;
-            gap: 1.2rem;
-            border: 1.5px solid var(--glass-border);
-            box-shadow: var(--shadow-soft);
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
-        .skeleton-avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: var(--radius-md);
-            background: linear-gradient(110deg, var(--primary-100) 30%, var(--primary-50) 50%, var(--primary-100) 70%);
-            background-size: 200% 100%;
-            animation: shimmer 1.6s infinite ease-in-out;
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
         }
-        .skeleton-lines {
+        .modal-sheet {
+            background: var(--surface-solid);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            width: 100%;
+            max-width: 760px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-elevated);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.32, 1, 0.5, 1);
+        }
+        .modal-overlay.show .modal-sheet {
+            transform: translateY(0);
+        }
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            border-radius: 99px;
+            background: var(--primary-200);
+            margin: 1rem auto 0.5rem;
+            flex-shrink: 0;
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1.5rem 1rem;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--primary-50);
+        }
+        .modal-header h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+        .modal-close-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1.5px solid var(--primary-100);
+            background: var(--primary-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }
+        .modal-close-btn:hover {
+            background: var(--primary-100);
+            color: var(--primary-700);
+        }
+        .modal-body {
+            padding: 1.25rem 1.5rem;
+            overflow-y: auto;
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 11px;
-            padding-top: 6px;
+            gap: 1.25rem;
         }
-        .skeleton-line {
-            height: 15px;
-            background: linear-gradient(110deg, var(--primary-100) 30%, var(--primary-50) 50%, var(--primary-100) 70%);
-            background-size: 200% 100%;
+        .modal-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .modal-body::-webkit-scrollbar-thumb {
+            background: var(--primary-200);
+            border-radius: 10px;
+        }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--primary-50);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        /* ============ تفاصيل الملف الشخصي ============ */
+        .profile-detail-header {
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+        }
+        .profile-avatar-lg {
+            width: 100px;
+            height: 100px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(145deg, var(--primary-500), var(--primary-700));
+            box-shadow: 0 6px 20px rgba(47, 148, 148, 0.22);
+            border: 3px solid rgba(255,255,255,0.6);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+        }
+        .profile-avatar-lg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-detail-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .profile-detail-name {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .profile-detail-specialty {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--primary-50);
+            color: var(--primary-700);
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 1px solid var(--primary-100);
+            margin-bottom: 8px;
+        }
+        .profile-detail-bio {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* ============ معلومات مهنية ============ */
+        .professional-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+        }
+        .pro-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.7rem 0.9rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--primary-50);
+        }
+        .pro-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: var(--primary-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-600);
+            flex-shrink: 0;
+        }
+        .pro-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .pro-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+        }
+        .pro-value {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ============ قسم التقييمات في المودال ============ */
+        .modal-reviews-section {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            border: 1px solid var(--primary-50);
+        }
+        .modal-reviews-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .modal-reviews-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+        .modal-add-review-btn {
+            padding: 6px 14px;
+            background: var(--primary-500);
+            color: white;
+            border: none;
             border-radius: 20px;
-            animation: shimmer 1.6s infinite ease-in-out;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
         }
-        @keyframes shimmer {
-            0% {
-                background-position: 200% 0;
+        .modal-add-review-btn:hover {
+            background: var(--primary-600);
+            box-shadow: var(--shadow-btn);
+        }
+        .modal-reviews-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .modal-reviews-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .modal-reviews-list::-webkit-scrollbar-thumb {
+            background: var(--primary-200);
+            border-radius: 10px;
+        }
+        .modal-review-item {
+            background: var(--surface-solid);
+            border-radius: var(--radius-sm);
+            padding: 11px 13px;
+            border: 1px solid var(--primary-50);
+        }
+        .modal-review-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+        .modal-reviewer-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 6px rgba(47, 148, 148, 0.2);
+        }
+        .modal-reviewer-name {
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--text-primary);
+        }
+        .modal-review-date {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-right: auto;
+            opacity: 0.7;
+        }
+        .modal-review-rating {
+            display: flex;
+            gap: 1px;
+            margin-bottom: 3px;
+        }
+        .modal-review-star {
+            width: 13px;
+            height: 13px;
+        }
+        .modal-review-star.filled {
+            fill: var(--star-color);
+            stroke: var(--star-color);
+        }
+        .modal-review-star.empty {
+            fill: none;
+            stroke: var(--text-tertiary);
+            opacity: 0.4;
+        }
+        .modal-review-text {
+            font-size: 0.83rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* ============ نموذج التقييم في المودال ============ */
+        .modal-review-form {
+            display: none;
+            margin-top: 10px;
+            padding: 14px;
+            background: var(--surface-solid);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--primary-100);
+            animation: formSlideIn 0.3s ease;
+        }
+        @keyframes formSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
             }
-            100% {
-                background-position: -200% 0;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
+        }
+        .modal-review-form.show {
+            display: block;
+        }
+        .modal-review-textarea {
+            width: 100%;
+            min-height: 75px;
+            padding: 11px;
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--primary-100);
+            border-radius: var(--radius-xs);
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.88rem;
+            color: var(--text-primary);
+            resize: vertical;
+            margin-bottom: 8px;
+            transition: var(--transition-smooth);
+        }
+        .modal-review-textarea:focus {
+            outline: none;
+            border-color: var(--primary-400);
+            box-shadow: var(--shadow-focus);
+        }
+        .modal-review-submit {
+            padding: 9px 22px;
+            background: linear-gradient(145deg, var(--primary-600), var(--primary-500));
+            color: white;
+            border: none;
+            border-radius: var(--radius-xs);
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: var(--shadow-btn);
+        }
+        .modal-review-submit:hover {
+            box-shadow: 0 6px 20px rgba(47, 148, 148, 0.32);
+            transform: translateY(-1px);
+        }
+        .modal-star-rating-input {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+        .modal-star-rating-input .star {
+            width: 27px;
+            height: 27px;
         }
 
         /* ============ الحالة الفارغة ============ */
@@ -1145,6 +1302,13 @@
                 padding: 6px 11px;
                 font-size: 0.62rem;
             }
+            .profile-avatar-lg {
+                width: 80px;
+                height: 80px;
+            }
+            .professional-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -1204,6 +1368,32 @@
         </div>
     </div>
 
+    <!-- مودال الملف الشخصي -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h3 id="modalDoctorName">الملف الشخصي</h3>
+                <button class="modal-close-btn" id="modalCloseBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- يتم ملؤه ديناميكياً -->
+            </div>
+            <div class="modal-footer">
+                <button class="action-button" id="modalChatBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    </svg>
+                    راسل الآن
+                </button>
+            </div>
+        </div>
+    </div>
+
     <nav class="bottom-nav">
         <a href="patient-home.html" class="nav-link active">
             <svg class="icon" viewBox="0 0 24 24">
@@ -1237,7 +1427,7 @@
     <script type="module">
         import { firebaseConfig } from './firebase-config.js';
 
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import {
             getDatabase,
             ref,
@@ -1247,96 +1437,13 @@
             remove,
             get,
             push,
-            query,
-            orderByChild,
-            limitToLast,
             runTransaction
-        } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const auth = getAuth(app);
-
-        class DoctorCache {
-            constructor() {
-                this.db = null;
-            }
-            async init() {
-                if (this.db) return;
-                return new Promise((resolve, reject) => {
-                    const request = indexedDB.open('SakoonDoctorCache', 1);
-                    request.onerror = () => reject(request.error);
-                    request.onsuccess = () => {
-                        this.db = request.result;
-                        resolve();
-                    };
-                    request.onupgradeneeded = (event) => {
-                        const db = event.target.result;
-                        if (!db.objectStoreNames.contains('doctors')) {
-                            db.createObjectStore('doctors', { keyPath: 'i' });
-                        }
-                        if (!db.objectStoreNames.contains('metadata')) {
-                            db.createObjectStore('metadata', { keyPath: 'key' });
-                        }
-                    };
-                });
-            }
-            async save(doctors) {
-                await this.init();
-                const compact = doctors.map(d => ({
-                    i: d.id,
-                    u: d.authUid || d.id,
-                    n: d.name || '',
-                    s: d.specialty || '',
-                    b: (d.quickBlurb || '').substring(0, 100),
-                    p: d.photoURL || ''
-                }));
-                return new Promise((resolve, reject) => {
-                    const tx = this.db.transaction(['doctors', 'metadata'], 'readwrite');
-                    const doctorStore = tx.objectStore('doctors');
-                    const metaStore = tx.objectStore('metadata');
-                    doctorStore.clear();
-                    compact.forEach(doc => doctorStore.put(doc));
-                    metaStore.put({ key: 'lastSync', value: Date.now() });
-                    tx.oncomplete = () => resolve();
-                    tx.onerror = () => reject(tx.error);
-                });
-            }
-            async load() {
-                await this.init();
-                return new Promise((resolve, reject) => {
-                    const tx = this.db.transaction('doctors', 'readonly');
-                    const store = tx.objectStore('doctors');
-                    const request = store.getAll();
-                    request.onsuccess = () => {
-                        const compact = request.result || [];
-                        const doctors = compact.map(d => ({
-                            id: d.i,
-                            authUid: d.u,
-                            name: d.n,
-                            specialty: d.s,
-                            quickBlurb: d.b,
-                            photoURL: d.p
-                        }));
-                        resolve(doctors);
-                    };
-                    request.onerror = () => reject(request.error);
-                });
-            }
-            async getLastSync() {
-                await this.init();
-                return new Promise((resolve, reject) => {
-                    const tx = this.db.transaction('metadata', 'readonly');
-                    const store = tx.objectStore('metadata');
-                    const request = store.get('lastSync');
-                    request.onsuccess = () => resolve(request.result?.value || 0);
-                    request.onerror = () => reject(request.error);
-                });
-            }
-        }
-
-        const cache = new DoctorCache();
 
         const specialtyLabels = {
             'psychiatrist': 'طبيب نفسي',
@@ -1357,6 +1464,11 @@
         const filterLabel = document.getElementById('filterLabel');
         const syncDot = document.getElementById('syncDot');
         const syncMessage = document.getElementById('syncMessage');
+        const profileModal = document.getElementById('profileModal');
+        const modalBody = document.getElementById('modalBody');
+        const modalDoctorName = document.getElementById('modalDoctorName');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const modalChatBtn = document.getElementById('modalChatBtn');
 
         let allDoctors = [];
         let filterSpecialty = 'all';
@@ -1364,6 +1476,7 @@
         let currentUser = null;
         let userLikes = new Set();
         let userRatings = {};
+        let currentModalDoctor = null;
 
         function setSyncStatus(status, msg) {
             syncDot.className = 'sync-dot';
@@ -1423,6 +1536,9 @@
                 userRatings[doctorId] = { rating, review: reviewText };
                 await updateDoctorAverageRating(doctorId);
                 updateDoctorCardUI(doctorId);
+                if (currentModalDoctor && currentModalDoctor.id === doctorId) {
+                    await openDoctorProfile(doctorId);
+                }
                 return true;
             } catch (error) {
                 console.error('خطأ في إرسال التقييم:', error);
@@ -1462,8 +1578,7 @@
                     if (userRating) { userRatings[doctorId] = { rating: userRating.rating,
                             review: userRating.review }; }
                 }
-                return { averageRating, totalRatings, reviews: reviews.sort((a, b) => b.timestamp - a.timestamp)
-                        .slice(0, 5) };
+                return { averageRating, totalRatings, reviews: reviews.sort((a, b) => b.timestamp - a.timestamp) };
             } catch (error) {
                 console.error('خطأ في تحميل التقييمات:', error);
                 return { averageRating: 0, totalRatings: 0, reviews: [] };
@@ -1490,13 +1605,10 @@
                 ratingNumber.textContent = ratingsData.averageRating.toFixed(1);
                 ratingCount.textContent = `(${ratingsData.totalRatings})`;
             }
-            const reviewsList = card.querySelector('.reviews-list');
-            if (reviewsList) { updateReviewsDisplay(reviewsList, ratingsData.reviews); }
         }
 
         function updateStarsDisplay(container, rating) {
             const fullStars = Math.floor(rating);
-            const hasHalfStar = rating - fullStars >= 0.5;
             container.innerHTML = '';
             for (let i = 0; i < 5; i++) {
                 const star = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -1506,38 +1618,11 @@
                 polygon.setAttribute("points",
                     "12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2");
                 if (i < fullStars) { polygon.classList.add("filled");
-                    star.classList.add("filled"); } else if (i === fullStars && hasHalfStar) { polygon.setAttribute(
-                        "fill", "url(#halfGradient)");
                     star.classList.add("filled"); } else { polygon.classList.add("empty");
                     star.classList.add("empty"); }
                 star.appendChild(polygon);
                 container.appendChild(star);
             }
-        }
-
-        function updateReviewsDisplay(container, reviews) {
-            if (reviews.length === 0) {
-                container.innerHTML =
-                    '<p style="color: var(--text-tertiary); font-size: 0.85rem;">لا توجد تقييمات بعد</p>';
-                return;
-            }
-            container.innerHTML = reviews.map(review => `
-            <div class="review-item">
-                <div class="review-header">
-                    <div class="reviewer-avatar">${(review.userName || 'م').charAt(0)}</div>
-                    <span class="reviewer-name">${review.userName || 'مستخدم'}</span>
-                    <span class="review-date">${formatDate(review.timestamp)}</span>
-                </div>
-                <div class="review-rating">
-                    ${Array.from({length: 5}, (_, i) => `
-                        <svg class="review-star ${i < review.rating ? 'filled' : 'empty'}" viewBox="0 0 24 24">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                    `).join('')}
-                </div>
-                ${review.review ? `<p class="review-text">${review.review}</p>` : ''}
-            </div>
-        `).join('');
         }
 
         function formatDate(timestamp) {
@@ -1550,6 +1635,119 @@
             if (diff < 604800000) return `${Math.floor(diff / 86400000)} يوم`;
             return date.toLocaleDateString('ar-SA');
         }
+
+        async function openDoctorProfile(doctorId) {
+            const doc = allDoctors.find(d => d.id === doctorId);
+            if (!doc) return;
+            currentModalDoctor = doc;
+            const ratingsData = await loadRatingsData(doctorId);
+            const likesData = await loadLikesData(doctorId);
+
+            modalDoctorName.textContent = doc.name || 'الملف الشخصي';
+            modalChatBtn.dataset.doctorId = doc.authUid || doc.id;
+            modalChatBtn.dataset.patientId = currentUser?.uid || '';
+
+            const avatarHtml = doc.photoURL ?
+                `<div class="profile-avatar-lg"><img src="${escapeAttr(doc.photoURL)}" alt="${escapeAttr(doc.name)}"></div>` :
+                `<div class="profile-avatar-lg">${(doc.name || 'د').charAt(0).toUpperCase()}</div>`;
+
+            const specLabel = getSpecialtyName(doc.specialty);
+            const fullBio = doc.fullBio || doc.quickBlurb || '';
+            const experience = doc.experience || '';
+            const country = doc.country || '';
+            const city = doc.city || '';
+            const languages = doc.languages || '';
+            const price = doc.price || '';
+            const license = doc.license || '';
+            const subspecialties = doc.subspecialties || '';
+            const education = doc.education || '';
+
+            let proItemsHtml = '';
+            if (experience) proItemsHtml +=
+                `<div class="pro-item"><div class="pro-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div><div class="pro-content"><div class="pro-label">سنوات الخبرة</div><div class="pro-value">${escapeHtml(experience)} سنوات</div></div></div>`;
+            if (country || city) proItemsHtml +=
+                `<div class="pro-item"><div class="pro-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div><div class="pro-content"><div class="pro-label">الموقع</div><div class="pro-value">${escapeHtml([city, country].filter(Boolean).join('، '))}</div></div></div>`;
+            if (languages) proItemsHtml +=
+                `<div class="pro-item"><div class="pro-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><div class="pro-content"><div class="pro-label">اللغات</div><div class="pro-value">${escapeHtml(languages)}</div></div></div>`;
+            if (price) proItemsHtml +=
+                `<div class="pro-item"><div class="pro-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div><div class="pro-content"><div class="pro-label">سعر الجلسة</div><div class="pro-value">${escapeHtml(price)}</div></div></div>`;
+            if (license) proItemsHtml +=
+                `<div class="pro-item"><div class="pro-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><div class="pro-content"><div class="pro-label">الترخيص</div><div class="pro-value">${escapeHtml(license)}</div></div></div>`;
+            if (subspecialties) proItemsHtml +=
+                `<div class="pro-item"><div class="pro-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div><div class="pro-content"><div class="pro-label">تخصصات فرعية</div><div class="pro-value">${escapeHtml(subspecialties)}</div></div></div>`;
+            if (education) proItemsHtml +=
+                `<div class="pro-item"><div class="pro-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5"></path></svg></div><div class="pro-content"><div class="pro-label">المؤهلات</div><div class="pro-value">${escapeHtml(education)}</div></div></div>`;
+
+            const reviewsToShow = ratingsData.reviews.slice(0, 10);
+            const reviewsHtml = reviewsToShow.length === 0 ?
+                '<p style="color: var(--text-tertiary); font-size: 0.85rem; text-align: center;">لا توجد تقييمات بعد</p>' :
+                reviewsToShow.map(review => `
+                <div class="modal-review-item">
+                    <div class="modal-review-header">
+                        <div class="modal-reviewer-avatar">${(review.userName || 'م').charAt(0)}</div>
+                        <span class="modal-reviewer-name">${escapeHtml(review.userName || 'مستخدم')}</span>
+                        <span class="modal-review-date">${formatDate(review.timestamp)}</span>
+                    </div>
+                    <div class="modal-review-rating">
+                        ${Array.from({length: 5}, (_, i) => `
+                            <svg class="modal-review-star ${i < review.rating ? 'filled' : 'empty'}" viewBox="0 0 24 24">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        `).join('')}
+                    </div>
+                    ${review.review ? `<p class="modal-review-text">${escapeHtml(review.review)}</p>` : ''}
+                </div>
+            `).join('');
+
+            modalBody.innerHTML = `
+                <div class="profile-detail-header">
+                    ${avatarHtml}
+                    <div class="profile-detail-info">
+                        <div class="profile-detail-name">${escapeHtml(doc.name || '—')}</div>
+                        <div class="profile-detail-specialty">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="8" r="4"></circle><path d="M5 20v-2a7 7 0 0 1 14 0v2"></path>
+                            </svg>
+                            ${escapeHtml(specLabel)}
+                        </div>
+                        <div class="profile-detail-bio">${escapeHtml(fullBio) || 'لا توجد نبذة تعريفية.'}</div>
+                    </div>
+                </div>
+                ${proItemsHtml ? `<div class="professional-grid">${proItemsHtml}</div>` : ''}
+                <div class="modal-reviews-section">
+                    <div class="modal-reviews-header">
+                        <span class="modal-reviews-title">⭐ التقييمات (${ratingsData.totalRatings}) - ${ratingsData.averageRating.toFixed(1)}</span>
+                        <button class="modal-add-review-btn" data-action="modal-add-review" data-doctor-id="${escapeAttr(doctorId)}">أضف تقييمك</button>
+                    </div>
+                    <div class="modal-review-form" id="modalReviewForm-${escapeAttr(doctorId)}">
+                        <div class="modal-star-rating-input" data-doctor-id="${escapeAttr(doctorId)}">
+                            ${Array.from({length: 5}, (_, i) => `
+                                <svg class="star empty" viewBox="0 0 24 24" data-rating="${i + 1}">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                            `).join('')}
+                        </div>
+                        <textarea class="modal-review-textarea" placeholder="اكتب تقييمك (اختياري)..."></textarea>
+                        <button class="modal-review-submit" data-action="modal-submit-review" data-doctor-id="${escapeAttr(doctorId)}">إرسال التقييم</button>
+                    </div>
+                    <div class="modal-reviews-list">${reviewsHtml}</div>
+                </div>
+            `;
+
+            profileModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProfileModal() {
+            profileModal.classList.remove('show');
+            document.body.style.overflow = '';
+            currentModalDoctor = null;
+        }
+
+        function escapeHtml(text) { if (!text) return ''; return String(text).replace(/[&<>]/g, c => ({ '&': '&amp;',
+                '<': '&lt;', '>': '&gt;' }[c])); }
+
+        function escapeAttr(text) { return String(text).replace(/"/g, '&quot;'); }
 
         let renderScheduled = false;
 
@@ -1596,6 +1794,10 @@
             const specLabel = getSpecialtyName(doc.specialty);
             const bio = (doc.quickBlurb || '').substring(0, 120);
             card.innerHTML = `
+            <div class="card-click-hint">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+                اضغط للتفاصيل
+            </div>
             <div class="card-header">
                 ${avatarHtml}
                 <div class="doctor-info">
@@ -1628,26 +1830,6 @@
                     <span class="rating-count">(0)</span>
                 </div>
             </div>
-            <div class="reviews-section">
-                <div class="reviews-header">
-                    <span class="reviews-title">تقييمات المرضى</span>
-                    <button class="add-review-btn" data-action="add-review" data-doctor-id="${escapeAttr(doc.id)}">أضف تقييمك</button>
-                </div>
-                <div class="review-form" id="reviewForm-${escapeAttr(doc.id)}">
-                    <div class="star-rating-input" data-doctor-id="${escapeAttr(doc.id)}">
-                        ${Array.from({length: 5}, (_, i) => `
-                            <svg class="star empty" viewBox="0 0 24 24" data-rating="${i + 1}">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                        `).join('')}
-                    </div>
-                    <textarea class="review-textarea" placeholder="اكتب تقييمك (اختياري)..."></textarea>
-                    <button class="review-submit" data-action="submit-review" data-doctor-id="${escapeAttr(doc.id)}">إرسال التقييم</button>
-                </div>
-                <div class="reviews-list">
-                    <p style="color: var(--text-tertiary); font-size: 0.85rem;">جاري تحميل التقييمات...</p>
-                </div>
-            </div>
             <button class="action-button" data-action="chat" data-doctor-id="${escapeAttr(doc.authUid || doc.id)}" data-patient-id="${escapeAttr(currentUser?.uid || '')}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
@@ -1657,11 +1839,6 @@
         `;
             return card;
         }
-
-        function escapeHtml(text) { if (!text) return ''; return String(text).replace(/[&<>]/g, c => ({ '&': '&amp;',
-                '<': '&lt;', '>': '&gt;' }[c])); }
-
-        function escapeAttr(text) { return String(text).replace(/"/g, '&quot;'); }
 
         function buildFilterDropdown() {
             const specs = [...new Set(allDoctors.map(d => d.specialty).filter(Boolean))];
@@ -1695,35 +1872,31 @@
                             name: data.name || '',
                             specialty: data.specialty || '',
                             quickBlurb: data.quickBlurb || '',
+                            fullBio: data.fullBio || '',
                             photoURL: data.photoURL || '',
                             email: data.email || '',
                             phone: data.phone || '',
-                            status: data.status || 'active'
+                            status: data.status || 'active',
+                            experience: data.experience || '',
+                            country: data.country || '',
+                            city: data.city || '',
+                            languages: data.languages || '',
+                            price: data.price || '',
+                            license: data.license || '',
+                            licenseAuthority: data.licenseAuthority || '',
+                            subspecialties: data.subspecialties || '',
+                            education: data.education || ''
                         });
                     }
                 });
-                cache.save(fresh);
                 allDoctors = fresh;
                 buildFilterDropdown();
                 await performRender();
                 setSyncStatus('online', 'بيانات محدثة ✓');
             }, (error) => {
                 console.warn('خطأ في المزامنة:', error);
-                setSyncStatus('syncing', 'غير متصل - عرض البيانات المخزنة');
+                setSyncStatus('syncing', 'غير متصل - جاري إعادة المحاولة...');
             });
-        }
-
-        async function initialize() {
-            const cached = await cache.load();
-            if (cached.length) {
-                allDoctors = cached;
-                buildFilterDropdown();
-                await performRender();
-                setSyncStatus('online', 'تم التحميل من الذاكرة المحلية');
-            } else {
-                setSyncStatus('syncing', 'تحميل أول مرة...');
-            }
-            startRealtimeSync();
         }
 
         function setupListeners() {
@@ -1747,59 +1920,103 @@
                 filterDropdown.classList.remove('show');
                 filterBtn.classList.remove('active');
             });
+
+            // أحداث الشبكة
             grid.addEventListener('click', async (e) => {
+                // زر الإعجاب
                 const heartBtn = e.target.closest('[data-action="like"]');
-                if (heartBtn) { const doctorId = heartBtn.dataset.doctorId;
-                    await toggleLike(doctorId); return; }
+                if (heartBtn) {
+                    e.stopPropagation();
+                    const doctorId = heartBtn.dataset.doctorId;
+                    await toggleLike(doctorId);
+                    return;
+                }
+                // زر المحادثة
                 const chatBtn = e.target.closest('[data-action="chat"]');
                 if (chatBtn) {
+                    e.stopPropagation();
                     const doctorId = chatBtn.dataset.doctorId;
                     const patientId = chatBtn.dataset.patientId;
                     window.location.href =
                         `conversation.html?doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(patientId)}`;
                     return;
                 }
-                const addReviewBtn = e.target.closest('[data-action="add-review"]');
-                if (addReviewBtn) { const doctorId = addReviewBtn.dataset.doctorId;
-                    const form = document.getElementById(`reviewForm-${doctorId}`); if (form) { form
-                            .classList.toggle('show'); } return; }
-                const star = e.target.closest('.star-rating-input .star');
+                // النقر على البطاقة نفسها
+                const card = e.target.closest('.doctor-card');
+                if (card) {
+                    const doctorId = card.dataset.doctorId;
+                    await openDoctorProfile(doctorId);
+                    return;
+                }
+            });
+
+            // أحداث المودال
+            modalCloseBtn.addEventListener('click', closeProfileModal);
+            profileModal.addEventListener('click', (e) => {
+                if (e.target === profileModal) closeProfileModal();
+            });
+
+            modalChatBtn.addEventListener('click', () => {
+                const doctorId = modalChatBtn.dataset.doctorId;
+                const patientId = modalChatBtn.dataset.patientId;
+                window.location.href =
+                    `conversation.html?doctorId=${encodeURIComponent(doctorId)}&patientId=${encodeURIComponent(patientId)}`;
+            });
+
+            // أحداث داخل المودال
+            modalBody.addEventListener('click', async (e) => {
+                const addReviewBtn = e.target.closest('[data-action="modal-add-review"]');
+                if (addReviewBtn) {
+                    const doctorId = addReviewBtn.dataset.doctorId;
+                    const form = document.getElementById(`modalReviewForm-${doctorId}`);
+                    if (form) form.classList.toggle('show');
+                    return;
+                }
+                const star = e.target.closest('.modal-star-rating-input .star');
                 if (star) {
                     const rating = parseInt(star.dataset.rating);
-                    const container = star.closest('.star-rating-input');
+                    const container = star.closest('.modal-star-rating-input');
                     const doctorId = container.dataset.doctorId;
                     const stars = container.querySelectorAll('.star');
-                    stars.forEach((s, index) => { if (index < rating) { s.classList.add('filled');
+                    stars.forEach((s, index) => {
+                        if (index < rating) { s.classList.add('filled');
                             s.classList.remove('empty'); } else { s.classList.remove('filled');
-                            s.classList.add('empty'); } });
+                            s.classList.add('empty'); }
+                    });
                     container.dataset.selectedRating = rating;
                     return;
                 }
-                const submitBtn = e.target.closest('[data-action="submit-review"]');
+                const submitBtn = e.target.closest('[data-action="modal-submit-review"]');
                 if (submitBtn) {
                     const doctorId = submitBtn.dataset.doctorId;
-                    const form = document.getElementById(`reviewForm-${doctorId}`);
-                    const starContainer = form.querySelector('.star-rating-input');
-                    const textarea = form.querySelector('.review-textarea');
+                    const form = document.getElementById(`modalReviewForm-${doctorId}`);
+                    const starContainer = form.querySelector('.modal-star-rating-input');
+                    const textarea = form.querySelector('.modal-review-textarea');
                     const selectedRating = parseInt(starContainer.dataset.selectedRating || '0');
                     if (selectedRating === 0) { alert('الرجاء اختيار تقييم بالنجوم'); return; }
                     const reviewText = textarea.value.trim();
                     const success = await submitRating(doctorId, selectedRating, reviewText);
-                    if (success) { form.classList.remove('show');
+                    if (success) {
+                        form.classList.remove('show');
                         textarea.value = '';
                         starContainer.dataset.selectedRating = '0';
                         const stars = starContainer.querySelectorAll('.star');
                         stars.forEach(s => { s.classList.remove('filled');
-                            s.classList.add('empty'); }); }
+                            s.classList.add('empty'); });
+                    }
                     return;
                 }
             });
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (user) { currentUser = user;
+            if (user) {
+                currentUser = user;
                 setupListeners();
-                initialize(); } else { window.location.href = 'patient-login.html'; }
+                startRealtimeSync();
+            } else {
+                window.location.href = 'patient-login.html';
+            }
         });
 
         if (!CSS.supports('backdrop-filter', 'blur(10px)')) {
