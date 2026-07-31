@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>سُكُون | رحلة العناية النفسية</title>
+    <title>سُكُون | مجتمع العناية النفسية</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -18,6 +18,7 @@
             --surface-solid: #ffffff;
             --glass-border: rgba(255, 255, 255, 0.55);
             --glass-border-hover: rgba(255, 255, 255, 0.8);
+            --menu-bg: rgba(255, 255, 255, 0.98);
 
             --primary-50: #e8f4f4;
             --primary-100: #cee9e9;
@@ -31,7 +32,10 @@
             --primary-900: #0a2e2e;
 
             --heart-color: #e85d5d;
+            --heart-glow: rgba(232, 93, 93, 0.3);
             --bookmark-color: #f0b34b;
+            --bookmark-glow: rgba(240, 179, 75, 0.3);
+            --share-color: #5b8def;
 
             --text-primary: #1c2e2e;
             --text-secondary: #425858;
@@ -65,6 +69,7 @@
                 --surface-solid: #162828;
                 --glass-border: rgba(255, 255, 255, 0.08);
                 --glass-border-hover: rgba(255, 255, 255, 0.14);
+                --menu-bg: rgba(22, 40, 40, 0.99);
                 --text-primary: #e6f0f0;
                 --text-secondary: #b8d0d0;
                 --text-tertiary: #7a9e9e;
@@ -108,24 +113,16 @@
         body::before {
             content: '';
             position: fixed;
-            top: -18vh;
-            right: -8vw;
-            width: 70vw;
-            height: 70vw;
-            max-width: 550px;
-            max-height: 550px;
+            top: -20vh;
+            right: -10vw;
+            width: 60vw;
+            height: 60vw;
+            max-width: 500px;
+            max-height: 500px;
             border-radius: 50%;
-            background: radial-gradient(circle at 40% 40%, rgba(47, 148, 148, 0.06) 0%, transparent 72%);
+            background: radial-gradient(circle at 40% 40%, rgba(47, 148, 148, 0.04) 0%, transparent 70%);
             pointer-events: none;
             z-index: 0;
-            animation: orbDrift 18s ease-in-out infinite;
-        }
-
-        @keyframes orbDrift {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(-14px, 10px) scale(1.04); }
-            50% { transform: translate(6px, -8px) scale(0.97); }
-            75% { transform: translate(-8px, -4px) scale(1.02); }
         }
 
         .app-container {
@@ -136,6 +133,7 @@
             z-index: 2;
         }
 
+        /* الهيدر */
         .app-header {
             display: flex;
             align-items: center;
@@ -155,6 +153,7 @@
             letter-spacing: -2px;
             color: var(--primary-600);
             line-height: 1;
+            text-shadow: 0 2px 6px rgba(47, 148, 148, 0.15);
         }
 
         .logo-sub {
@@ -164,6 +163,7 @@
             margin-right: 1px;
         }
 
+        /* التبويبات الرئيسية */
         .main-tabs {
             display: flex;
             gap: 6px;
@@ -179,35 +179,38 @@
 
         .main-tab-btn {
             flex: 1;
-            padding: 12px 16px;
+            padding: 12px 14px;
             border: none;
             background: transparent;
             font-family: 'Cairo', sans-serif;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--text-tertiary);
             cursor: pointer;
             border-radius: var(--radius-md);
-            transition: var(--transition-smooth);
+            transition: var(--transition-bounce);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 7px;
+            position: relative;
         }
 
         .main-tab-btn.active {
             background: var(--primary-500);
             color: white;
             box-shadow: var(--shadow-btn);
+            transform: scale(1.02);
         }
 
-        .tab-badge {
-            background: rgba(255, 255, 255, 0.3);
+        .main-tab-btn .tab-badge {
+            background: rgba(150, 160, 160, 0.2);
             padding: 2px 8px;
             border-radius: 20px;
-            font-size: 0.7rem;
-            min-width: 24px;
+            font-size: 0.68rem;
+            min-width: 22px;
             text-align: center;
+            font-weight: 800;
         }
 
         .main-tab-btn.active .tab-badge {
@@ -216,18 +219,25 @@
 
         .tab-content {
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeSlideIn 0.4s ease;
         }
 
         .tab-content.active {
             display: block;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
+        /* شريط البحث */
         .toolbar {
             display: flex;
             gap: 10px;
@@ -257,9 +267,19 @@
             transition: var(--transition-smooth);
         }
 
+        .search-input:hover {
+            border-color: var(--primary-200);
+        }
+
         .search-input:focus {
             border-color: var(--primary-400);
-            box-shadow: var(--shadow-focus);
+            box-shadow: var(--shadow-focus), var(--shadow-card);
+            background: var(--surface-solid);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-tertiary);
+            opacity: 0.7;
         }
 
         .search-icon {
@@ -269,8 +289,10 @@
             transform: translateY(-50%);
             color: var(--text-tertiary);
             pointer-events: none;
+            font-size: 1rem;
         }
 
+        /* بطاقة منشور */
         .post-card {
             background: var(--surface);
             backdrop-filter: blur(20px);
@@ -281,12 +303,32 @@
             padding: 1.3rem;
             margin-bottom: 18px;
             transition: var(--transition-smooth);
-            will-change: transform;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post-card::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 40%;
+            height: 60%;
+            border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
 
         .post-card:hover {
             box-shadow: var(--shadow-card-hover);
             background: var(--surface-hover);
+            transform: translateY(-1px);
+        }
+
+        .post-card:hover::before {
+            opacity: 1;
         }
 
         .post-header {
@@ -295,14 +337,16 @@
             gap: 12px;
             margin-bottom: 12px;
             cursor: pointer;
+            position: relative;
+            z-index: 1;
         }
 
         .post-author-avatar {
-            width: 48px;
-            height: 48px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             background: linear-gradient(145deg, var(--primary-500), var(--primary-700));
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            border: 2.5px solid rgba(255, 255, 255, 0.6);
             overflow: hidden;
             flex-shrink: 0;
             display: flex;
@@ -310,7 +354,13 @@
             justify-content: center;
             font-weight: 800;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(47, 148, 148, 0.2);
+            transition: var(--transition-smooth);
+        }
+
+        .post-header:hover .post-author-avatar {
+            box-shadow: 0 6px 18px rgba(47, 148, 148, 0.3);
         }
 
         .post-author-avatar img {
@@ -326,13 +376,13 @@
 
         .post-author-name {
             font-weight: 700;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--text-primary);
             line-height: 1.3;
         }
 
         .post-author-specialty {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--primary-500);
             font-weight: 600;
             background: var(--primary-50);
@@ -343,7 +393,7 @@
         }
 
         .post-date {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--text-tertiary);
             margin-right: auto;
             flex-shrink: 0;
@@ -351,21 +401,25 @@
 
         .post-title {
             font-weight: 800;
-            font-size: 1.05rem;
+            font-size: 1rem;
             color: var(--text-primary);
             margin-bottom: 8px;
             line-height: 1.4;
+            position: relative;
+            z-index: 1;
         }
 
         .post-content {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: var(--text-secondary);
-            line-height: 1.7;
-            margin-bottom: 12px;
+            line-height: 1.75;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
         }
 
         .post-content.collapsed {
-            max-height: 80px;
+            max-height: 85px;
             overflow: hidden;
             position: relative;
         }
@@ -376,19 +430,27 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 40px;
+            height: 45px;
             background: linear-gradient(transparent, var(--surface));
+            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
         }
 
         .post-read-more {
             color: var(--primary-500);
             font-weight: 700;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             cursor: pointer;
             border: none;
             background: none;
             font-family: 'Cairo', sans-serif;
             margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            transition: var(--transition-fast);
+        }
+
+        .post-read-more:hover {
+            color: var(--primary-600);
         }
 
         .post-images {
@@ -396,6 +458,8 @@
             gap: 8px;
             flex-wrap: wrap;
             margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
         }
 
         .post-image {
@@ -404,20 +468,30 @@
             object-fit: cover;
             cursor: pointer;
             transition: var(--transition-smooth);
+            aspect-ratio: 4/3;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .post-image:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
         }
 
         .post-image.single {
             width: 100%;
-            max-height: 300px;
-            object-fit: cover;
+            max-height: 320px;
+            aspect-ratio: auto;
         }
 
         .post-actions {
             display: flex;
-            gap: 16px;
+            gap: 10px;
             align-items: center;
             padding-top: 10px;
-            border-top: 1px solid rgba(150, 180, 180, 0.2);
+            border-top: 1px solid rgba(150, 180, 180, 0.15);
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
         }
 
         .post-action-btn {
@@ -426,33 +500,46 @@
             gap: 6px;
             padding: 8px 14px;
             background: rgba(255, 255, 255, 0.3);
-            border: 1.5px solid rgba(180, 190, 190, 0.35);
+            border: 1.5px solid rgba(180, 190, 190, 0.3);
             border-radius: 30px;
             cursor: pointer;
             font-family: 'Cairo', sans-serif;
             font-weight: 600;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
-            transition: var(--transition-smooth);
+            transition: var(--transition-bounce);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
+            user-select: none;
+        }
+
+        .post-action-btn:hover {
+            border-color: var(--primary-300);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .post-action-btn:active {
+            transform: scale(0.95);
         }
 
         .post-action-btn.liked {
             border-color: var(--heart-color);
-            background: rgba(232, 93, 93, 0.08);
+            background: rgba(232, 93, 93, 0.1);
             color: var(--heart-color);
+            box-shadow: 0 0 16px var(--heart-glow);
         }
 
         .post-action-btn.liked svg {
             fill: var(--heart-color);
             stroke: var(--heart-color);
+            animation: heartPop 0.6s cubic-bezier(0.34, 1.3, 0.7, 1);
         }
 
         .post-action-btn.bookmarked {
             border-color: var(--bookmark-color);
-            background: rgba(240, 179, 75, 0.08);
+            background: rgba(240, 179, 75, 0.1);
             color: #c78a1a;
+            box-shadow: 0 0 14px var(--bookmark-glow);
         }
 
         .post-action-btn.bookmarked svg {
@@ -460,6 +547,30 @@
             stroke: var(--bookmark-color);
         }
 
+        @keyframes heartPop {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            30% {
+                transform: scale(1.4);
+            }
+            60% {
+                transform: scale(0.85);
+            }
+        }
+
+        .views-count {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            margin-right: auto;
+            opacity: 0.7;
+        }
+
+        /* بطاقة دكتور */
         .doctor-card {
             background: var(--surface);
             backdrop-filter: blur(20px);
@@ -467,12 +578,30 @@
             border: 1.5px solid var(--glass-border);
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-card);
-            padding: 1.3rem;
+            padding: 1.2rem;
             margin-bottom: 16px;
             display: flex;
             gap: 14px;
             align-items: center;
             cursor: pointer;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doctor-card::after {
+            content: '';
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: var(--transition-smooth);
         }
 
@@ -482,9 +611,13 @@
             transform: translateY(-2px);
         }
 
+        .doctor-card:hover::after {
+            background: var(--primary-100);
+        }
+
         .doctor-avatar {
-            width: 72px;
-            height: 72px;
+            width: 68px;
+            height: 68px;
             border-radius: 50%;
             background: linear-gradient(145deg, var(--primary-500), var(--primary-700));
             border: 3px solid rgba(255, 255, 255, 0.6);
@@ -495,7 +628,8 @@
             justify-content: center;
             font-weight: 800;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 14px rgba(47, 148, 148, 0.2);
         }
 
         .doctor-avatar img {
@@ -511,13 +645,13 @@
 
         .doctor-name {
             font-weight: 800;
-            font-size: 1.05rem;
+            font-size: 1rem;
             color: var(--text-primary);
             line-height: 1.3;
         }
 
         .doctor-specialty {
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             color: var(--primary-500);
             font-weight: 600;
             background: var(--primary-50);
@@ -528,23 +662,32 @@
         }
 
         .doctor-bio {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            opacity: 0.8;
         }
 
         .doctor-arrow {
             color: var(--text-tertiary);
             flex-shrink: 0;
+            font-size: 1.2rem;
+            transition: var(--transition-smooth);
         }
 
+        .doctor-card:hover .doctor-arrow {
+            transform: translateX(-4px);
+            color: var(--primary-500);
+        }
+
+        /* المودال */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(10, 30, 30, 0.5);
+            background: rgba(10, 30, 30, 0.55);
             z-index: 1000;
             display: flex;
             align-items: flex-end;
@@ -553,6 +696,7 @@
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
 
         .modal-overlay.show {
@@ -578,7 +722,7 @@
         }
 
         .modal-handle {
-            width: 40px;
+            width: 36px;
             height: 4px;
             border-radius: 99px;
             background: var(--primary-200);
@@ -596,7 +740,7 @@
         }
 
         .modal-header h3 {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 800;
         }
 
@@ -610,16 +754,30 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: var(--transition-smooth);
+            font-size: 0.9rem;
+        }
+
+        .modal-close-btn:hover {
+            background: var(--primary-100);
+            transform: rotate(90deg);
         }
 
         .modal-body {
             padding: 1.25rem 1.5rem;
             overflow-y: auto;
             flex: 1;
+            overscroll-behavior: contain;
         }
 
-        .modal-body::-webkit-scrollbar { width: 4px; }
-        .modal-body::-webkit-scrollbar-thumb { background: var(--primary-200); border-radius: 10px; }
+        .modal-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: var(--primary-200);
+            border-radius: 10px;
+        }
 
         .modal-footer {
             padding: 1rem 1.5rem;
@@ -630,8 +788,8 @@
         }
 
         .profile-avatar-lg {
-            width: 90px;
-            height: 90px;
+            width: 85px;
+            height: 85px;
             border-radius: 50%;
             background: linear-gradient(145deg, var(--primary-500), var(--primary-700));
             border: 3px solid rgba(255, 255, 255, 0.6);
@@ -642,7 +800,7 @@
             justify-content: center;
             font-weight: 800;
             color: white;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
         }
 
         .profile-avatar-lg img {
@@ -659,7 +817,7 @@
         }
 
         .profile-detail-name {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 800;
         }
 
@@ -671,49 +829,71 @@
             color: var(--primary-700);
             padding: 5px 14px;
             border-radius: 30px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 700;
         }
 
         .profile-detail-bio {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: var(--text-secondary);
             margin: 12px 0;
-            line-height: 1.7;
+            line-height: 1.8;
+            background: var(--bg-secondary);
+            padding: 14px;
+            border-radius: var(--radius-sm);
         }
 
         .pro-item {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 14px;
+            padding: 12px 14px;
             background: var(--bg-secondary);
             border-radius: var(--radius-sm);
             margin-bottom: 8px;
+            transition: var(--transition-fast);
+        }
+
+        .pro-item:hover {
+            background: var(--primary-50);
         }
 
         .pro-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
             background: var(--primary-50);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary-600);
             flex-shrink: 0;
+            font-size: 1rem;
         }
 
-        .pro-content { flex: 1; min-width: 0; }
-        .pro-label { font-size: 0.7rem; color: var(--text-tertiary); font-weight: 600; }
-        .pro-value { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+        .pro-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pro-label {
+            font-size: 0.68rem;
+            color: var(--text-tertiary);
+            font-weight: 600;
+        }
+
+        .pro-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
 
         .btn {
-            padding: 14px 20px;
+            padding: 13px 20px;
             border-radius: var(--radius-sm);
             font-family: 'Cairo', sans-serif;
             font-weight: 700;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             cursor: pointer;
             border: none;
             transition: var(--transition-smooth);
@@ -721,6 +901,10 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
         }
 
         .btn-primary {
@@ -731,7 +915,7 @@
         }
 
         .btn-primary:hover {
-            box-shadow: 0 8px 24px rgba(47, 148, 148, 0.3);
+            box-shadow: 0 8px 24px rgba(47, 148, 148, 0.35);
             transform: translateY(-1px);
         }
 
@@ -759,11 +943,52 @@
         }
 
         .empty-icon {
-            font-size: 4rem;
+            font-size: 3.5rem;
             margin-bottom: 0.8rem;
             opacity: 0.65;
+            animation: floatIcon 3s ease-in-out infinite;
         }
 
+        @keyframes floatIcon {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .empty-state p {
+            margin-top: 4px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(15px);
+            background: var(--primary-800);
+            color: white;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            white-space: nowrap;
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* شريط التنقل */
         .bottom-nav {
             position: fixed;
             bottom: 20px;
@@ -793,21 +1018,60 @@
             border-radius: 28px;
             color: var(--text-tertiary);
             font-weight: 600;
-            font-size: 0.68rem;
+            font-size: 0.65rem;
             transition: var(--transition-bounce);
+            position: relative;
         }
 
         .nav-link.active {
             color: var(--primary-600);
             background: var(--primary-50);
+            box-shadow: 0 2px 8px rgba(47, 148, 148, 0.1);
+        }
+
+        .nav-link .nav-icon {
+            font-size: 1.2rem;
+            transition: var(--transition-smooth);
         }
 
         @media (max-width: 480px) {
-            .app-container { padding: 1rem 0.8rem; }
-            .post-card, .doctor-card { padding: 1rem; }
-            .post-author-avatar { width: 40px; height: 40px; font-size: 0.9rem; }
-            .doctor-avatar { width: 60px; height: 60px; font-size: 1.2rem; }
-            .main-tab-btn { padding: 10px 8px; font-size: 0.75rem; gap: 4px; }
+            .app-container {
+                padding: 1rem 0.8rem;
+            }
+            .post-card,
+            .doctor-card {
+                padding: 1rem;
+                border-radius: var(--radius-md);
+            }
+            .post-author-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 0.85rem;
+            }
+            .doctor-avatar {
+                width: 56px;
+                height: 56px;
+                font-size: 1.1rem;
+            }
+            .main-tab-btn {
+                padding: 10px 6px;
+                font-size: 0.72rem;
+                gap: 4px;
+            }
+            .post-actions {
+                gap: 6px;
+            }
+            .post-action-btn {
+                padding: 7px 10px;
+                font-size: 0.72rem;
+                gap: 4px;
+            }
+            .bottom-nav {
+                bottom: 12px;
+                width: calc(100% - 16px);
+                border-radius: 30px;
+                padding: 7px 4px;
+            }
         }
     </style>
 </head>
@@ -821,21 +1085,23 @@
             </div>
         </header>
 
+        <!-- التبويبات الرئيسية -->
         <div class="main-tabs">
             <button class="main-tab-btn active" data-tab="posts">
-                📰 المنشورات
+                📰 <span>المنشورات</span>
                 <span class="tab-badge" id="postsCount">0</span>
             </button>
             <button class="main-tab-btn" data-tab="doctors">
-                👨‍⚕️ الأطباء
+                👨‍⚕️ <span>الأطباء</span>
                 <span class="tab-badge" id="doctorsCount">0</span>
             </button>
             <button class="main-tab-btn" data-tab="saved">
-                🔖 المحفوظات
+                🔖 <span>المحفوظات</span>
                 <span class="tab-badge" id="savedCount">0</span>
             </button>
         </div>
 
+        <!-- تبويب المنشورات -->
         <div class="tab-content active" id="postsTab">
             <div class="toolbar">
                 <div class="search-wrapper">
@@ -846,40 +1112,45 @@
             <div id="postsGrid"></div>
             <div class="empty-state" id="postsEmpty">
                 <div class="empty-icon">📭</div>
-                <p>لا توجد منشورات حالياً</p>
+                <h3 style="font-weight:700; margin-bottom:4px;">لا توجد منشورات</h3>
+                <p style="opacity:0.8; font-size:0.85rem;">لم يتم نشر أي محتوى بعد</p>
             </div>
         </div>
 
+        <!-- تبويب الأطباء -->
         <div class="tab-content" id="doctorsTab">
             <div class="toolbar">
                 <div class="search-wrapper">
-                    <input type="text" id="doctorSearchInput" class="search-input" placeholder="ابحث عن طبيب..." autocomplete="off">
+                    <input type="text" id="doctorSearchInput" class="search-input" placeholder="ابحث عن طبيب أو أخصائي..." autocomplete="off">
                     <span class="search-icon">🔍</span>
                 </div>
             </div>
             <div id="doctorsGrid"></div>
             <div class="empty-state" id="doctorsEmpty">
                 <div class="empty-icon">👨‍⚕️</div>
-                <p>لا يوجد أطباء متاحين</p>
+                <h3 style="font-weight:700; margin-bottom:4px;">لا يوجد أطباء</h3>
+                <p style="opacity:0.8; font-size:0.85rem;">لم ينضم أي أخصائي بعد</p>
             </div>
         </div>
 
+        <!-- تبويب المحفوظات -->
         <div class="tab-content" id="savedTab">
             <div id="savedGrid"></div>
             <div class="empty-state" id="savedEmpty" style="display:block;">
                 <div class="empty-icon">🔖</div>
-                <p>لم تحفظ أي شيء بعد</p>
-                <p style="font-size:0.85rem; margin-top:8px;">احفظ المنشورات والأطباء للرجوع إليها لاحقاً</p>
+                <h3 style="font-weight:700; margin-bottom:4px;">المحفوظات فارغة</h3>
+                <p style="opacity:0.8; font-size:0.85rem;">احفظ المنشورات والأطباء للرجوع إليها لاحقاً</p>
             </div>
         </div>
     </div>
 
+    <!-- مودال الملف الشخصي للطبيب -->
     <div class="modal-overlay" id="profileModal">
         <div class="modal-sheet">
             <div class="modal-handle"></div>
             <div class="modal-header">
                 <h3 id="modalDoctorName">الملف الشخصي</h3>
-                <button class="modal-close-btn" id="modalCloseBtn">✕</button>
+                <button class="modal-close-btn" id="modalCloseBtn" aria-label="إغلاق">✕</button>
             </div>
             <div class="modal-body" id="modalBody"></div>
             <div class="modal-footer">
@@ -896,23 +1167,44 @@
         </div>
     </div>
 
+    <!-- Toast للإشعارات -->
+    <div class="toast" id="toast"></div>
+
     <nav class="bottom-nav">
-        <a href="patient-home.html" class="nav-link active">🏠 الرئيسية</a>
-        <a href="patient-chats.html" class="nav-link">💬 محادثاتي</a>
-        <a href="patient-agenda.html" class="nav-link">📅 الأجندة</a>
-        <a href="patient-tools.html" class="nav-link">🧰 أدوات</a>
+        <a href="patient-home.html" class="nav-link active">
+            <span class="nav-icon">🏠</span> الرئيسية
+        </a>
+        <a href="patient-chats.html" class="nav-link">
+            <span class="nav-icon">💬</span> محادثاتي
+        </a>
+        <a href="patient-agenda.html" class="nav-link">
+            <span class="nav-icon">📅</span> الأجندة
+        </a>
+        <a href="patient-tools.html" class="nav-link">
+            <span class="nav-icon">🧰</span> أدوات
+        </a>
     </nav>
 
     <script type="module">
         import { firebaseConfig } from './firebase-config.js';
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, remove, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import {
+            getDatabase,
+            ref,
+            onValue,
+            set,
+            remove,
+            get,
+            runTransaction
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const auth = getAuth(app);
 
+        // ============ الحالة العامة ============
         let currentUser = null;
         let allDoctors = [];
         let allArticles = [];
@@ -921,8 +1213,11 @@
         let userDoctorSaves = new Set();
         let currentTab = 'posts';
         let currentModalDoctor = null;
-        let renderTimeout = null;
+        let postLikeCounts = {};
+        let postViewCounts = {};
+        let initialLoadDone = false;
 
+        // ============ عناصر DOM ============
         const postsGrid = document.getElementById('postsGrid');
         const doctorsGrid = document.getElementById('doctorsGrid');
         const savedGrid = document.getElementById('savedGrid');
@@ -940,7 +1235,9 @@
         const modalCloseBtn = document.getElementById('modalCloseBtn');
         const modalSaveDoctorBtn = document.getElementById('modalSaveDoctorBtn');
         const modalBookBtn = document.getElementById('modalBookBtn');
+        const toastEl = document.getElementById('toast');
 
+        // ============ دوال مساعدة ============
         function escapeHtml(text) {
             if (!text) return '';
             return String(text).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
@@ -956,10 +1253,10 @@
             const now = new Date();
             const diff = now - date;
             if (diff < 60000) return 'الآن';
-            if (diff < 3600000) return `${Math.floor(diff / 60000)} دقيقة`;
-            if (diff < 86400000) return `${Math.floor(diff / 3600000)} ساعة`;
+            if (diff < 3600000) return `${Math.floor(diff / 60000)} د`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)} س`;
             if (diff < 604800000) return `${Math.floor(diff / 86400000)} يوم`;
-            return date.toLocaleDateString('ar-SA');
+            return date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
         }
 
         function getSpecialtyName(key) {
@@ -984,7 +1281,14 @@
             return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
         }
 
-        // ============ تحميل البيانات (مرة واحدة فقط) ============
+        function showToast(message, duration = 2500) {
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            clearTimeout(toastEl._timeout);
+            toastEl._timeout = setTimeout(() => toastEl.classList.remove('show'), duration);
+        }
+
+        // ============ تحميل البيانات ============
         function loadDoctors() {
             const doctorsRef = ref(database, 'doctors');
             onValue(doctorsRef, (snapshot) => {
@@ -1013,9 +1317,10 @@
                 });
                 allDoctors = doctors;
                 doctorsCount.textContent = doctors.length;
-                scheduleRender('doctors');
-                scheduleRender('posts');
-                updateSavedCount();
+
+                if (currentTab === 'doctors') renderDoctors();
+                if (currentTab === 'posts') renderPosts();
+                updateAllCounts();
             });
         }
 
@@ -1026,14 +1331,19 @@
                 snapshot.forEach(child => {
                     const data = child.val();
                     if (data.status === 'approved') {
-                        articles.push({ id: child.key, ...data });
+                        articles.push({
+                            id: child.key,
+                            ...data
+                        });
                     }
                 });
                 articles.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                 allArticles = articles;
                 postsCount.textContent = articles.length;
-                scheduleRender('posts');
-                updateSavedCount();
+
+                if (currentTab === 'posts') renderPosts();
+                updateAllCounts();
+                initialLoadDone = true;
             });
         }
 
@@ -1041,46 +1351,77 @@
             if (!currentUser) return;
             const uid = currentUser.uid;
 
-            onValue(ref(database, `userPostLikes/${uid}`), (snapshot) => {
+            // إعجابات المنشورات
+            const postLikesRef = ref(database, `userPostLikes/${uid}`);
+            onValue(postLikesRef, (snapshot) => {
                 userPostLikes.clear();
-                snapshot.forEach(child => userPostLikes.add(child.key));
-                scheduleRender('posts');
+                snapshot.forEach(child => {
+                    userPostLikes.add(child.key);
+                });
+                updateAllPostActionButtons();
             });
 
-            onValue(ref(database, `userPostSaves/${uid}`), (snapshot) => {
+            // المنشورات المحفوظة
+            const postSavesRef = ref(database, `userPostSaves/${uid}`);
+            onValue(postSavesRef, (snapshot) => {
                 userPostSaves.clear();
-                snapshot.forEach(child => userPostSaves.add(child.key));
-                scheduleRender('posts');
-                scheduleRender('saved');
-                updateSavedCount();
+                snapshot.forEach(child => {
+                    userPostSaves.add(child.key);
+                });
+                updateAllPostActionButtons();
+                if (currentTab === 'saved') renderSaved();
+                updateAllCounts();
             });
 
-            onValue(ref(database, `userDoctorSaves/${uid}`), (snapshot) => {
+            // الأطباء المحفوظون
+            const doctorSavesRef = ref(database, `userDoctorSaves/${uid}`);
+            onValue(doctorSavesRef, (snapshot) => {
                 userDoctorSaves.clear();
-                snapshot.forEach(child => userDoctorSaves.add(child.key));
-                scheduleRender('saved');
-                updateSavedCount();
+                snapshot.forEach(child => {
+                    userDoctorSaves.add(child.key);
+                });
+                if (currentTab === 'saved') renderSaved();
+                updateAllCounts();
                 if (currentModalDoctor) updateModalSaveButton();
             });
         }
 
-        function updateSavedCount() {
-            savedCount.textContent = userPostSaves.size + userDoctorSaves.size;
+        function updateAllCounts() {
+            const count = userPostSaves.size + userDoctorSaves.size;
+            savedCount.textContent = count;
         }
 
-        // ============ جدولة العرض (منع التكرار) ============
-        function scheduleRender(type) {
-            if (renderTimeout) clearTimeout(renderTimeout);
-            renderTimeout = setTimeout(() => {
-                if (type === 'posts') renderPosts();
-                else if (type === 'doctors') renderDoctors();
-                else if (type === 'saved') renderSaved();
-                renderTimeout = null;
-            }, 50);
+        function updateAllPostActionButtons() {
+            if (currentTab !== 'posts') return;
+
+            document.querySelectorAll('#postsGrid .post-card').forEach(card => {
+                const articleId = card.dataset.articleId;
+                const likeBtn = card.querySelector('[data-action="like"]');
+                const saveBtn = card.querySelector('[data-action="save-post"]');
+
+                if (likeBtn) {
+                    const isLiked = userPostLikes.has(articleId);
+                    likeBtn.classList.toggle('liked', isLiked);
+                    const svg = likeBtn.querySelector('svg');
+                    if (svg) {
+                        svg.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+                    }
+                }
+
+                if (saveBtn) {
+                    const isSaved = userPostSaves.has(articleId);
+                    saveBtn.classList.toggle('bookmarked', isSaved);
+                    const svg = saveBtn.querySelector('svg');
+                    if (svg) {
+                        svg.setAttribute('fill', isSaved ? 'currentColor' : 'none');
+                    }
+                    saveBtn.querySelector('span:last-child').textContent = isSaved ? 'محفوظ' : 'حفظ';
+                }
+            });
         }
 
         // ============ إعجاب منشور ============
-        async function togglePostLike(articleId) {
+        async function togglePostLike(articleId, likeBtnElement) {
             if (!currentUser) return;
             const uid = currentUser.uid;
             const likeRef = ref(database, `userPostLikes/${uid}/${articleId}`);
@@ -1091,23 +1432,47 @@
                 if (snapshot.exists()) {
                     await remove(likeRef);
                     await runTransaction(countRef, (count) => Math.max((count || 1) - 1, 0));
+                    // تحديث محلي فوري
+                    postLikeCounts[articleId] = Math.max((postLikeCounts[articleId] || 1) - 1, 0);
                 } else {
                     await set(likeRef, { timestamp: Date.now() });
                     await runTransaction(countRef, (count) => (count || 0) + 1);
+                    postLikeCounts[articleId] = (postLikeCounts[articleId] || 0) + 1;
+                    if (!userPostLikes.has(articleId)) {
+                        showToast('❤️ تم الإعجاب بالمنشور');
+                    }
                 }
+                updateLikeButtonUI(likeBtnElement, articleId);
             } catch (error) {
                 console.error('خطأ في الإعجاب:', error);
             }
         }
 
-        async function getPostLikeCount(articleId) {
+        function updateLikeButtonUI(btn, articleId) {
+            if (!btn) return;
+            const isLiked = userPostLikes.has(articleId);
+            btn.classList.toggle('liked', isLiked);
+            const svg = btn.querySelector('svg');
+            if (svg) {
+                svg.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+            }
+            const countSpan = btn.querySelector('span:first-of-type');
+            if (countSpan) {
+                countSpan.textContent = postLikeCounts[articleId] || 0;
+            }
+        }
+
+        async function loadPostLikeCount(articleId) {
+            if (postLikeCounts[articleId] !== undefined) return postLikeCounts[articleId];
             const countRef = ref(database, `articleLikeCounts/${articleId}`);
             const snapshot = await get(countRef);
-            return snapshot.val() || 0;
+            const count = snapshot.val() || 0;
+            postLikeCounts[articleId] = count;
+            return count;
         }
 
         // ============ حفظ منشور ============
-        async function togglePostSave(articleId) {
+        async function togglePostSave(articleId, saveBtnElement) {
             if (!currentUser) return;
             const uid = currentUser.uid;
             const saveRef = ref(database, `userPostSaves/${uid}/${articleId}`);
@@ -1116,10 +1481,11 @@
                 const snapshot = await get(saveRef);
                 if (snapshot.exists()) {
                     await remove(saveRef);
+                    showToast('📌 تم إلغاء الحفظ');
                 } else {
                     const article = allArticles.find(a => a.id === articleId);
                     await set(saveRef, {
-                        articleId,
+                        articleId: articleId,
                         savedAt: Date.now(),
                         articleData: article ? {
                             title: article.title,
@@ -1129,10 +1495,24 @@
                             timestamp: article.timestamp
                         } : {}
                     });
+                    showToast('🔖 تم حفظ المنشور');
                 }
+                updateSaveButtonUI(saveBtnElement, articleId);
             } catch (error) {
                 console.error('خطأ في حفظ المنشور:', error);
             }
+        }
+
+        function updateSaveButtonUI(btn, articleId) {
+            if (!btn) return;
+            const isSaved = userPostSaves.has(articleId);
+            btn.classList.toggle('bookmarked', isSaved);
+            const svg = btn.querySelector('svg');
+            if (svg) {
+                svg.setAttribute('fill', isSaved ? 'currentColor' : 'none');
+            }
+            const span = btn.querySelector('span:last-child');
+            if (span) span.textContent = isSaved ? 'محفوظ' : 'حفظ';
         }
 
         // ============ حفظ طبيب ============
@@ -1145,10 +1525,11 @@
                 const snapshot = await get(saveRef);
                 if (snapshot.exists()) {
                     await remove(saveRef);
+                    showToast('👨‍⚕️ تم إلغاء حفظ الطبيب');
                 } else {
                     const doctor = allDoctors.find(d => d.id === doctorId || d.authUid === doctorId);
                     await set(saveRef, {
-                        doctorId,
+                        doctorId: doctorId,
                         savedAt: Date.now(),
                         doctorData: doctor ? {
                             name: doctor.name,
@@ -1158,6 +1539,7 @@
                             authUid: doctor.authUid || doctor.id
                         } : {}
                     });
+                    showToast('🔖 تم حفظ الطبيب');
                 }
                 if (currentModalDoctor && (currentModalDoctor.id === doctorId || currentModalDoctor.authUid === doctorId)) {
                     updateModalSaveButton();
@@ -1194,6 +1576,65 @@
             }
         }
 
+        // ============ مشاركة منشور ============
+        async function sharePost(articleId) {
+            const article = allArticles.find(a => a.id === articleId);
+            if (!article) return;
+
+            const shareData = {
+                title: article.title || 'منشور من سُكُون',
+                text: article.content ? article.content.substring(0, 150) + '...' : '',
+                url: window.location.origin + window.location.pathname + '?post=' + articleId
+            };
+
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                    showToast('✅ تمت المشاركة بنجاح');
+                } else {
+                    await navigator.clipboard.writeText(shareData.url);
+                    showToast('📋 تم نسخ الرابط');
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('خطأ في المشاركة:', error);
+                }
+            }
+        }
+
+        // ============ زيادة عدد المشاهدات ============
+        async function incrementViewCount(articleId) {
+            const viewKey = `viewed_${articleId}`;
+            if (sessionStorage.getItem(viewKey)) return;
+
+            const countRef = ref(database, `articleViewCounts/${articleId}`);
+            try {
+                await runTransaction(countRef, (count) => (count || 0) + 1);
+                sessionStorage.setItem(viewKey, '1');
+                // تحديث محلي
+                postViewCounts[articleId] = (postViewCounts[articleId] || 0) + 1;
+                updateViewCountUI(articleId);
+            } catch (error) {
+                console.error('خطأ في تحديث المشاهدات:', error);
+            }
+        }
+
+        async function loadViewCount(articleId) {
+            if (postViewCounts[articleId] !== undefined) return postViewCounts[articleId];
+            const countRef = ref(database, `articleViewCounts/${articleId}`);
+            const snapshot = await get(countRef);
+            const count = snapshot.val() || 0;
+            postViewCounts[articleId] = count;
+            return count;
+        }
+
+        function updateViewCountUI(articleId) {
+            const viewSpan = document.querySelector(`.views-count[data-article-id="${articleId}"] span`);
+            if (viewSpan) {
+                viewSpan.textContent = postViewCounts[articleId] || 0;
+            }
+        }
+
         // ============ عرض المنشورات ============
         async function renderPosts() {
             if (currentTab !== 'posts') return;
@@ -1207,7 +1648,8 @@
                     const content = (article.content || '').toLowerCase();
                     const doctor = getDoctorById(article.doctorId);
                     const doctorName = (doctor?.name || '').toLowerCase();
-                    return title.includes(searchQuery) || content.includes(searchQuery) || doctorName.includes(searchQuery);
+                    return title.includes(searchQuery) || content.includes(searchQuery) || doctorName.includes(
+                        searchQuery);
                 });
             }
 
@@ -1218,13 +1660,14 @@
             }
 
             postsEmpty.style.display = 'none';
-            
-            // استخدام DocumentFragment لتحسين الأداء
+            postsGrid.innerHTML = '';
+
             const fragment = document.createDocumentFragment();
-            
+
             for (const article of filtered) {
                 const doctor = getDoctorById(article.doctorId);
-                const likeCount = await getPostLikeCount(article.id);
+                const likeCount = await loadPostLikeCount(article.id);
+                const viewCount = await loadViewCount(article.id);
                 const isLiked = userPostLikes.has(article.id);
                 const isSaved = userPostSaves.has(article.id);
                 const doctorName = doctor?.name || 'طبيب';
@@ -1234,14 +1677,15 @@
                 const contentText = article.content || '';
                 const isLongContent = contentText.length > 150;
                 const images = article.images || [];
+                const hasImages = images.length > 0;
 
-                const card = document.createElement('div');
-                card.className = 'post-card';
-                card.dataset.articleId = article.id;
-                card.innerHTML = `
+                const postCard = document.createElement('div');
+                postCard.className = 'post-card';
+                postCard.dataset.articleId = article.id;
+                postCard.innerHTML = `
                     <div class="post-header" data-doctor-id="${escapeAttr(article.doctorId)}">
                         <div class="post-author-avatar">
-                            ${doctorPhoto ? `<img src="${escapeAttr(doctorPhoto)}" alt="" loading="lazy">` : doctorInitials}
+                            ${doctorPhoto ? `<img src="${escapeAttr(doctorPhoto)}" alt="${escapeAttr(doctorName)}" loading="lazy" decoding="async">` : doctorInitials}
                         </div>
                         <div class="post-author-info">
                             <div class="post-author-name">${escapeHtml(doctorName)}</div>
@@ -1254,9 +1698,11 @@
                         ${escapeHtml(contentText)}
                     </div>
                     ${isLongContent ? `<button class="post-read-more" data-action="read-more" data-article-id="${escapeAttr(article.id)}">...اقرأ المزيد</button>` : ''}
-                    ${images.length ? `
+                    ${hasImages ? `
                     <div class="post-images">
-                        ${images.map((img, i) => `<img src="${escapeAttr(img)}" class="post-image ${images.length === 1 ? 'single' : ''}" alt="صورة" loading="lazy">`).join('')}
+                        ${images.map((img, index) => `
+                            <img src="${escapeAttr(img)}" class="post-image ${images.length === 1 ? 'single' : ''}" alt="صورة ${index + 1}" loading="lazy" decoding="async" onclick="event.stopPropagation(); window.open('${escapeAttr(img)}', '_blank')">
+                        `).join('')}
                     </div>` : ''}
                     <div class="post-actions">
                         <button class="post-action-btn ${isLiked ? 'liked' : ''}" data-action="like" data-article-id="${escapeAttr(article.id)}">
@@ -1269,14 +1715,29 @@
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2">
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                             </svg>
-                            ${isSaved ? 'محفوظ' : 'حفظ'}
+                            <span>${isSaved ? 'محفوظ' : 'حفظ'}</span>
                         </button>
+                        <button class="post-action-btn" data-action="share" data-article-id="${escapeAttr(article.id)}">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                            <span>مشاركة</span>
+                        </button>
+                        <div class="views-count" data-article-id="${escapeAttr(article.id)}">
+                            👁 <span>${viewCount}</span>
+                        </div>
                     </div>
                 `;
-                fragment.appendChild(card);
+                fragment.appendChild(postCard);
+
+                // زيادة عدد المشاهدات عند عرض المنشور
+                incrementViewCount(article.id);
             }
-            
-            postsGrid.innerHTML = '';
+
             postsGrid.appendChild(fragment);
         }
 
@@ -1302,19 +1763,13 @@
             }
 
             doctorsEmpty.style.display = 'none';
-            
-            const fragment = document.createDocumentFragment();
-            
-            filtered.forEach(doc => {
+            doctorsGrid.innerHTML = filtered.map(doc => {
                 const initials = getInitials(doc.name);
                 const specLabel = getSpecialtyName(doc.specialty);
-                const card = document.createElement('div');
-                card.className = 'doctor-card';
-                card.dataset.doctorId = doc.id;
-                card.dataset.action = 'open-doctor';
-                card.innerHTML = `
+                return `
+                <div class="doctor-card" data-doctor-id="${escapeAttr(doc.id)}" data-action="open-doctor">
                     <div class="doctor-avatar">
-                        ${doc.photoURL ? `<img src="${escapeAttr(doc.photoURL)}" alt="" loading="lazy">` : initials}
+                        ${doc.photoURL ? `<img src="${escapeAttr(doc.photoURL)}" alt="${escapeAttr(doc.name)}" loading="lazy" decoding="async">` : initials}
                     </div>
                     <div class="doctor-info">
                         <div class="doctor-name">${escapeHtml(doc.name || '—')}</div>
@@ -1322,27 +1777,23 @@
                         <div class="doctor-bio">${escapeHtml(doc.quickBlurb || '')}</div>
                     </div>
                     <div class="doctor-arrow">←</div>
+                </div>
                 `;
-                fragment.appendChild(card);
-            });
-            
-            doctorsGrid.innerHTML = '';
-            doctorsGrid.appendChild(fragment);
+            }).join('');
         }
 
         // ============ عرض المحفوظات ============
         function renderSaved() {
             if (currentTab !== 'saved') return;
 
-            const fragment = document.createDocumentFragment();
+            let html = '';
             let hasContent = false;
 
+            // المنشورات المحفوظة
             if (userPostSaves.size > 0) {
-                const title = document.createElement('h4');
-                title.style.cssText = 'margin-bottom:12px; color: var(--text-secondary);';
-                title.textContent = '📰 المنشورات المحفوظة';
-                fragment.appendChild(title);
-
+                hasContent = true;
+                html +=
+                    '<h4 style="margin-bottom:14px; color: var(--text-secondary); font-weight:700; font-size:0.9rem;">📰 المنشورات المحفوظة</h4>';
                 const savedArticles = [];
                 userPostSaves.forEach(articleId => {
                     const article = allArticles.find(a => a.id === articleId);
@@ -1353,13 +1804,11 @@
                 savedArticles.forEach(article => {
                     const doctor = getDoctorById(article.doctorId);
                     const doctorName = doctor?.name || 'طبيب';
-                    const card = document.createElement('div');
-                    card.className = 'post-card';
-                    card.dataset.articleId = article.id;
-                    card.innerHTML = `
+                    html += `
+                    <div class="post-card" data-article-id="${escapeAttr(article.id)}">
                         <div class="post-header" data-doctor-id="${escapeAttr(article.doctorId)}">
                             <div class="post-author-avatar">
-                                ${doctor?.photoURL ? `<img src="${escapeAttr(doctor.photoURL)}" alt="" loading="lazy">` : getInitials(doctorName)}
+                                ${doctor?.photoURL ? `<img src="${escapeAttr(doctor.photoURL)}" alt="${escapeAttr(doctorName)}" loading="lazy" decoding="async">` : getInitials(doctorName)}
                             </div>
                             <div class="post-author-info">
                                 <div class="post-author-name">${escapeHtml(doctorName)}</div>
@@ -1368,37 +1817,34 @@
                             <span class="post-date">${formatDate(article.timestamp)}</span>
                         </div>
                         ${article.title ? `<div class="post-title">${escapeHtml(article.title)}</div>` : ''}
-                        <div class="post-content collapsed">${escapeHtml(article.content || '')}</div>
+                        <div class="post-content collapsed">
+                            ${escapeHtml(article.content || '')}
+                        </div>
                         <div class="post-actions">
                             <button class="post-action-btn bookmarked" data-action="save-post" data-article-id="${escapeAttr(article.id)}">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.2">
                                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                                 </svg>
-                                إلغاء الحفظ
+                                <span>محفوظ</span>
                             </button>
                         </div>
-                    `;
-                    fragment.appendChild(card);
-                    hasContent = true;
+                    </div>`;
                 });
             }
 
+            // الأطباء المحفوظون
             if (userDoctorSaves.size > 0) {
-                const title = document.createElement('h4');
-                title.style.cssText = 'margin:16px 0 12px; color: var(--text-secondary);';
-                title.textContent = '👨‍⚕️ الأطباء المحفوظون';
-                fragment.appendChild(title);
-
+                hasContent = true;
+                html +=
+                    '<h4 style="margin:20px 0 14px; color: var(--text-secondary); font-weight:700; font-size:0.9rem;">👨‍⚕️ الأطباء المحفوظون</h4>';
                 userDoctorSaves.forEach(doctorId => {
                     const doctor = allDoctors.find(d => d.id === doctorId || d.authUid === doctorId);
                     if (doctor) {
-                        const card = document.createElement('div');
-                        card.className = 'doctor-card';
-                        card.dataset.doctorId = doctor.id;
-                        card.dataset.action = 'open-doctor';
-                        card.innerHTML = `
+                        const initials = getInitials(doctor.name);
+                        html += `
+                        <div class="doctor-card" data-doctor-id="${escapeAttr(doctor.id)}" data-action="open-doctor">
                             <div class="doctor-avatar">
-                                ${doctor.photoURL ? `<img src="${escapeAttr(doctor.photoURL)}" alt="" loading="lazy">` : getInitials(doctor.name)}
+                                ${doctor.photoURL ? `<img src="${escapeAttr(doctor.photoURL)}" alt="${escapeAttr(doctor.name)}" loading="lazy" decoding="async">` : initials}
                             </div>
                             <div class="doctor-info">
                                 <div class="doctor-name">${escapeHtml(doctor.name || '—')}</div>
@@ -1406,9 +1852,7 @@
                                 <div class="doctor-bio">${escapeHtml(doctor.quickBlurb || '')}</div>
                             </div>
                             <div class="doctor-arrow">←</div>
-                        `;
-                        fragment.appendChild(card);
-                        hasContent = true;
+                        </div>`;
                     }
                 });
             }
@@ -1418,8 +1862,7 @@
                 savedEmpty.style.display = 'block';
             } else {
                 savedEmpty.style.display = 'none';
-                savedGrid.innerHTML = '';
-                savedGrid.appendChild(fragment);
+                savedGrid.innerHTML = html;
             }
         }
 
@@ -1432,7 +1875,7 @@
             modalDoctorName.textContent = doctor.name || 'الملف الشخصي';
 
             const avatarHtml = doctor.photoURL ?
-                `<div class="profile-avatar-lg"><img src="${escapeAttr(doctor.photoURL)}" alt=""></div>` :
+                `<div class="profile-avatar-lg"><img src="${escapeAttr(doctor.photoURL)}" alt="${escapeAttr(doctor.name)}"></div>` :
                 `<div class="profile-avatar-lg">${getInitials(doctor.name)}</div>`;
 
             const specLabel = getSpecialtyName(doctor.specialty);
@@ -1446,9 +1889,9 @@
             if (doctor.price) proItemsHtml +=
                 `<div class="pro-item"><div class="pro-icon">💰</div><div class="pro-content"><div class="pro-label">سعر الجلسة</div><div class="pro-value">${escapeHtml(doctor.price)}</div></div></div>`;
             if (doctor.license) proItemsHtml +=
-                `<div class="pro-item"><div class="pro-icon">✅</div><div class="pro-content"><div class="pro-label">الترخيص</div><div class="pro-value">${escapeHtml(doctor.license)}</div></div></div>`;
+                `<div class="pro-item"><div class="pro-icon">✅</div><div class="pro-content"><div class="pro-label">الترخيص المهني</div><div class="pro-value">${escapeHtml(doctor.license)}</div></div></div>`;
             if (doctor.education) proItemsHtml +=
-                `<div class="pro-item"><div class="pro-icon">🎓</div><div class="pro-content"><div class="pro-label">المؤهلات</div><div class="pro-value">${escapeHtml(doctor.education)}</div></div></div>`;
+                `<div class="pro-item"><div class="pro-icon">🎓</div><div class="pro-content"><div class="pro-label">المؤهلات العلمية</div><div class="pro-value">${escapeHtml(doctor.education)}</div></div></div>`;
 
             modalBody.innerHTML = `
                 <div class="profile-detail-header">
@@ -1459,7 +1902,7 @@
                     </div>
                 </div>
                 ${fullBio ? `<div class="profile-detail-bio">${escapeHtml(fullBio)}</div>` : ''}
-                ${proItemsHtml ? `<div>${proItemsHtml}</div>` : ''}
+                ${proItemsHtml ? `<div style="margin-top:8px;">${proItemsHtml}</div>` : ''}
             `;
 
             updateModalSaveButton();
@@ -1475,122 +1918,194 @@
 
         // ============ تبديل التبويبات ============
         function switchTab(tabName) {
+            if (currentTab === tabName) return;
             currentTab = tabName;
 
+            // تحديث أزرار التبويب
             document.querySelectorAll('.main-tab-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.tab === tabName);
             });
 
+            // تحديث المحتوى
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.toggle('active', content.id === `${tabName}Tab`);
             });
 
-            if (tabName === 'posts') scheduleRender('posts');
-            else if (tabName === 'doctors') scheduleRender('doctors');
-            else if (tabName === 'saved') scheduleRender('saved');
+            // إعادة عرض المحتوى المناسب
+            if (tabName === 'posts') renderPosts();
+            else if (tabName === 'doctors') renderDoctors();
+            else if (tabName === 'saved') renderSaved();
         }
 
-        // ============ إعداد الأحداث (باستخدام تفويض الحدث) ============
+        // ============ إعداد الأحداث ============
         function setupEventListeners() {
+            // تبديل التبويبات
             document.querySelectorAll('.main-tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+                btn.addEventListener('click', () => {
+                    switchTab(btn.dataset.tab);
+                });
             });
 
-            postSearchInput.addEventListener('input', () => scheduleRender('posts'));
-            doctorSearchInput.addEventListener('input', () => scheduleRender('doctors'));
+            // بحث المنشورات (مع debounce للأداء)
+            let postSearchTimeout;
+            postSearchInput.addEventListener('input', () => {
+                clearTimeout(postSearchTimeout);
+                postSearchTimeout = setTimeout(() => {
+                    renderPosts();
+                }, 300);
+            });
 
-            // تفويض الحدث للمنشورات
+            // بحث الأطباء (مع debounce)
+            let doctorSearchTimeout;
+            doctorSearchInput.addEventListener('input', () => {
+                clearTimeout(doctorSearchTimeout);
+                doctorSearchTimeout = setTimeout(() => {
+                    renderDoctors();
+                }, 300);
+            });
+
+            // أحداث شبكة المنشورات - استخدام event delegation
             postsGrid.addEventListener('click', async (e) => {
-                const likeBtn = e.target.closest('[data-action="like"]');
+                const target = e.target;
+
+                // زر الإعجاب
+                const likeBtn = target.closest('[data-action="like"]');
                 if (likeBtn) {
                     e.stopPropagation();
-                    await togglePostLike(likeBtn.dataset.articleId);
+                    e.preventDefault();
+                    const articleId = likeBtn.dataset.articleId;
+                    await togglePostLike(articleId, likeBtn);
                     return;
                 }
 
-                const saveBtn = e.target.closest('[data-action="save-post"]');
+                // زر حفظ المنشور
+                const saveBtn = target.closest('[data-action="save-post"]');
                 if (saveBtn) {
                     e.stopPropagation();
-                    await togglePostSave(saveBtn.dataset.articleId);
+                    e.preventDefault();
+                    const articleId = saveBtn.dataset.articleId;
+                    await togglePostSave(articleId, saveBtn);
                     return;
                 }
 
-                const readMoreBtn = e.target.closest('[data-action="read-more"]');
+                // زر المشاركة
+                const shareBtn = target.closest('[data-action="share"]');
+                if (shareBtn) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    await sharePost(shareBtn.dataset.articleId);
+                    return;
+                }
+
+                // زر اقرأ المزيد
+                const readMoreBtn = target.closest('[data-action="read-more"]');
                 if (readMoreBtn) {
                     e.stopPropagation();
+                    e.preventDefault();
                     const articleId = readMoreBtn.dataset.articleId;
-                    const contentDiv = postsGrid.querySelector(`.post-content[data-article-id="${articleId}"]`);
+                    const contentDiv = postsGrid.querySelector(
+                        `.post-content[data-article-id="${articleId}"]`);
                     if (contentDiv) {
                         contentDiv.classList.toggle('collapsed');
-                        readMoreBtn.textContent = contentDiv.classList.contains('collapsed') ? '...اقرأ المزيد' : 'عرض أقل';
+                        readMoreBtn.textContent = contentDiv.classList.contains('collapsed') ?
+                            '...اقرأ المزيد' : 'عرض أقل';
                     }
                     return;
                 }
 
-                const postHeader = e.target.closest('.post-header');
+                // النقر على رأس المنشور (صورة الطبيب)
+                const postHeader = target.closest('.post-header');
                 if (postHeader) {
                     e.stopPropagation();
-                    openDoctorProfile(postHeader.dataset.doctorId);
+                    e.preventDefault();
+                    const doctorId = postHeader.dataset.doctorId;
+                    openDoctorProfile(doctorId);
                     return;
                 }
             });
 
-            // تفويض الحدث للمحفوظات
+            // أحداث شبكة المحفوظات
             savedGrid.addEventListener('click', async (e) => {
-                const saveBtn = e.target.closest('[data-action="save-post"]');
+                const target = e.target;
+
+                // زر إلغاء حفظ المنشور
+                const saveBtn = target.closest('[data-action="save-post"]');
                 if (saveBtn) {
                     e.stopPropagation();
-                    await togglePostSave(saveBtn.dataset.articleId);
+                    e.preventDefault();
+                    await togglePostSave(saveBtn.dataset.articleId, saveBtn);
                     return;
                 }
 
-                const postHeader = e.target.closest('.post-header');
+                // النقر على رأس المنشور
+                const postHeader = target.closest('.post-header');
                 if (postHeader) {
                     e.stopPropagation();
-                    openDoctorProfile(postHeader.dataset.doctorId);
+                    e.preventDefault();
+                    const doctorId = postHeader.dataset.doctorId;
+                    openDoctorProfile(doctorId);
                     return;
                 }
 
-                const doctorCard = e.target.closest('[data-action="open-doctor"]');
+                // النقر على بطاقة طبيب
+                const doctorCard = target.closest('[data-action="open-doctor"]');
                 if (doctorCard) {
-                    openDoctorProfile(doctorCard.dataset.doctorId);
+                    e.preventDefault();
+                    const doctorId = doctorCard.dataset.doctorId;
+                    openDoctorProfile(doctorId);
                     return;
                 }
             });
 
-            // تفويض الحدث للأطباء
+            // أحداث شبكة الأطباء
             doctorsGrid.addEventListener('click', (e) => {
                 const doctorCard = e.target.closest('[data-action="open-doctor"]');
                 if (doctorCard) {
-                    openDoctorProfile(doctorCard.dataset.doctorId);
+                    const doctorId = doctorCard.dataset.doctorId;
+                    openDoctorProfile(doctorId);
                 }
             });
 
+            // أحداث المودال
             modalCloseBtn.addEventListener('click', closeProfileModal);
             profileModal.addEventListener('click', (e) => {
                 if (e.target === profileModal) closeProfileModal();
             });
 
+            // حفظ الطبيب من المودال
             modalSaveDoctorBtn.addEventListener('click', async () => {
-                if (currentModalDoctor) await toggleDoctorSave(currentModalDoctor.id);
-            });
-
-            modalBookBtn.addEventListener('click', () => {
                 if (currentModalDoctor) {
-                    const doctorId = currentModalDoctor.authUid || currentModalDoctor.id;
-                    window.location.href = `booking.html?doctorId=${encodeURIComponent(doctorId)}`;
+                    await toggleDoctorSave(currentModalDoctor.id);
                 }
             });
 
-            // إغلاق المودال بالسحب
+            // حجز جلسة
+            modalBookBtn.addEventListener('click', () => {
+                if (currentModalDoctor) {
+                    const doctorId = currentModalDoctor.authUid || currentModalDoctor.id;
+                    window.location.href =
+                        `booking.html?doctorId=${encodeURIComponent(doctorId)}`;
+                }
+            });
+
+            // إغلاق المودال بالسحب للأسفل (للمس)
             let touchStartY = 0;
             const modalSheet = profileModal.querySelector('.modal-sheet');
             modalSheet.addEventListener('touchstart', (e) => {
                 touchStartY = e.touches[0].clientY;
-            });
+            }, { passive: true });
+
             modalSheet.addEventListener('touchmove', (e) => {
-                const diff = e.touches[0].clientY - touchStartY;
+                const touchY = e.touches[0].clientY;
+                const diff = touchY - touchStartY;
                 if (diff > 80 && modalSheet.scrollTop <= 0) {
+                    closeProfileModal();
+                }
+            }, { passive: true });
+
+            // إغلاق المودال بزر Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && profileModal.classList.contains('show')) {
                     closeProfileModal();
                 }
             });
