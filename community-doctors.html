@@ -1202,24 +1202,9 @@
 
             modalBookBtn.addEventListener('click', () => {
                 if (currentModalDoctor) {
-                    const doctorData = encodeURIComponent(JSON.stringify({
-                        id: currentModalDoctor.id,
-                        authUid: currentModalDoctor.authUid || currentModalDoctor.id,
-                        name: currentModalDoctor.name,
-                        specialty: currentModalDoctor.specialty,
-                        photoURL: currentModalDoctor.photoURL,
-                        quickBlurb: currentModalDoctor.quickBlurb,
-                        fullBio: currentModalDoctor.fullBio,
-                        email: currentModalDoctor.email,
-                        phone: currentModalDoctor.phone,
-                        experience: currentModalDoctor.experience,
-                        country: currentModalDoctor.country,
-                        city: currentModalDoctor.city,
-                        price: currentModalDoctor.price,
-                        license: currentModalDoctor.license,
-                        education: currentModalDoctor.education
-                    }));
-                    window.location.href = `conversation.html?doctor=${doctorData}`;
+                    // إرسال doctorId فقط إلى صفحة المحادثة
+                    const doctorId = currentModalDoctor.authUid || currentModalDoctor.id;
+                    window.location.href = `conversation.html?doctorId=${encodeURIComponent(doctorId)}`;
                 }
             });
 
