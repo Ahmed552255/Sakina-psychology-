@@ -1087,7 +1087,7 @@
         </header>
 
         <div class="main-tabs">
-            <a href="community-posts.html" class="main-tab-btn active">
+            <a href="patient-home.html" class="main-tab-btn active">
                 📰 <span>المنشورات</span>
                 <span class="tab-badge" id="postsCount">0</span>
             </a>
@@ -1132,7 +1132,7 @@
                     حفظ الطبيب
                 </button>
                 <button class="btn btn-primary" id="modalBookBtn">
-                    📅 حجز جلسة
+                    💬 حجز جلسة
                 </button>
             </div>
         </div>
@@ -1817,9 +1817,24 @@
 
             modalBookBtn.addEventListener('click', () => {
                 if (currentModalDoctor) {
-                    const doctorId = currentModalDoctor.authUid || currentModalDoctor.id;
-                    window.location.href =
-                        `booking.html?doctorId=${encodeURIComponent(doctorId)}`;
+                    const doctorData = encodeURIComponent(JSON.stringify({
+                        id: currentModalDoctor.id,
+                        authUid: currentModalDoctor.authUid || currentModalDoctor.id,
+                        name: currentModalDoctor.name,
+                        specialty: currentModalDoctor.specialty,
+                        photoURL: currentModalDoctor.photoURL,
+                        quickBlurb: currentModalDoctor.quickBlurb,
+                        fullBio: currentModalDoctor.fullBio,
+                        email: currentModalDoctor.email,
+                        phone: currentModalDoctor.phone,
+                        experience: currentModalDoctor.experience,
+                        country: currentModalDoctor.country,
+                        city: currentModalDoctor.city,
+                        price: currentModalDoctor.price,
+                        license: currentModalDoctor.license,
+                        education: currentModalDoctor.education
+                    }));
+                    window.location.href = `conversation.html?doctor=${doctorData}`;
                 }
             });
 
