@@ -502,15 +502,15 @@
             🧰 أدوات العناية
         </div>
 
-        <!-- قائمة الأطباء الذين لديهم أدوات -->
+        <!-- قائمة الأطباء الذين لديهم أدوات مخصصة لهذا المريض -->
         <div class="section-title">
             👨‍⚕️ أطبائي وأدواتهم
         </div>
         <div id="doctorsList"></div>
         <div class="empty-state" id="doctorsEmpty" style="display:none;">
             <div class="empty-icon">👨‍⚕️</div>
-            <p>لا يوجد أطباء لديهم أدوات متاحة</p>
-            <p style="font-size:0.85rem; margin-top:8px;">تواصل مع طبيبك ليشاركك أدواته</p>
+            <p>لا يوجد أطباء لديهم أدوات مخصصة لك</p>
+            <p style="font-size:0.85rem; margin-top:8px;">سيقوم طبيبك بتعيين الأدوات المناسبة لك</p>
         </div>
     </div>
 
@@ -545,7 +545,7 @@
     <script type="module">
         import { firebaseConfig } from './firebase-config.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const app = initializeApp(firebaseConfig);
@@ -553,7 +553,6 @@
         const auth = getAuth(app);
 
         let currentUser = null;
-        let conversations = [];
         let allTools = [];
         let allDoctors = [];
 
@@ -591,14 +590,18 @@
         function loadAllData() {
             if (!currentUser) return;
 
-            // تحميل المحادثات لاستخراج الأطباء الذين يتواصل معهم المريض
-            const conversationsRef = ref(database, 'conversations');
-            onValue(conversationsRef, (snapshot) => {
-                const doctorIds = new Set();
-                snapshot.forEach(child => {
-                    const conv = child.val();
-                    if (conv.patientId === currentUser.uid) {
-                        doctorIds.add(conv.doctorId);
+            // تحميل الأدوات المقبولة فقط
+            const toolsRef = ref(database, 'tools');
+            onValue(toolsRef, (toolsSnap) => {
+                allTools = [];
+                toolsSnap.forEach(child => {
+                    const tool = child.val();
+                    // فقط الأدوات المقبولة والتي تحتوي على كود
+                    if (tool.status === 'approved' && tool.code) {
+                        allTools.push({
+                            id: child.key,
+                            ...tool
+                        });
                     }
                 });
 
@@ -608,7 +611,7 @@
                     allDoctors = [];
                     docSnap.forEach(child => {
                         const doc = child.val();
-                        if (doctorIds.has(child.key) && doc.status !== 'blocked') {
+                        if (doc.status !== 'blocked') {
                             allDoctors.push({
                                 id: child.key,
                                 authUid: doc.authUid || child.key,
@@ -620,34 +623,32 @@
                         }
                     });
 
-                    // تحميل الأدوات المقبولة
-                    const toolsRef = ref(database, 'tools');
-                    onValue(toolsRef, (toolsSnap) => {
-                        allTools = [];
-                        toolsSnap.forEach(child => {
-                            const tool = child.val();
-                            if (tool.status === 'approved' && tool.code) {
-                                allTools.push({
-                                    id: child.key,
-                                    ...tool
-                                });
-                            }
-                        });
-
-                        renderDoctorsWithTools();
-                    });
+                    renderDoctorsWithTools();
                 });
             });
         }
 
-        function getDoctorTools(doctorId) {
-            return allTools.filter(t => t.doctorId === doctorId || t.userId === doctorId);
+        // الحصول على الأدوات المخصصة لهذا المريض تحديداً من قبل الطبيب
+        function getDoctorToolsForPatient(doctorId) {
+            return allTools.filter(t => {
+                // الأداة تتبع هذا الطبيب
+                const belongsToDoctor = t.doctorId === doctorId || t.userId === doctorId;
+                if (!belongsToDoctor) return false;
+                
+                // التحقق من أن الأداة مخصصة لهذا المريض
+                if (t.assignedPatients && Array.isArray(t.assignedPatients)) {
+                    return t.assignedPatients.includes(currentUser.uid);
+                }
+                
+                // إذا لم يكن هناك قائمة مرضى، لا تظهر الأداة (تتطلب تصريحاً صريحاً)
+                return false;
+            });
         }
 
         function renderDoctorsWithTools() {
-            // تصفية الأطباء الذين لديهم أدوات مقبولة فقط
+            // تصفية الأطباء الذين لديهم أدوات مخصصة لهذا المريض
             const doctorsWithTools = allDoctors.filter(doctor => {
-                const tools = getDoctorTools(doctor.id);
+                const tools = getDoctorToolsForPatient(doctor.id);
                 return tools.length > 0;
             });
 
@@ -659,7 +660,7 @@
 
             doctorsEmpty.style.display = 'none';
             doctorsList.innerHTML = doctorsWithTools.map(doctor => {
-                const tools = getDoctorTools(doctor.id);
+                const tools = getDoctorToolsForPatient(doctor.id);
                 const initials = getInitials(doctor.name);
                 const specLabel = getSpecialtyName(doctor.specialty);
 
