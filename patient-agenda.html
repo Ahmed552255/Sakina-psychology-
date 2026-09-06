@@ -474,6 +474,30 @@
             border: 1px solid var(--primary-100);
             transition: var(--transition-smooth);
         }
+        .mood-section.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(0.5);
+        }
+        .mood-section .not-today-notice {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            background: rgba(255,255,255,0.5);
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+        .mood-section.disabled .not-today-notice {
+            display: block;
+        }
+        .mood-section.disabled .mood-emojis,
+        .mood-section.disabled .mood-note,
+        .mood-section.disabled .save-mood-btn {
+            display: none;
+        }
         .section-label {
             display: flex;
             align-items: center;
@@ -917,6 +941,9 @@
         .toast.success {
             background: var(--success);
         }
+        .toast.error {
+            background: var(--danger);
+        }
 
         .bottom-nav {
             position: fixed;
@@ -1032,7 +1059,10 @@
                 <span class="streak-badge" id="streakBadge"></span>
             </div>
 
-            <div class="mood-section">
+            <div class="mood-section" id="moodSection">
+                <div class="not-today-notice">
+                    🕰️ يمكنك تسجيل حالتك المزاجية لليوم الحالي فقط
+                </div>
                 <div class="section-label">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
@@ -1171,10 +1201,10 @@
 
         let currentUser = null;
         let events = [];
-        let moods = {};
         let moodHistory = {};
         let currentDate = new Date();
         let selectedDate = new Date().toISOString().split('T')[0];
+        const todayStr = new Date().toISOString().split('T')[0];
         let currentType = 'task';
         let currentPrio = 'med';
         let currentRecur = 'none';
@@ -1205,9 +1235,12 @@
 
         const formatDateLabel = (ds) => {
             const d = new Date(ds + 'T00:00:00');
-            const today = new Date().toISOString().split('T')[0];
-            if (ds === today) return 'اليوم';
+            if (ds === todayStr) return 'اليوم';
             return d.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
+        };
+
+        const isToday = (dateStr) => {
+            return dateStr === todayStr;
         };
 
         const isEventOnDate = (ev, dateStr) => {
@@ -1227,7 +1260,6 @@
             const month = currentDate.getMonth();
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const todayStr = new Date().toISOString().split('T')[0];
             const grid = document.getElementById('calendarGrid');
 
             document.getElementById('calTitle').textContent = currentDate.toLocaleDateString('ar-EG', { month: 'long',
@@ -1292,15 +1324,27 @@
             document.getElementById('agendaCard').style.display = 'block';
             document.getElementById('agendaTitle').textContent = formatDateLabel(ds);
 
+            const moodSection = document.getElementById('moodSection');
+            const isDateToday = isToday(ds);
+
+            // تفعيل/تعطيل قسم المزاج بناءً على التاريخ
+            if (isDateToday) {
+                moodSection.classList.remove('disabled');
+            } else {
+                moodSection.classList.add('disabled');
+            }
+
             const entries = moodHistory[ds] || [];
             const latestMood = entries.length > 0 ? entries[entries.length - 1] : null;
 
-            document.querySelectorAll('.mood-option').forEach(el => el.classList.remove('selected'));
-            if (latestMood) {
-                document.querySelectorAll(`.mood-option[data-emoji="${latestMood.emoji}"]`).forEach(el => el.classList.add(
-                    'selected'));
+            if (isDateToday) {
+                document.querySelectorAll('.mood-option').forEach(el => el.classList.remove('selected'));
+                if (latestMood) {
+                    document.querySelectorAll(`.mood-option[data-emoji="${latestMood.emoji}"]`).forEach(el => el.classList
+                        .add('selected'));
+                }
+                document.getElementById('moodNote').value = '';
             }
-            document.getElementById('moodNote').value = '';
 
             const moodHistoryDiv = document.getElementById('moodHistory');
             const moodHistoryList = document.getElementById('moodHistoryList');
@@ -1367,9 +1411,8 @@
 
             const sortedDates = Object.keys(moodHistory).sort((a, b) => b.localeCompare(a));
             let streak = 0;
-            const today = new Date().toISOString().split('T')[0];
             for (let i = 0; i < sortedDates.length; i++) {
-                const diff = (new Date(today) - new Date(sortedDates[i] + 'T00:00:00')) / (1000 * 3600 * 24);
+                const diff = (new Date(todayStr) - new Date(sortedDates[i] + 'T00:00:00')) / (1000 * 3600 * 24);
                 if (diff === i) streak++;
                 else break;
             }
@@ -1407,6 +1450,13 @@
 
         const saveMood = async () => {
             if (isSaving || !currentUser) return;
+            
+            // التحقق من أن التاريخ المحدد هو اليوم الحالي
+            if (!isToday(selectedDate)) {
+                toast('يمكنك تسجيل حالتك المزاجية لليوم الحالي فقط 🕰️', 'error');
+                return;
+            }
+            
             const selected = document.querySelector('.mood-option.selected');
             if (!selected) {
                 toast('الرجاء اختيار حالة مزاجية', 'error');
@@ -1424,7 +1474,7 @@
                 const scoreMap = { '😁': 5, '😊': 4, '😐': 3, '😌': 3, '😔': 2, '😢': 2, '😰': 1, '😠': 1 };
                 const moodData = {
                     patientId: currentUser.uid,
-                    date: selectedDate,
+                    date: todayStr, // استخدام تاريخ اليوم الحالي دائماً
                     score: scoreMap[emoji] || 3,
                     emoji,
                     note,
@@ -1433,6 +1483,7 @@
 
                 await addDoc(collection(db, 'moods'), moodData);
                 document.getElementById('moodNote').value = '';
+                document.querySelectorAll('.mood-option').forEach(el => el.classList.remove('selected'));
                 toast('تم حفظ حالتك المزاجية ✨', 'success');
             } catch (e) {
                 console.error('Save mood error:', e);
@@ -1571,6 +1622,10 @@
             moodEmojis.innerHTML = emojis.map(e => `<span class="mood-option" data-emoji="${e}">${e}</span>`).join('');
             moodEmojis.querySelectorAll('.mood-option').forEach(el => {
                 el.addEventListener('click', () => {
+                    if (!isToday(selectedDate)) {
+                        toast('يمكنك تسجيل حالتك المزاجية لليوم الحالي فقط 🕰️', 'error');
+                        return;
+                    }
                     moodEmojis.querySelectorAll('.mood-option').forEach(e => e.classList.remove(
                         'selected'));
                     el.classList.add('selected');
