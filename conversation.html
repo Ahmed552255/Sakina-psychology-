@@ -285,91 +285,124 @@
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // ==================== أدوات التشفير (Web Crypto API) ====================
-    const ENCRYPTION_SALT = new Uint8Array([22, 86, 136, 136, 42, 136, 136, 42]);
-    const ENCRYPTION_ITERATIONS = 100000;
-
-    // تحويل Uint8Array إلى Base64 بشكل آمن
-    function uint8ArrayToBase64(bytes) {
-        let binary = '';
-        const len = bytes.byteLength;
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i]);
+    // ==================== نظام التشفير القوي ====================
+    class EncryptionManager {
+        constructor(database) {
+            this.database = database;
+            this.keyCache = new Map();
+            this.ivLength = 12; // 96 bits لـ GCM
+            this.algorithm = 'AES-GCM';
+            this.keyLength = 256;
         }
-        return btoa(binary);
-    }
 
-    // تحويل Base64 إلى Uint8Array بشكل آمن
-    function base64ToUint8Array(base64) {
-        const binaryString = atob(base64);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
+        async getConversationKey(convId) {
+            // استخدام التخزين المؤقت أولاً
+            if (this.keyCache.has(convId)) {
+                return this.keyCache.get(convId);
+            }
+
+            const keyRef = ref(this.database, `conversation_keys/${convId}`);
+            const snapshot = await get(keyRef);
+
+            let key;
+            if (snapshot.exists()) {
+                // استيراد المفتاح المخزن
+                const keyData = new Uint8Array(snapshot.val().keyData);
+                key = await crypto.subtle.importKey(
+                    'raw',
+                    keyData,
+                    { name: this.algorithm },
+                    false,
+                    ['encrypt', 'decrypt']
+                );
+            } else {
+                // توليد مفتاح جديد وتخزينه
+                key = await this.generateAndStoreKey(convId);
+            }
+
+            // تخزين في الذاكرة المؤقتة
+            this.keyCache.set(convId, key);
+            return key;
         }
-        return bytes;
-    }
 
-    async function deriveEncryptionKey(patientId, doctorId) {
-        const ids = [patientId, doctorId].sort();
-        const baseString = `${ids[0]}:${ids[1]}`;
-        
-        const enc = new TextEncoder();
-        const keyMaterial = await crypto.subtle.importKey(
-            'raw',
-            enc.encode(baseString),
-            { name: 'PBKDF2' },
-            false,
-            ['deriveKey']
-        );
-        
-        return crypto.subtle.deriveKey(
-            {
-                name: 'PBKDF2',
-                salt: ENCRYPTION_SALT,
-                iterations: ENCRYPTION_ITERATIONS,
-                hash: 'SHA-256'
-            },
-            keyMaterial,
-            { name: 'AES-GCM', length: 256 },
-            false,
-            ['encrypt', 'decrypt']
-        );
-    }
-
-    async function encryptMessage(plainText, key) {
-        const enc = new TextEncoder();
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const encrypted = await crypto.subtle.encrypt(
-            { name: 'AES-GCM', iv },
-            key,
-            enc.encode(plainText)
-        );
-        
-        const combined = new Uint8Array(iv.length + encrypted.byteLength);
-        combined.set(iv, 0);
-        combined.set(new Uint8Array(encrypted), iv.length);
-        
-        return uint8ArrayToBase64(combined);
-    }
-
-    async function decryptMessage(encryptedBase64, key) {
-        try {
-            const combined = base64ToUint8Array(encryptedBase64);
-            const iv = combined.slice(0, 12);
-            const data = combined.slice(12);
-            
-            const decrypted = await crypto.subtle.decrypt(
-                { name: 'AES-GCM', iv },
-                key,
-                data
+        async generateAndStoreKey(convId) {
+            // توليد مفتاح AES-256 عشوائي
+            const key = await crypto.subtle.generateKey(
+                { name: this.algorithm, length: this.keyLength },
+                true,
+                ['encrypt', 'decrypt']
             );
-            return new TextDecoder().decode(decrypted);
-        } catch (e) {
-            console.warn('فشل فك التشفير:', e);
-            return '[رسالة مشفرة - تعذر فك التشفير]';
+
+            // تصدير المفتاح للتخزين
+            const exportedKey = await crypto.subtle.exportKey('raw', key);
+            const keyData = Array.from(new Uint8Array(exportedKey));
+
+            // تخزين في Firebase
+            await set(ref(this.database, `conversation_keys/${convId}`), {
+                keyData: keyData,
+                createdAt: Date.now(),
+                algorithm: this.algorithm,
+                keyLength: this.keyLength
+            });
+
+            return key;
+        }
+
+        async encrypt(plainText, convId) {
+            const key = await this.getConversationKey(convId);
+            const iv = crypto.getRandomValues(new Uint8Array(this.ivLength));
+
+            const encrypted = await crypto.subtle.encrypt(
+                { name: this.algorithm, iv },
+                key,
+                new TextEncoder().encode(plainText)
+            );
+
+            const combined = new Uint8Array(iv.length + encrypted.byteLength);
+            combined.set(iv, 0);
+            combined.set(new Uint8Array(encrypted), iv.length);
+
+            // تحويل إلى Base64 بشكل آمن
+            let binary = '';
+            for (let i = 0; i < combined.length; i++) {
+                binary += String.fromCharCode(combined[i]);
+            }
+            return btoa(binary);
+        }
+
+        async decrypt(encryptedBase64, convId) {
+            try {
+                const key = await this.getConversationKey(convId);
+                
+                // تحويل Base64 إلى Uint8Array
+                const binaryString = atob(encryptedBase64);
+                const combined = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    combined[i] = binaryString.charCodeAt(i);
+                }
+
+                const iv = combined.slice(0, this.ivLength);
+                const data = combined.slice(this.ivLength);
+
+                const decrypted = await crypto.subtle.decrypt(
+                    { name: this.algorithm, iv },
+                    key,
+                    data
+                );
+
+                return new TextDecoder().decode(decrypted);
+            } catch (e) {
+                console.warn('فشل فك التشفير:', e);
+                return '[رسالة مشفرة - تعذر فك التشفير]';
+            }
+        }
+
+        clearCache() {
+            this.keyCache.clear();
         }
     }
+
+    const encryptionManager = new EncryptionManager(database);
 
     // ==================== IndexedDB للتخزين المحلي ====================
     class MessageCache {
@@ -435,7 +468,7 @@
                 return new Promise((resolve) => {
                     const tx = this.db.transaction('messages', 'readwrite');
                     const store = tx.objectStore('messages');
-                    store.put({ convId, messages: messages.slice(-100) }); // الاحتفاظ بآخر 100 رسالة فقط
+                    store.put({ convId, messages: messages.slice(-100) });
                     tx.oncomplete = () => resolve();
                     tx.onerror = () => resolve();
                 });
@@ -515,7 +548,6 @@
     let currentUserId = null;
     let doctorId = null;
     let conversationId = null;
-    let encryptionKey = null;
     let allMessages = [];
     let isNearBottom = true;
     let longPressTimer = null;
@@ -545,7 +577,6 @@
 
     // ==================== عرض الرسائل مع فك التشفير ====================
     const renderMessages = async (msgs) => {
-        // إفراغ الحاوية
         container.innerHTML = '';
         
         if (!msgs || msgs.length === 0) {
@@ -589,14 +620,10 @@
             // فك تشفير النص إذا كان مشفراً
             let displayText = '';
             if (msg.encrypted && msg.encryptedText) {
-                if (encryptionKey) {
-                    try {
-                        displayText = await decryptMessage(msg.encryptedText, encryptionKey);
-                    } catch (e) {
-                        displayText = '[تعذر فك التشفير]';
-                    }
-                } else {
-                    displayText = '[جاري تحميل المفتاح...]';
+                try {
+                    displayText = await encryptionManager.decrypt(msg.encryptedText, conversationId);
+                } catch (e) {
+                    displayText = '[تعذر فك التشفير]';
                 }
             } else if (msg.text) {
                 displayText = msg.text; // توافق مع الرسائل القديمة غير المشفرة
@@ -624,18 +651,28 @@
         }
         
         container.appendChild(fragment);
+        
+        // تحديث حالة القراءة للرسائل المستلمة
+        const unreadDoctorMessages = sorted.filter(m => m.senderId === doctorId && !m.read);
+        for (const msg of unreadDoctorMessages) {
+            try {
+                await update(ref(database, `conversations/${conversationId}/messages/${msg.id}`), {
+                    read: true
+                });
+            } catch (e) {
+                console.warn('فشل تحديث حالة القراءة:', e);
+            }
+        }
     };
 
     // ==================== تحميل الطبيب ====================
     const loadDoctor = async () => {
         try {
-            // محاولة التحميل من الكاش أولاً
             let doc = await cache.getDoctor(doctorId);
             if (doc) {
                 updateDoctorUI(doc);
             }
             
-            // التحميل من Firebase
             const snap = await get(ref(database, `doctors/${doctorId}`));
             if (snap.exists()) {
                 const data = snap.val();
@@ -647,7 +684,6 @@
                 await cache.saveDoctor(doc);
                 updateDoctorUI(doc);
             } else if (!doc) {
-                // محاولة من users
                 const userSnap = await get(ref(database, `users/${doctorId}`));
                 if (userSnap.exists()) {
                     const data = userSnap.val();
@@ -694,7 +730,6 @@
                 }
             }
             
-            // إنشاء محادثة جديدة
             const newRef = push(refConv);
             conversationId = newRef.key;
             await set(newRef, {
@@ -753,7 +788,6 @@
             // عرض الرسائل
             await renderMessages(allMessages);
             
-            // تمرير للأسفل إذا كان المستخدم في الأسفل
             if (isNearBottom || fresh.length === 1) {
                 scrollToBottom(true);
             } else {
@@ -769,13 +803,13 @@
     let sending = false;
     
     const sendMessage = async (text) => {
-        if (!text || !conversationId || !encryptionKey || sending) return;
+        if (!text || !conversationId || sending) return;
         
         sending = true;
         sendBtn.classList.add('sending');
         
         try {
-            const encryptedText = await encryptMessage(text, encryptionKey);
+            const encryptedText = await encryptionManager.encrypt(text, conversationId);
             
             const msgRef = push(ref(database, `conversations/${conversationId}/messages`));
             await set(msgRef, {
@@ -784,7 +818,8 @@
                 senderId: currentUserId,
                 senderRole: 'patient',
                 timestamp: Date.now(),
-                read: false
+                read: false,
+                type: 'message'
             });
             
             await update(ref(database, `conversations/${conversationId}`), {
@@ -802,7 +837,6 @@
         } catch (e) {
             console.error('فشل الإرسال:', e);
             showToast('فشل إرسال الرسالة', true);
-            // استعادة النص في حالة الفشل
             input.value = text;
         } finally {
             sending = false;
@@ -816,7 +850,6 @@
         menu.style.display = 'block';
         menu.classList.add('show');
         
-        // ضبط الموضع مع مراعاة حدود الشاشة
         const menuRect = menu.getBoundingClientRect();
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
@@ -842,17 +875,22 @@
     };
 
     const editMessage = async (msgId, newText) => {
-        if (!encryptionKey || !newText) return;
+        if (!newText) return;
         
         try {
-            const encryptedText = await encryptMessage(newText, encryptionKey);
+            const encryptedText = await encryptionManager.encrypt(newText, conversationId);
+            
+            // تحديث الرسالة المشفرة
             await update(ref(database, `conversations/${conversationId}/messages/${msgId}`), {
                 encrypted: true,
                 encryptedText: encryptedText,
-                text: null,
                 edited: true,
                 editedAt: Date.now()
             });
+            
+            // حذف الحقل القديم text إذا كان موجوداً
+            await remove(ref(database, `conversations/${conversationId}/messages/${msgId}/text`));
+            
             showToast('تم تعديل الرسالة');
         } catch (e) {
             console.error('فشل التعديل:', e);
@@ -892,7 +930,6 @@
         }
     };
 
-    // الاستماع لأحداث المكالمات
     window.addEventListener('callEvent', (e) => {
         if (e.detail && conversationId) {
             addCallLog(e.detail).catch(console.warn);
@@ -900,7 +937,6 @@
     });
 
     // ==================== الأحداث ====================
-    // تعديل ارتفاع حقل الإدخال تلقائياً
     const adjustTextarea = () => {
         input.style.height = 'auto';
         input.style.height = Math.min(input.scrollHeight, 130) + 'px';
@@ -909,7 +945,6 @@
     input.addEventListener('input', adjustTextarea);
     input.addEventListener('paste', () => setTimeout(adjustTextarea, 0));
     
-    // إرسال عند الضغط على Enter
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -920,7 +955,6 @@
         }
     });
     
-    // زر الإرسال
     sendBtn.addEventListener('click', () => {
         const txt = input.value.trim();
         if (txt) {
@@ -930,7 +964,6 @@
     
     sendBtn.addEventListener('mousedown', (e) => e.preventDefault());
     
-    // زر الرجوع
     document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = 'patient-chats.html';
     });
@@ -962,7 +995,6 @@
     container.addEventListener('mouseup', () => clearTimeout(longPressTimer));
     container.addEventListener('mousemove', () => clearTimeout(longPressTimer));
     
-    // إخفاء القائمة عند النقر خارجها
     document.addEventListener('click', (e) => {
         if (!menu.contains(e.target)) {
             hideMessageOptions();
@@ -976,7 +1008,6 @@
         const msg = allMessages.find(m => m.id === currentSelectedMsg);
         if (!msg) return;
         
-        // الحصول على النص الحالي من DOM
         const row = document.querySelector(`[data-msg-id="${currentSelectedMsg}"]`);
         const currentText = row ? row.dataset.messageText : '';
         
@@ -999,10 +1030,11 @@
 
     // ==================== تنظيف عند المغادرة ====================
     const cleanup = () => {
-        if (unsubMessages) {
+        if (unsubMessages && conversationId) {
             off(ref(database, `conversations/${conversationId}/messages`), 'value', unsubMessages);
             unsubMessages = null;
         }
+        encryptionManager.clearCache();
     };
     
     window.addEventListener('beforeunload', cleanup);
@@ -1025,14 +1057,8 @@
                 return;
             }
             
-            // اشتقاق مفتاح التشفير
-            try {
-                encryptionKey = await deriveEncryptionKey(currentUserId, doctorId);
-            } catch (e) {
-                console.error('فشل إعداد التشفير:', e);
-                showToast('تعذر إعداد التشفير', true);
-                return;
-            }
+            // تهيئة الكاش
+            await cache.init();
             
             // تحميل بيانات الطبيب
             await loadDoctor();
