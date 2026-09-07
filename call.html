@@ -372,28 +372,17 @@
 </div>
 
 <script type="module">
-    // ==================== إعدادات Firebase (مصادقة فقط) ====================
+    // ==================== استيراد الإعدادات من ملف خارجي ====================
+    import { firebaseConfig, AGORA_APP_ID } from './firebase-config.js';
+    
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, update, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, update, onValue, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAx0wVqtIYHbFNgZ3_Wr6ViemAJ7BwMOkw",
-        authDomain: "sakina-937c4.firebaseapp.com",
-        databaseURL: "https://sakina-937c4-default-rtdb.firebaseio.com",
-        projectId: "sakina-937c4",
-        storageBucket: "sakina-937c4.firebasestorage.app",
-        messagingSenderId: "25215790734",
-        appId: "1:25215790734:web:46c5d893d5818530b3a3df"
-    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
     feather.replace();
-
-    // ==================== إعدادات Agora ====================
-    const AGORA_APP_ID = '13534a183d7941c2b324b5c29c15ca8a';
 
     // عناصر DOM
     const loadingScreen = document.getElementById('loadingScreen');
@@ -442,7 +431,7 @@
     let callTimerInterval = null;
     let cameras = [];
     let currentCameraId = null;
-    let currentVolume = 80; // النسبة المئوية
+    let currentVolume = 80;
 
     // دوال مساعدة
     function showLoading(text, isError = false) {
@@ -479,24 +468,23 @@
         }
     }
 
-    // التحكم في مستوى صوت الوسائط البعيدة
     function setRemoteVolume(volumePercent) {
         const volume = volumePercent / 100;
         if (remoteVideo) remoteVideo.volume = volume;
-        // أيضاً للصوت في حالة المكالمة الصوتية
         const audioElements = document.querySelectorAll('audio');
         audioElements.forEach(audio => audio.volume = volume);
     }
 
-    // توليد اسم قناة آمن
+    // ✅ توليد اسم قناة ثابت بدون Date.now()
     function generateChannelName(doc, pat) {
-        const input = `${doc}_${pat}`;
+        const sorted = [doc, pat].sort();
+        const input = `${sorted[0]}_${sorted[1]}`;
         let hash = 0;
         for (let i = 0; i < input.length; i++) {
             hash = ((hash << 5) - hash) + input.charCodeAt(i);
             hash |= 0;
         }
-        return `sakoon_${Math.abs(hash).toString(36)}_${Date.now().toString(36)}`;
+        return `sakoon_${Math.abs(hash).toString(36)}`;
     }
 
     // تهيئة عميل Agora
@@ -551,7 +539,7 @@
     }
 
     async function joinAndPublish() {
-        const token = null; // للتطوير
+        const token = null; // null مسموح في وضع الاختبار
         await agoraClient.join(AGORA_APP_ID, channelName, token, localUid);
         const tracks = [localAudioTrack];
         if (localVideoTrack) tracks.push(localVideoTrack);
@@ -662,10 +650,16 @@
 
         if (role === 'caller') {
             callId = `${doctorId}_${patientId}_${Date.now()}`;
-            await set(ref(db, `calls/${callId}`), {
+            const callRef = ref(db, `calls/${callId}`);
+            
+            await set(callRef, {
                 caller: doctorId, callee: patientId, type: callType,
                 status: 'ringing', channelName, createdAt: Date.now()
             });
+            
+            // ✅ إضافة onDisconnect للتنظيف التلقائي
+            onDisconnect(callRef).update({ status: 'ended', disconnectedAt: Date.now() });
+            
             onValue(ref(db, `calls/${callId}/status`), (snap) => {
                 if (snap.val() === 'rejected') {
                     showLoading('تم رفض المكالمة', true);
